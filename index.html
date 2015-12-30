@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sphaero.org</title>
+    <meta name="description" content="{{ _abstract }}" />
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Custom styles -->
+    <style type="text/css">
+        html {
+            height: 100%;
+        }
+        body {
+            color: #DDD;
+            background-color: #455c63;
+            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
+            font-family: "Lucida Console", Monaco, monospace;
+            height: 100%;
+        }
+        .no-gutter [class*="col-"] {
+            padding-left:0;
+            padding-right:0;
+        }
+        .navbar {
+            margin-bottom: 0px;
+            border: none;
+            border-radius: 0px;
+            min-height: 10px;
+        }
+        .navbar-nav li a {
+            padding: 4px 10px;
+        }
+        .navbar-brand {
+            height: 10px;
+            padding: 4px 10px;
+        }
+        .navbar-default {
+            border-bottom: solid 1px #2A2A2A;
+            border-top: solid 1px #2A2A2A;
+        }
+        .navbar-default .navbar-nav > .active {
+            color: #000;
+            background: #d65c14;
+        }
+        .navbar-default .navbar-nav > .active > a, 
+        .navbar-default .navbar-nav > .active > a:hover, 
+        .navbar-default .navbar-nav > .active > a:focus {
+            color: #fff;
+            background: #455c63;
+            border-bottom: #58747d 1px solid;
+            border-top: #58747d 1px solid;
+        }
+        #main_container {
+            margin-top: -1px;
+            background-color: #455c63;
+            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
+        }
+        #appie_grid {
+            color: white;
+        }
+        #appie_grid h2 span {
+            color: rgba(200,20,7,0.9);
+            background-color: rgba(20,20,20,0.5);
+            white-space:nowrap;
+            overflow:hidden;
+        }
+        #appie_grid .descr
+        {
+            font-size: 1em;
+            height : 8.4em;
+            overflow: hidden;
+        }
+        #appie_grid .descr span 
+        {
+            background-color: rgba(20,20,20,0.5);
+        }
+        .appie_cell {
+            height : 17.4em;
+            background-color: #222;
+            border: #222 1px solid;
+            background-color: rgba(40,100,100,0.6); 
+            background-blend-mode: luminosity;
+        }
+        .appie_cell:hover {
+            background-color: rgba(40,0,0,0.0); 
+        }
+        div.appie_cell:hover .appie_cell_header {
+            background-color: #455c63;
+            border: solid 1px #58747d;
+            padding-left: 10px;
+        }
+        .appie_cell_header {
+            font-weight: bold;
+            margin: -1px;
+            background-color: #222;
+            border-bottom: solid 1px #2A2A2A;
+            border-top: solid 1px #2A2A2A;
+            border-right: solid 1px #2A2A2A;
+            padding-left: 10px;
+        }
+        .appie_cell p {
+            margin: 15px;
+        }
+        .appie_text {
+            margin: 15px;
+        }
+        #appie_footer {
+            background-color: #000;
+            border-bottom: solid 1px #111;
+            border-top: solid 1px #111;
+        }
+        .appie_img_slider{
+            width: 100%; display: block;
+        }
+        div#slider { overflow: hidden;}
+        
+        .btn {
+            position: absolute;
+            bottom: 10px;
+        }
+        .btn-success:visited {
+            color: #fff;
+        }
+        /* std styling */
+        a, a:hover, a:visited {
+            color: #BAA39C;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        h1, h2, h3, h4, h5, h6, caption, legend {
+            font-weight: bold;
+            color: #BAA39C;
+        }
+    </style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script>
+    
+    var JSONDATA = {};
+    var img_slider_count = 0;
+    
+    /* Helpers */
+    
+    //twitter widget
+    function twit(d,s,id)
+    {
+        var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';
+        if(!d.getElementById(id))
+        {
+            js=d.createElement(s);
+            js.id=id;
+            js.src=p+"://platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js,fjs);
+        }
+    }
+    //(document,"script","twitter-wjs");
+    
+    // Returns false if a key is not in the object otherwise returns
+    // true
+    function keys_in(keys, ob)
+    {
+        for (var i=0; i < keys.length; i++)
+        {
+            if (!(keys[i] in ob)) return false;
+        }
+        return true;
+    }
+    
+    function object_sorter(data,sortkey,reversed) {
+        // Prep
+        if (!sortkey) { sortkey = "_title"; }
+        var dataSorted = {};
+        var tmp = []; // filled with sortkey
+        var tmp2 = {}; // filled with obj, key=sortkey so we can find it
+        var tmp3 = {}; // filled with key, key==sortkey so we can find it
+        // Populate array with sortkey values
+        for (var key in data) {
+            try { 
+                tmp.push(data[key][sortkey]); 
+                tmp2[data[key][sortkey]] = data[key];
+                tmp3[data[key][sortkey]] = key;
+            } catch(e) { console.warn(" > data[key][sortkey] undefined: "+key+", "+sortkey); }
+        }
+        // Sort
+        tmp.sort();
+        if (reversed) { tmp.reverse(); }
+        // Build new data
+        for (var i=0; i<tmp.length; i++) {
+            var tmpkey = tmp[i];
+            var datakey = tmp3[tmpkey];
+            dataSorted[datakey] = tmp2[tmpkey];
+        }
+        return dataSorted;
+    }
+    
+    function date_format(date) 
+    {
+        var monthNames = [
+          "January", "February", "March",
+          "April", "May", "June", "July",
+          "August", "September", "October",
+          "November", "December"
+        ];
+        var year = date.substring(0,4);
+        var month = monthNames[parseInt(date.substring(5,6))];
+        var day = date.substring(7,8);
+        return ""+day+' '+month+' '+year;
+    }
+    /* End helpers */
+    
+    /* Appie methods */
+
+    function appie_kickstart() 
+    {
+        jQuery.getJSON("all.json", function(data) {
+            JSONDATA = data;
+            var location = window.location.href.split('#')[1] || "";
+            setInterval(img_slider, 3000);
+            appie_route('#'+location);
+        }).error(function(e) {
+            console.log("error getting all.json");
+            console.log(e);
+        });
+    }
+    
+    function appie_latest()
+    {
+        $("#appie_grid").empty();
+        // add latest project
+        appie_latest_something(['projects']);
+        appie_latest_something(['_rd_']);     
+        // add twitter widget
+        appie_grid_cell("Twitter @sphaero", '<a class="twitter-timeline"  height="15.3em" href="https://twitter.com/sphaero" data-chrome="nofooter transparent noheader noscrollbar" data-theme="dark" data-link-color="#BAA39C" data-widget-id="343804020034514944">Tweets by @sphaero</a>');
+        twit(document,"script","twitter-wjs");
+        try 
+        {
+            twttr.widgets.load();
+        }
+        catch(err) {
+        }
+    }
+    
+    // clear the containers and load with data from the JSONDATA based
+    // on location
+    function appie_route(location_path)
+    {
+        if (location_path === undefined || location_path == "") 
+        {
+            location_path = "#home.textile";
+        }
+        console.log("Appie parse location: "+location_path);
+        // update address bar
+        history.pushState({}, "location_path", location_path);
+        var path = location_path.split('?');
+        // set navbar active item
+        $('#navbarCollapse li').removeClass('active');
+        $('#navbarCollapse a[href="'+path[0]+'"]').parent().addClass('active');
+        $("#appie_jumboframe").empty();
+        
+        var json_key = path[0].substring(1);
+        var location_data = JSONDATA[json_key];
+        switch (json_key)
+        {
+            case "projects":
+                if (path.length == 2)
+                {
+                    // single project so full display it
+                    location_data = location_data[path[1]];
+                    appie_project(path[1]);
+                }
+                else 
+                {
+                    $("#appie_grid").empty();
+                    appie_projects(["projects"]);
+                }
+                break;
+            case "_rd_":
+                if (path.length == 2)
+                {
+                    // single project so full display it
+                    location_data = location_data[path[1]];
+                    console.log('rd '+path[1]);
+                    appie_rd(path[1]);
+                }
+                else 
+                {
+                    $("#appie_grid").empty();
+                    appie_rds(['_rd_']);
+                }
+                break;
+            case "home.textile":
+                appie_jumbo("", "", JSONDATA[json_key], []);
+                appie_latest();
+                break;
+            case "about.textile":
+                appie_jumbo("", "", JSONDATA[json_key], []);
+                break;
+            default:
+                appie_latest();
+        }
+        // fixup the ui
+        //$('#main_container img').addClass('img-responsive');
+        $('.appie_a').off().on("click", appie_click);
+    }
+    
+    function appie_navbar_add(title, key_path)
+    {   // obsolete
+        if (NAVBAR_DONE) return;
+        var key_path_str = key_path.join("?");   // used in appie_key
+        $('#navbarCollapse ul').append('<li><a appie_key="'
+                +key_path_str+'" href="#'+key_path_str+'" class="appie_a">'
+                +title.toUpperCase()
+                +'</a></li>');
+    }
+    
+    function appie_jumbo(title, desc, body, imgs)
+    {
+        console.log("Rendering jumbo frame: "+title);
+        if (imgs.length >= 1)
+        {
+            var img = img_slider_container(imgs);            
+            var elmnt = jQuery('<div/>', {
+                            id: "appie_images",
+                            class: "col-sm-12 col-md-8 col-lg-6"})
+                        .append(img);
+            $('#appie_jumboframe').append(elmnt);
+            var el2 = jQuery('<div/>', {
+                            class: "col-sm-12 col-md-4 col-lg-6"})
+                        .append('<div class=appie_text><p>'
+                        +body
+                        +'</p></div>');
+            $('#appie_jumboframe').append(el2);
+            img_slider();
+        }
+        else
+        {
+            var el = jQuery('<div/>', {
+                            class: "col-sm-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"})
+                        .append('<div class=appie_text><p>'
+                        +body
+                        +'</p></div>');
+            $('#appie_jumboframe').append(el);
+        }
+    }
+    
+    function appie_grid_cell(title, descr, img, link)
+    {
+        console.log("Rendering grid cell: "+title);
+        if (!(link === undefined)) 
+        {
+            var elmnt = jQuery('<div/>', {
+                        class: "appie_cell col-sm-6 col-md-4 col-lg-3",
+                        style: 'background-image: url("'+img+'"); background-size: cover;'
+                    }).html('<div class="appie_cell_header">'+title+'</div><p class="descr"><span>'
+                        +descr
+                        +'</span></p><p><a'
+                        +'" href="'+link
+                        +'" class="btn btn-success appie_a">Learn More &raquo;</a></p>');
+        }
+        else
+        {
+            //simple entry
+            var elmnt = jQuery('<div/>', {
+                        class: "appie_cell col-sm-6 col-md-4 col-lg-3"
+                    }).html('<div class="appie_cell_header">'+title+'</div>'
+                        +descr);
+        }
+        $('#appie_grid').append(elmnt);
+    }
+    
+    //render a grid of projects
+    function appie_projects(json_path)
+    {
+        //json_path should be a list
+        var pdata = JSONDATA;
+        for (var i in json_path)
+        {
+            pdata = pdata[json_path[i]];
+        }
+        pdata = object_sorter(pdata, '_date', true);
+        for (var key in pdata)
+        {
+            // test if valid project entry
+            if (keys_in(['_body.textile','_date','_description','_status','_title'], pdata[key]))
+            {
+                //console.log("project " + pdata[key]['_title']);
+                // Just get the project's data and put it in a div with
+                // a button
+                firstimgentry = Object.keys(pdata[key]['img'])[0];
+                if (firstimgentry.endsWith(".png"))
+                {
+                    var thumbimg = json_path.join("/") + '/' 
+                                        + key +'/img/' 
+                                        + pdata[key]['img'][firstimgentry]['thumb'];
+                }
+                else
+                {
+                    var thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
+                }
+                // add to the grid
+                appie_grid_cell(pdata[key]['_title'], 
+                                pdata[key]['_description'],
+                                thumbimg,
+                                '#projects?'+key);
+            }
+        }
+    }
+    
+    //render a view of a single project
+    function appie_project(prj)
+    {
+        var pdata = JSONDATA['projects'][prj];
+        // prep images first
+        imgs = [];
+        for (var img in pdata['img'])
+        {
+            if (img.endsWith(".png"))
+            {
+                imgs.push('projects/'+prj+'/img/'+pdata['img'][img]['web']);
+            }
+            else
+            {
+                imgs.push(pdata['img'][img] + '/' + img);
+            }
+        }
+        var el = appie_jumbo(pdata['_title'],
+                    pdata['_description'],
+                    pdata['_body.textile'],
+                    imgs);
+    }
+    
+    //get the latest project
+    function appie_latest_something(json_path, amount) 
+    {
+        if (amount === undefined) amount = 1;
+        var pdata = JSONDATA;
+        for (var i in json_path)
+        {
+            pdata = pdata[json_path[i]];
+        }
+        pdata = object_sorter(pdata, '_date', true);
+        // test if valid project entry
+        for (var key in pdata)
+        {
+            if (keys_in(['_date','_title'], pdata[key]))
+            {
+                console.log("latest: " + pdata[key]['_title']);
+                // Just get the project's data and put it in a div with
+                // a button
+                var thumbimg = "";
+                if (keys_in(['img'], pdata[key]))
+                {
+                    firstimgentry = Object.keys(pdata[key]['img'])[0];
+                    //console.log(firstimgentry);
+                    if (firstimgentry.endsWith(".png"))
+                    {
+                        thumbimg = json_path.join('/') +'/'+ key 
+                                    + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
+                    }
+                    else
+                    {
+                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
+                    }
+                }
+                // add to the grid
+                var descr = pdata[key]['_description'] || pdata[key]['_abstract'];
+                var link = '#'+json_path.join('?') +'?'+key;
+                if (keys_in(["_abstract", "_author"], pdata[key]))
+                {
+                    // link to paper html
+                    link = json_path.join('/') + '/' + key;
+                }
+                appie_grid_cell("latest: "+pdata[key]['_title'], 
+                                descr,
+                                thumbimg,
+                                link);
+                amount--;
+                if (amount == 0) return;
+            }
+        }
+    }
+
+    //render a grid of r&d entries
+    function appie_rds(json_path) 
+    {
+        //json_path should be a list
+        var pdata = JSONDATA;
+        console.log(pdata);
+        for (var i in json_path)
+        {
+            pdata = pdata[json_path[i]];
+        }
+        pdata = object_sorter(pdata, '_date', true);
+        
+        for (var key in pdata)
+        {
+            // test if valid entry
+            if (keys_in(['body.md','_title','_description'], pdata[key]))
+            {
+                //console.log("_rd_ " + pdata[key]['_title']);
+                // Just get the r&d's data and put it in a div with
+                // a button
+                var thumbimg = "";
+                if (keys_in(['img'], pdata[key]))
+                {
+                    firstimgentry = Object.keys(pdata[key]['img'])[0];
+                    if (firstimgentry.endsWith(".png"))
+                    {
+                        thumbimg = '/_rd_/' + key + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
+                    }
+                    else
+                    {
+                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
+                    }
+                }
+                var el = appie_grid_cell(pdata[key]['_title'], 
+                                pdata[key]['_description'],
+                                thumbimg,
+                                '#_rd_?'+key);
+                $('#appie_grid').append(el);
+            }
+            // z25 r&d entry
+            else if (keys_in(['_body.textile','_title','_abstract', '_author', '_date'], pdata[key]))
+            {
+                //console.log("z25_rd_ " + pdata[key]['_title']);
+                var thumbimg = "";
+                if (keys_in(['img'], pdata[key]))
+                {
+                    firstimgentry = Object.keys(pdata[key]['img'])[0];
+                    if (firstimgentry.endsWith(".png"))
+                    {
+                        thumbimg = '/_rd_/' + key + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
+                    }
+                    else
+                    {
+                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
+                    }
+                }
+                var el = appie_grid_cell(pdata[key]['_title'], 
+                                pdata[key]['_abstract'],
+                                thumbimg,
+                                '_rd_/'+ key);
+            }
+        }
+    }
+    
+    function appie_rd(rd)
+    {
+        var pdata = JSONDATA['_rd_'][rd];
+        var el = appie_jumbo(pdata['_title'],
+                    pdata['_description'],
+                    pdata['body.md'],
+                    []);
+    }
+    
+    function appie_click(e) 
+    {
+        var href = $(e.currentTarget).attr('href');
+        if ( href.startsWith('#') )
+        {
+            //e.preventDefault();
+            appie_route(href);
+            window.scrollTo(0, 0);
+            console.log('appie_click: '+$(e.currentTarget).attr('href'));
+            //var appie_key = $(e.target).attr('appie_key');
+            img_slider_count = 0;
+            //just a fix to make the dropdown list dissappear after clicking
+            if ($('div.navbar-collapse').hasClass('in')) {
+                $('button.navbar-toggle:visible').click();
+            }
+            return false;
+        }
+        console.log('normal_click: '+href);
+        window.location.href = href;
+        return true;
+    }
+    
+    function img_slider_container(imgs)
+    {
+        var div = jQuery('<div/>', { 
+                                    id: 'appie_img_slider_container', 
+                                    img_count: imgs.length
+                                   });
+        var fig = jQuery('<figure/>');
+        for (var i in imgs) 
+        {
+            var img = jQuery('<img/>', {
+                                        src: imgs[i],
+                                        class: 'appie_img_slider img-responsive',
+                                        id: 'appie_img_slider'+i
+                                       });
+            fig.append(img);
+        }
+        div.append(fig);
+        return div;
+    }
+
+    function img_slider() 
+    {
+        var img_count = jQuery('#appie_img_slider_container').attr('img_count');
+        if (img_count > 1)
+        {
+            $('.appie_img_slider').hide();
+            $('#appie_img_slider'+img_slider_count).show();
+            img_slider_count = img_slider_count+1;
+            if (img_slider_count >= img_count) img_slider_count = 0;
+        }
+    }
+    </script>    
+  </head>
+<body>
+<nav id="myNavbar" class="navbar navbar-default navbar-inverse" role="navigation">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbarCollapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand appie_a" href="#"><img src=""/></a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#projects" class="appie_a">projects</a></li>
+                <li><a href="#_rd_" class="appie_a">r&d</a></li>
+                <!--<li><a appie_key="blog" href="#blog" class="appie_a">blog</a></li>-->
+                <li><a href="#about.textile" class="appie_a">about</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div id="main_container" class="container-fluid">
+    <div id="appie_jumboframe" class="no-gutter row">
+    </div>
+    <div id="appie_grid" class="no-gutter row">
+    </div>
+    <div id="appie_footer" class="row">
+        <div class="col-sm-12">
+            <div style="float:left;">© Copyright Arnaud Loonstra</div>
+            <div style="float:right; color: #0f0;">E: 95.211.58.198</div>
+        </div>
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script>jQuery(document).ready(appie_kickstart());</script>
+</body>
+</html>

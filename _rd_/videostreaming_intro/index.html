@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <meta name="description" content="" />
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Custom styles -->
+    <style type="text/css">
+        body {
+            color: #DDD;
+            background-color: #455c63;
+            background: -webkit-linear-gradient(#6e929e, #455c63); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#6e929e, #455c63); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#6e929e, #455c63); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#6e929e, #455c63); /* Standard syntax */
+            font-family: "Lucida Console", Monaco, monospace;
+            height: 100%;
+        }
+        a, a:hover, a:visited {
+            color: #BAA39C;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        h1, h2, h3, h4, h5, h6, caption, legend {
+            font-weight: bold;
+            color: #BAA39C;
+        }
+        p { 
+            text-align: justify;
+        }
+        .navbar {
+            margin-bottom: 0px;
+            border: none;
+            border-radius: 0px;
+            min-height: 10px;
+        }
+        .navbar-nav li a {
+            padding: 4px 10px;
+        }
+        .navbar-brand {
+            height: 10px;
+            padding: 4px 10px;
+        }
+        .navbar-default .navbar-nav > .active {
+            color: #000;
+            background: #d65c14;
+        }
+        .navbar-default .navbar-nav > .active > a, 
+        .navbar-default .navbar-nav > .active > a:hover, 
+        .navbar-default .navbar-nav > .active > a:focus {
+            color: #fff;
+            background: #455c63;
+            border-bottom: #6e929e 1px solid;
+            border-top: #6e929e 1px solid;
+        }
+    </style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script>
+    function appie_kickstart() 
+    {
+        jQuery.getJSON("all.json", function(data) {
+            console.log("got all.json");
+            JSONDATA = data;
+            var location = window.location.href.split('#')[1] || "";
+            setInterval(img_slider, 3000);
+            appie_route('#'+location);
+        }).error(function(e) {
+            console.log("error getting all.json");
+            console.log(e);
+        });
+        $('#main_container img').addClass('img-responsive');
+    }
+    </script>
+  </head>
+<body>
+<nav id="myNavbar" class="navbar navbar-default navbar-inverse" role="navigation">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbarCollapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" appie_key="home.textile" href="#" onclick="return appie_click(event);"><img src=""/></a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="nav navbar-nav">
+                <li><a appie_key="projects" href="/#projects" class="appie_a">projects</a></li>
+                <li><a appie_key="_rd_" href="/#_rd_" class="appie_a">r&d</a></li>
+                <!--<li><a appie_key="blog" href="#blog" class="appie_a">blog</a></li>-->
+                <li><a appie_key="about.textile" href="/#about" class="appie_a">about</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div id="main_container" class="container">
+    <div class="row"><div class="col-sm-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <h1>Videostreaming with Gstreamer
+</h1>
+    <p style="text-align: center;">Arnaud Loonstra <arnaud@z25.org>,
+Stichting z25.org,
+Leiden University
+<br />05 July 2014</p>
+    <div style="margin: 3em;"><h2 style="text-alight: center;">Abstract</h2>
+    <p>In this document, we explore videostreaming technologies using the Gstreamer framework. Since videostreaming is becoming a commodity it is available for anybody to utilize. However videostreaming technology can be challenging as it can be highly complex. In this document we will introduce the elements needed for videostreaming on a network. We will focus our efforts onto setting up live videostreaming between two hosts. 
+
+</p></div>
+    	<h2>Purpose, Context and History</h2>
+
+	<p>Videostreaming is available in every consumer mobile phone and every home computer. It is used for teleconferencing, live broadcasting, on-demand television, remote gaming, wireless videoprojection, surveillance cameras, remote drone control, etcetera. The first streaming systems stem from 1920 but only since the late &#8217;90s video streaming has become a commodity as technology progressed and standards emerged. </p>
+
+	<p>There are many out-of-the-box videostreaming software packages available. (e.g. <span class="caps">VLC</span>, Ustream, Justin.tv) These can be very easy to operate and might suit your purpose perfectly. However it is when you run into the limits of these packages that you need to understand what is going on behind the scenes. The purpose of this document is to introduce you to the technology behind the scenes using the Gstreamer framework.</p>
+
+	<h2>Operating Principles</h2>
+
+	<p>Streaming technology usually refers to sending large streams of data between systems. Because the data is too big to send in one go it is cut in to smaller packets of data. These packets are then send sequentially. In order to decrease the size of the data it is often compressed. </p>
+
+	<p>The operating principle of videostreaming is the same. Basically a video is compressed and then send in packets through a transport.  </p>
+
+	<p>There are two methods of compressing video data. The first is 'Inter-Frame&#8217; based compression. Think of this as saving every image in the video as a <span class="caps">JPEG</span> image. An example compression algorithm that works accordingly is Motion-<span class="caps">JPEG</span>. Other examples are DV and HuffYUV. The second method is 'Intra-Frame&#8217; based compression and uses the the differences in images. If you start with an image the 'Intra-Frame&#8217; based method only tracks the differences in the following frames. Some highly sophisticated algorithms have been developed over the years of which the most used one is H.264. Other examples include Theora, Xvid and Divx. Compression algorithms for video are often referred to as a 'codec&#8217;. </p>
+
+	<p>To transport the stream of of video data packets there are many possibilities. In TCP/IP networks an <span class="caps">UDP</span> transport is the most simple solution. The <span class="caps">RTP</span> protocol is a transport protocol on top of <span class="caps">UDP</span>. Nowadays <span class="caps">HTTP</span> is also often used as a transport for streaming video. </p>
+
+	<h2>Strengths and Weaknesses</h2>
+
+	<p>With digital video technologies many parameters are involved which have a broad range of consequences. We could dive into the discussion of whether IP networks are designed for streaming technologies however we rather focus on the implications of the codecs and the transports on top of IP networks as that&#8217;s the practical situation we will be exposed to. In this document we will be exploring the Motion-<span class="caps">JPEG</span> and H.264 codec on top of <span class="caps">RTP</span> transports.</p>
+
+	<p>To transport the videostream we already introduced <span class="caps">UDP</span>. As <span class="caps">UDP</span> does not guarantee delivery nor order it&#8217;s only suitable for situations where speed and minimal bandwidth are a top requirement. However usually you do want the right order of packets if the packets do make it across. The <span class="caps">RTP</span> protocol provides this on top of <span class="caps">UDP</span>. Therefore the <span class="caps">RTP</span> protocol is better suited for transporting videostreams. The <span class="caps">HTTP</span> protocol was never designed to do streaming. However as a lot of firewalls block everything except <span class="caps">HTTP</span>, <span class="caps">HTTP</span> is nowadays used for everything thus including videostreaming. </p>
+
+	<p>When it comes to compressing video the Motion-<span class="caps">JPEG</span> compression is a common 'Inter-Frame&#8217; compression method which simply consists of compressing to <span class="caps">JPEG</span> images. This is very suitable for situations where you need fast encoding and decoding. As it&#8217;s based on single frames Motion-<span class="caps">JPEG</span> is also very suitable to seek through the video. </p>
+
+	<p>Seeking through a video is much more difficult when the compression is 'Intra-Frame&#8217; based. This method uses the changes in sequential frames. Before finding a frame at a certain position in the video the seek method first needs to find a full frame (keyframe) and from there calculate the differences to the position. The H.264 is a codec based on the differences in frames and therefore less suited for situations where you do a lot of seeking in the videostream. However when it comes to bandwidth the H.264 codec is the clear winner compared to Motion-<span class="caps">JPEG</span>. We&#8217;ll see the differences in bandwidth further on. The H.264 codec was designed for streaming. It provides many parameters to tweak the compression to specific needs. There are too many parameters to manage H.264 but luckily most encoders provide presets. We&#8217;ll be using these presets to do our encoding.</p>
+
+	<h2>Typicial Applications</h2>
+
+	<p>The band &#8220;Severe Tire Damage&#8221; performed at Xerox Parc in 1993 while being streamed through the internet. This is one of the first mentioned internet videostreaming events. Videostreaming is used in many domains nowadays of which television is the first that comes to mind. But other examples include streaming your videos on your mobile to your television or your presentation to the video projector. Nowadays a lot of research is done is for remote gaming. The computer you play on is located somewhere in a datacentre while you play it at home on your television. For these applications the latency if of utmost importance. <br />The basic application of videostreaming is sending any picture to one or more receivers. </p>
+
+	<h2>Surprising Applications</h2>
+
+	<p><img src="img/nasa_curiosity.PNG" alt="" /><br /><i>Still from the descent of Curiosity Rover. Image credit: NASA/JPL-Caltech/MSSS</i></p>
+
+	<p>The landing of NASA&#8217;s Curiosity Rover was broadcasted live from Mars. The latency of the videostream was about 14 minutes because of the distance. For the scientists involved this was called the &#8220;7 Minutes of Terror&#8221; as getting from the top of the atmosphere to the surface of Mars was about 7 minutes. So any first signal from Curiosity descent would mean it could be already dead for 7 minutes. </p>
+
+	<h2>Getting Started</h2>
+
+	<p>To use the Gstreamer framework it&#8217;s easiest to install it on a Linux system. In this example we are using Ubuntu but the steps should be similar on other platforms. To make sure the framework is installed run the following command in the terminal:</p>
+
+<pre>
+sudo apt-get install gstreamer1.0-tools \
+  gstreamer1.0-plugins-base \
+  gstreamer1.0-plugins-good \
+  gstreamer1.0-plugins-bad \
+  gstreamer1.0-plugins-ugly
+</pre>
+
+	<p>To have a basic understanding of the Gstreamer framework you need to think of it as a pipeline. The video data starts at the source and moves to the sink. Meanwhile you can do many things with the videodata. Each chain in the pipeline is called an element. </p>
+
+	<p><img src="basic-pipelines.png" alt="" /></p>
+
+	<p>To construct a pipeline we have a very simple command line tool called 'gst-launch&#8217;. The most simple pipeline would be a simple test video display which consists of the following elements:
+	<ol>
+		<li>videotestsrc: A simple element creating a test image</li>
+		<li>autovideosink: A display element which needs no configuring</li>
+	</ol></p>
+
+	<p><img src="test-pipelines.png" alt="" /></p>
+
+	<p>To create this pipeline run the following command:</p>
+
+<pre>
+gst-launch-1.0 videotestsrc ! autovideosink
+</pre>
+
+	<p>The 'gst-launch-1.0&#8217; command uses the exclamation mark (!) to link elements to each in order to create a pipeline.</p>
+
+	<p>In our videostreaming setup between two hosts we already know what we need our pipeline to do. On the sending side we need to:
+	<ol>
+		<li>acquire the video data</li>
+		<li>compress the video data</li>
+		<li>cut the data into smaller packets</li>
+		<li>send the packets out through a network transport</li>
+	</ol></p>
+
+	<p>On the receiving side we than want to:
+	<ol>
+		<li>receive the packets from the network transport</li>
+		<li>reassemble the packets into video data</li>
+		<li>decompress the video data</li>
+		<li>display the video</li>
+	</ol></p>
+
+	<p>To construct this pipeline you first need to find the elements that can do this. In general it is best to lookup the gstreamer plugin documentation to find the elements you need. In the case of a Motion-<span class="caps">JPEG</span> streaming setup using <span class="caps">RTP</span> we need the following elements:
+	<ol>
+		<li>'videotestsrc&#8217; & 'autovideosink&#8217; to genereate and display an image</li>
+		<li>'jpegenc&#8217; & 'jpegdec&#8217; to encode to and decode from <span class="caps">JPEG</span></li>
+		<li>'rtpjpegpay&#8217; & 'rtpjpegdepay&#8217; to create the <span class="caps">RTP</span> packets</li>
+		<li>'udpsrc&#8217; & 'udpsink&#8217; to transport the <span class="caps">RTP</span> packets using <span class="caps">UDP</span></li>
+	</ol></p>
+
+	<p>Run the following two commands for the sender and the receiever:</p>
+
+	<p>Sender:<br /><pre>
+gst-launch-1.0 videotestsrc ! \
+ jpegenc ! \
+ rtpjpegpay ! \
+ udpsink host=127.0.0.1 port=5200
+</pre></p>
+
+	<p><img src="mjpeg-sender.png" alt="" /></p>
+
+	<p>Receiver:<br /><pre>
+gst-launch-1.0 udpsrc port=5200 ! \
+ rtpjpegdepay ! \
+ jpegdec ! \
+ autovideosink
+</pre></p>
+
+	<p>You&#8217;ll notice that the receiver will quit immediately with an error. This is because we need to tell the 'rtpjpegdepay&#8217; element some information about the data it will receive. This is called a 'capsfilter&#8217; in Gstreamer terms. A capsfilter is placed between the 'pads&#8217; of connecting elements. In Gstreamer events can transfer up and down the pipeline. These events can be used to pause the pipeline for example but it can also be used for exchanging the capabilities.</p>
+
+	<p><img src="pads-pipelines.png" alt="" /></p>
+
+	<p>This might look a bit puzzling but just think of it as setting some required parameters the elements in the pipeline need in order to connect to each other:</p>
+
+<pre>
+gst-launch-1.0 udpsrc port=5200 ! \
+ application/x-rtp,\
+ encoding-name=JPEG,payload=26 ! \
+ rtpjpegdepay ! \
+ jpegdec ! \
+ autovideosink
+</pre>
+
+	<p>Now that we have an example stream working we can replace the 'videotestsrc&#8217; with a webcam. On a Linux system we can use the 'v4l2src&#8217;. We will need a capsfilter to set the webcam&#8217;s resolution.</p>
+
+	<p><img src="mjpeg-receiver.png" alt="" /></p>
+
+<pre>
+gst-launch-1.0 v4l2src ! 
+ video/x-raw,width=640,height=480 ! \
+ jpegenc ! \
+ rtpjpegpay ! \
+ udpsink host=127.0.0.1 port=5200
+</pre>
+
+	<p>This gives us a nice feedback on the latency involved in this stream. The bandwidth used is about 1800 kbit/s. If we now try a default h.264 encoder you will notice difference. </p>
+
+	<p>Sender:<br /><pre>
+gst-launch-1.0 v4l2src ! \
+ video/x-raw,width=640,height=480 ! \
+ x264enc ! h264parse ! rtph264pay ! \
+ udpsink host=127.0.0.1 port=5000
+</pre></p>
+
+	<p>Receiver:<br /><pre>
+gst-launch-1.0 udpsrc port=5000 ! \
+ application/x-rtp,\
+ encoding-name=H264,payload=96 ! \
+ rtph264depay ! h264parse ! avdec_h264 ! \
+ autovideosink
+</pre></p>
+
+	<p>First, it might take very long for the image to show. This is because the stream first needs to receive a full keyframe. Second, your computer might not be able to cope with the encoding and decoding. Third, the latency is much higher (+5s) compared to the Motion-<span class="caps">JPEG</span> pipeline. On the other hand the bandwidth is much lower. About 300 kbit/s. We can tweak the parameters of the x264 encoder (sender) to make it more suitable for live streaming. You can find out which parameters you can set using the 'gst-inspect&#8217; command. Just try the following 'gst-inspect&#8217; command and match the output with the next 'gst-launch&#8217; example. Running 'gst-inspect&#8217; with no arguments will list all available elements.<br /><pre>
+gst-inspect-1.0 x264enc
+</pre></p>
+
+<pre>
+gst-launch-1.0 v4l2src ! \
+ video/x-raw,width=640,height=480 ! \
+ x264enc tune=zerolatency byte-stream=true \
+ bitrate=3000 threads=2 ! \
+ h264parse config-interval=1 ! \
+ rtph264pay ! udpsink host=127.0.0.1 port=5000
+</pre>
+
+	<p>The bandwidth remains about the same (350 kbit/s) but the latency is much improved as well as the burden on the machine running it.</p>
+
+	<p>To conclude these example pipelines we still need to know the latencies involved in the pipelines. I will provide a recipe to explore yourself as you now should be able to find out what all these elements do. Basically the recipe constructs a videostreaming setup which is displaying the image with a timestamp on the source computer as well as on a remote system. The difference in the timestamp corresponds with your latency of the pipeline.</p>
+
+	<p><img src="tee-pipeline.png" alt="" /></p>
+
+	<p>Sender:<br /><pre>
+gst-launch-1.0 v4l2src ! \
+ video/x-raw,width=640,height=480 ! \
+ timeoverlay ! \
+ tee name=&#34;local&#34; ! \
+ queue ! \
+ autovideosink local. ! \
+ queue ! jpegenc! rtpjpegpay ! \
+ udpsink host=127.0.0.1 port= 5000
+</pre></p>
+
+	<p>Receiver:<br /><pre>
+gst-launch-1.0 udpsrc port=5000 ! \
+ application/x-rtp,\
+ encoding-name=JPEG,payload=26 ! \
+ rtpjpegdepay ! jpegdec ! autovideosink
+</pre></p>
+
+	<h2>Final Thoughts</h2>
+
+	<p>This document introduced you into the technologies involved in video streaming across networks. The Gstreamer framework was introduced and you should now be confident to experiment with different pipeline setups. </p>
+
+	<p>Not everything was explained as video streaming technologies is an engaging subject. As this paper only covered videostreaming no audio was involved. However in many videostreaming situations you do want audio. Therefore you need to understand that in those cases a data stream needs to contain both video and audio. The process of combining and splitting the audio and video data is called 'multiplexing&#8217;. The elements doing this process are called a 'muxer&#8217; and a 'demuxer&#8217;. </p>
+
+	<p>If you want to use the Gstreamer Framework in your own program I urge you to read the official Gstreamer tutorials. The process is exactly the same as explained in this document but provides many more options. As long as you understand the basic principles and commands introduced in this document you should be able to code any pipeline.</p>
+
+	<h2>References</h2>
+
+	<ol>
+		<li><a href="http://gstreamer.freedesktop.org/documentation/plugins.html">Overview of all Gstreamer plugins</a>, http://gstreamer.freedesktop.org/documentation/plugins.html, Retrieved 2014-06-04</li>
+		<li><a href="http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/html/index.html">Gstreamer Application Development Manual</a>, http://gstreamer.freedesktop.org/data/doc/gstreamer/head/manual/html/index.html, Retrieved 2014-06-04</li>
+	</ol>
+    </div></div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script>jQuery(document).ready(appie_kickstart());
+    </script>
+</body>
+</html>

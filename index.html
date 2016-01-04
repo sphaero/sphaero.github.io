@@ -66,6 +66,9 @@
             background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
             background: linear-gradient(#58747d, #38494f); /* Standard syntax */
         }
+        #appie_jumboframe {
+            margin-bottom: 60px;
+        }
         #appie_grid {
             color: white;
         }
@@ -78,7 +81,7 @@
         #appie_grid .descr
         {
             font-size: 1em;
-            height : 8.4em;
+            height : 7.0em;
             overflow: hidden;
         }
         #appie_grid .descr span 
@@ -110,10 +113,10 @@
             padding-left: 10px;
         }
         .appie_cell p {
-            margin: 15px;
+            margin: 30px;
         }
         .appie_text {
-            margin: 15px;
+            margin: 20px;
         }
         #appie_footer {
             background-color: #000;
@@ -127,7 +130,7 @@
         
         .btn {
             position: absolute;
-            bottom: 10px;
+            bottom: 30px;
         }
         .btn-success:visited {
             color: #fff;
@@ -242,7 +245,6 @@
     
     function appie_latest()
     {
-        $("#appie_grid").empty();
         // add latest project
         appie_latest_something(['projects']);
         appie_latest_something(['_rd_']);     
@@ -261,9 +263,9 @@
     // on location
     function appie_route(location_path)
     {
-        if (location_path === undefined || location_path == "") 
+        if (location_path === undefined || location_path == "#") 
         {
-            location_path = "#home.textile";
+            location_path = "#_home.html";
         }
         console.log("Appie parse location: "+location_path);
         // update address bar
@@ -272,7 +274,7 @@
         // set navbar active item
         $('#navbarCollapse li').removeClass('active');
         $('#navbarCollapse a[href="'+path[0]+'"]').parent().addClass('active');
-        $("#appie_jumboframe").empty();
+        $("#appie_jumboframe").hide();
         
         var json_key = path[0].substring(1);
         var location_data = JSONDATA[json_key];
@@ -305,7 +307,7 @@
                     appie_rds(['_rd_']);
                 }
                 break;
-            case "home.textile":
+            case "_home.html":
                 appie_jumbo("", "", JSONDATA[json_key], []);
                 appie_latest();
                 break;
@@ -313,7 +315,8 @@
                 appie_jumbo("", "", JSONDATA[json_key], []);
                 break;
             default:
-                appie_latest();
+	        $("#appie_grid").empty();
+	        appie_latest();
         }
         // fixup the ui
         //$('#main_container img').addClass('img-responsive');
@@ -333,6 +336,7 @@
     function appie_jumbo(title, desc, body, imgs)
     {
         console.log("Rendering jumbo frame: "+title);
+        $("#appie_jumboframe").empty();
         if (imgs.length >= 1)
         {
             var img = img_slider_container(imgs);            
@@ -358,6 +362,7 @@
                         +'</p></div>');
             $('#appie_jumboframe').append(el);
         }
+        $("#appie_jumboframe").show();
     }
     
     function appie_grid_cell(title, descr, img, link)
@@ -372,7 +377,7 @@
                         +descr
                         +'</span></p><p><a'
                         +'" href="'+link
-                        +'" class="btn btn-success appie_a">Learn More &raquo;</a></p>');
+                        +'" class="btn btn-success pull-right appie_a">Learn More &raquo;</a></p>');
         }
         else
         {

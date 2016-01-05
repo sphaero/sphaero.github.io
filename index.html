@@ -66,9 +66,6 @@
             background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
             background: linear-gradient(#58747d, #38494f); /* Standard syntax */
         }
-        #appie_jumboframe {
-            margin-bottom: 60px;
-        }
         #appie_grid {
             color: white;
         }
@@ -117,6 +114,7 @@
         }
         .appie_text {
             margin: 20px;
+            margin-bottom: 60px;
         }
         #appie_footer {
             background-color: #000;
@@ -308,7 +306,7 @@
                 }
                 break;
             case "_home.html":
-                appie_jumbo("", "", JSONDATA[json_key], []);
+                appie_jumbo_home(JSONDATA[json_key]);
                 appie_latest();
                 break;
             case "about.textile":
@@ -351,7 +349,11 @@
                         +body
                         +'</p></div>');
             $('#appie_jumboframe').append(el2);
-            img_slider();
+            if (imgs.length > 1) 
+            {
+                $('.appie_img_slider').hide();
+                img_slider();
+            }
         }
         else
         {
@@ -362,6 +364,51 @@
                         +'</p></div>');
             $('#appie_jumboframe').append(el);
         }
+        $("#appie_jumboframe").show();
+    }
+    
+    function _find_img_in_obj(obj, imgs) 
+    {
+        for (var key in obj)
+        {
+            if (key.endsWith(".png"))
+            {
+                //is img so save
+                if (keys_in(['web'], obj[key]))
+                {
+                    console.log("find img "+key);
+                    var img = obj[key]['path'] +'/'+ obj[key]['web'];
+                    imgs.push(img);
+                    break  //only get one img, so next iter
+                }
+            }
+            else if (typeof(obj[key]) === 'object') 
+            {
+                _find_img_in_obj(obj[key], imgs);
+            }
+        }
+    }
+    
+    function appie_jumbo_home(body)
+    {
+        console.log("Rendering jumbo home frame");
+        $("#appie_jumboframe").empty();
+        var imgs = [];
+        //get all images
+        _find_img_in_obj(JSONDATA, imgs); //this should fill the array
+        var img = img_slider_container(imgs);            
+        var elmnt = jQuery('<div/>', {
+                            id: "appie_images",
+                            class: "col-xs-12 col-sm-12 col-md-12 col-lg-12"})
+                        .append(img);
+        $('#appie_jumboframe').append(elmnt);
+        var bel = jQuery('<div/>', {
+                class: "col-xs-12 col-sm-12 col-md-12 col-lg-12",
+                style: "float:right;position:absolute;margin: 30% 0 0 20%;width:80%;min-height:128px;background-color:#455c63;border-top-left-radius:128px;border-bottom-left-radius:128px;"})
+                .html(body);
+        $('#appie_jumboframe').append(bel);
+        $('.appie_img_slider').hide();
+        img_slider();
         $("#appie_jumboframe").show();
     }
     
@@ -622,10 +669,13 @@
         var img_count = jQuery('#appie_img_slider_container').attr('img_count');
         if (img_count > 1)
         {
-            $('.appie_img_slider').hide();
-            $('#appie_img_slider'+img_slider_count).show();
-            img_slider_count = img_slider_count+1;
-            if (img_slider_count >= img_count) img_slider_count = 0;
+            $('#appie_img_slider'+img_slider_count).fadeOut(400, function() 
+            {
+                img_slider_count = img_slider_count+1;
+                if (img_slider_count >= img_count) img_slider_count = 0;
+                $('#appie_img_slider'+img_slider_count).fadeOut(0);
+                $('#appie_img_slider'+img_slider_count).fadeIn();
+            });
         }
     }
     </script>    

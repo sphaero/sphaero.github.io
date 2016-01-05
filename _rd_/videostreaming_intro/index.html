@@ -173,7 +173,7 @@ sudo apt-get install gstreamer1.0-tools \
 
 	<p>To have a basic understanding of the Gstreamer framework you need to think of it as a pipeline. The video data starts at the source and moves to the sink. Meanwhile you can do many things with the videodata. Each chain in the pipeline is called an element. </p>
 
-	<p><img alt="" src="basic-pipelines.png" /></p>
+	<p><img alt="" src="basic-pipelines.PNG" /></p>
 
 	<p>To construct a pipeline we have a very simple command line tool called &#8216;gst-launch&#8217;. The most simple pipeline would be a simple test video display which consists of the following elements:
 	<ol>
@@ -181,7 +181,7 @@ sudo apt-get install gstreamer1.0-tools \
 		<li>autovideosink: A display element which needs no configuring</li>
 	</ol></p>
 
-	<p><img alt="" src="test-pipelines.png" /></p>
+	<p><img alt="" src="test-pipelines.PNG" /></p>
 
 	<p>To create this pipeline run the following command:</p>
 
@@ -225,7 +225,7 @@ gst-launch-1.0 videotestsrc ! \
  udpsink host=127.0.0.1 port=5200
 </pre></p>
 
-	<p><img alt="" src="mjpeg-sender.png" /></p>
+	<p><img alt="" src="mjpeg-sender.PNG" /></p>
 
 	<p>Receiver:<br />
 <pre>
@@ -237,7 +237,7 @@ gst-launch-1.0 udpsrc port=5200 ! \
 
 	<p>You&#8217;ll notice that the receiver will quit immediately with an error. This is because we need to tell the &#8216;rtpjpegdepay&#8217; element some information about the data it will receive. This is called a &#8216;capsfilter&#8217; in Gstreamer terms. A capsfilter is placed between the &#8216;pads&#8217; of connecting elements. In Gstreamer events can transfer up and down the pipeline. These events can be used to pause the pipeline for example but it can also be used for exchanging the capabilities.</p>
 
-	<p><img alt="" src="pads-pipelines.png" /></p>
+	<p><img alt="" src="pads-pipelines.PNG" /></p>
 
 	<p>This might look a bit puzzling but just think of it as setting some required parameters the elements in the pipeline need in order to connect to each other:</p>
 
@@ -252,7 +252,7 @@ gst-launch-1.0 udpsrc port=5200 ! \
 
 	<p>Now that we have an example stream working we can replace the &#8216;videotestsrc&#8217; with a webcam. On a Linux system we can use the &#8216;v4l2src&#8217;. We will need a capsfilter to set the webcam&#8217;s resolution.</p>
 
-	<p><img alt="" src="mjpeg-receiver.png" /></p>
+	<p><img alt="" src="mjpeg-receiver.PNG" /></p>
 
 <pre>
 gst-launch-1.0 v4l2src ! 
@@ -299,7 +299,7 @@ gst-launch-1.0 v4l2src ! \
 
 	<p>To conclude these example pipelines we still need to know the latencies involved in the pipelines. I will provide a recipe to explore yourself as you now should be able to find out what all these elements do. Basically the recipe constructs a videostreaming setup which is displaying the image with a timestamp on the source computer as well as on a remote system. The difference in the timestamp corresponds with your latency of the pipeline.</p>
 
-	<p><img alt="" src="tee-pipeline.png" /></p>
+	<p><img alt="" src="tee-pipeline.PNG" /></p>
 
 	<p>Sender:<br />
 <pre>

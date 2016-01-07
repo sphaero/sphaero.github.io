@@ -15,10 +15,10 @@
         body {
             color: #DDD;
             background-color: #455c63;
-            background: -webkit-linear-gradient(#6e929e, #455c63); /* For Safari 5.1 to 6.0 */
-            background: -o-linear-gradient(#6e929e, #455c63); /* For Opera 11.1 to 12.0 */
-            background: -moz-linear-gradient(#6e929e, #455c63); /* For Firefox 3.6 to 15 */
-            background: linear-gradient(#6e929e, #455c63); /* Standard syntax */
+            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
             font-family: "Lucida Console", Monaco, monospace;
             height: 100%;
         }
@@ -48,6 +48,10 @@
             height: 10px;
             padding: 4px 10px;
         }
+        .navbar-default {
+            border-bottom: solid 1px #2A2A2A;
+            border-top: solid 1px #2A2A2A;
+        }
         .navbar-default .navbar-nav > .active {
             color: #000;
             background: #d65c14;
@@ -57,8 +61,8 @@
         .navbar-default .navbar-nav > .active > a:focus {
             color: #fff;
             background: #455c63;
-            border-bottom: #6e929e 1px solid;
-            border-top: #6e929e 1px solid;
+            border-bottom: #58747d 1px solid;
+            border-top: #58747d 1px solid;
         }
     </style>
 
@@ -96,7 +100,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" appie_key="home.textile" href="#" onclick="return appie_click(event);"><img src=""/></a>
+            <a class="navbar-brand" href="#" onclick="return appie_click(event);"><img src=""/></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -104,7 +108,7 @@
                 <li><a appie_key="projects" href="/#projects" class="appie_a">projects</a></li>
                 <li><a appie_key="_rd_" href="/#_rd_" class="appie_a">r&d</a></li>
                 <!--<li><a appie_key="blog" href="#blog" class="appie_a">blog</a></li>-->
-                <li><a appie_key="about.textile" href="/#about" class="appie_a">about</a></li>
+                <li><a href="/#about.textile" class="appie_a">about</a></li>
             </ul>
         </div>
     </div>
@@ -121,7 +125,7 @@
     	<h1>Introduction</h1>
 
 	<p>The <span class="caps">ZOCP</span> technology is a new computer technology which enables artists to easily connect different applications to each other and so create an orchestration of interconnected applications. This is accomplished by a classical programming framework combined with a visual editor to control the interconnections. <br />
-The <span class="caps">ZOCP</span> technology has emerged from the need to have a more flexible and distributed setup for orchestrating computer technology<sup class="footnote" id="fnrev3a419c5da99f41acaabe87ef69047316"><a href="#fn3a419c5da99f41acaabe87ef69047316">1</a></sup>. This has resulted in a prototype build with ZeroMQ and Python. The technology was developed to solve the problem of centralized control and processing and manual configured setups. However to steer future development we needed to make sure that:
+The <span class="caps">ZOCP</span> technology has emerged from the need to have a more flexible and distributed setup for orchestrating computer technology<sup class="footnote" id="fnrev080bae37708641ad89bac6195e17fe11"><a href="#fn080bae37708641ad89bac6195e17fe11">1</a></sup>. This has resulted in a prototype build with ZeroMQ and Python. The technology was developed to solve the problem of centralized control and processing and manual configured setups. However to steer future development we needed to make sure that:
 	<ol>
 		<li>the problem is indeed solved by the new technology</li>
 		<li>new problems introduced by the new technology are charted</li>
@@ -138,7 +142,7 @@ This document is written as a reflection on the first three organized labs. All 
 
 	<h1>Results</h1>
 
-	<p>The first lab gave the <span class="caps">ZOCP</span> prototype an initial stress test while being used on Linux, <span class="caps">OSX</span> and Windows platforms. This lab was especially useful to explain <span class="caps">ZOCP</span> concepts and usage to artists. This proved to be quite challenging as the translation from a conceptual model to the users mental model is a very delicate subject<sup class="footnote" id="fnrev157817d7a07d4bc89a44cb1ab6a05007"><a href="#fn157817d7a07d4bc89a44cb1ab6a05007">2</a></sup><sup class="footnote" id="fnrevaf5e1e3fb87c4c409489789cc567360d"><a href="#fnaf5e1e3fb87c4c409489789cc567360d">3</a></sup><sup class="footnote" id="fnrev3b2352b7939f4abf938e3d4caaf5e7fd"><a href="#fn3b2352b7939f4abf938e3d4caaf5e7fd">4</a></sup>. This can be best explained in terms of the difference between the familiar sequential programming paradigm to an asynchronous paradigm. The best approach seemed to be providing very simple use cases and discussing the problems of specific solutions artists came up with. Combining this with a solid theoretical conceptual model of the technology enabled the artists to mentally understand how the technology works. Even days after the Freaklab there was still discussion about how to utilize the <span class="caps">ZOCP</span> technology which illustrates the process of forming a mental model from the taught concepts.<br />
+	<p>The first lab gave the <span class="caps">ZOCP</span> prototype an initial stress test while being used on Linux, <span class="caps">OSX</span> and Windows platforms. This lab was especially useful to explain <span class="caps">ZOCP</span> concepts and usage to artists. This proved to be quite challenging as the translation from a conceptual model to the users mental model is a very delicate subject<sup class="footnote" id="fnrev50dd6288bb2c47c98b57aa92750c4011"><a href="#fn50dd6288bb2c47c98b57aa92750c4011">2</a></sup><sup class="footnote" id="fnrev0ed868a12939402991405c794255fcb8"><a href="#fn0ed868a12939402991405c794255fcb8">3</a></sup><sup class="footnote" id="fnrev8befa3247d7b44a392cd1388e54267b1"><a href="#fn8befa3247d7b44a392cd1388e54267b1">4</a></sup>. This can be best explained in terms of the difference between the familiar sequential programming paradigm to an asynchronous paradigm. The best approach seemed to be providing very simple use cases and discussing the problems of specific solutions artists came up with. Combining this with a solid theoretical conceptual model of the technology enabled the artists to mentally understand how the technology works. Even days after the Freaklab there was still discussion about how to utilize the <span class="caps">ZOCP</span> technology which illustrates the process of forming a mental model from the taught concepts.<br />
 <img alt="" src="img/fl2_discuss.jpg" /><br />
 As practice makes perfect the second lab was aimed at continuing to use the <span class="caps">ZOCP</span> technology. Often a new technology does not serve as a drop-in replacement for an existing technology. In our case a lot of systems are using the <span class="caps">OSC</span> protocol. The second Freaklab was therefore trying to combine the <span class="caps">ZOCP</span> technology with existing <span class="caps">OSC</span> applications. In addition the lab session was looking into combining a physical realm with a virtual realm and introducing interaction. This was done by trying to match projected virtual spaces with the physical space and using legacy applications to provide interaction. <br />
 The second lab showed that matching different realities is a very precise job. When no system provides a clear structure for describing a coordinate space you easily end up calculating a conversion for every space each time. This has resulted in a new research about the coordinate models for different spaces. <br />
@@ -146,8 +150,8 @@ Blender was used as a tool to operate and control all the virtual realities. The
 As this Freaklab was more focused on creating a setup with <span class="caps">ZOCP</span> as well as legacy applications, <span class="caps">ZOCP</span> received less feedback. However the general feedback from the artists proved invaluable for new developments of <span class="caps">ZOCP</span>, hence the new research into mapping coordinate models. The session also showed the different practices of legacy application and newer <span class="caps">ZOCP</span> based applications. In general the setups create chains of program communications which require a lot of management. This management is exactly what <span class="caps">ZOCP</span> aims to ease as legacy (<span class="caps">OSC</span>) applications do not have such mechanisms. <br />
 The artistic context which was created in the lab consisted of a interactive story called &#8220;Sea of Glass&#8221;. The story was about a fictional character with a porcelain heart. This story was experienced by interacting a moving head with a pico projector attached to it. The moving head was able to be controlled by using a Wii controller or a tablet and acted as a search light in a panoramic sea environment. It is as if the participant is standing in a lighthouse searching for objects/memories through which the story unfolds. (Illustration 2)<br />
 <img alt="" src="img/fl2_context.jpg" /><br />
-The third Freaklab was aimed at using the new signals implementation of <span class="caps">ZOCP</span><sup class="footnote" id="fnrevae8c1bb6e91043a8979117446f39749c"><a href="#fnae8c1bb6e91043a8979117446f39749c">5</a></sup>. Signals should enable the artists easier exchange of data between nodes of <span class="caps">ZOCP</span>. This lab session was preceded by a <span class="caps">ZOCP</span> workshop on the 4th of May. The workshop was done to introduce new artists and developers to <span class="caps">ZOCP</span> and to refresh the knowledge of those already familiar with <span class="caps">ZOCP</span>. This workshop proved to be very important to practice teaching the concepts of <span class="caps">ZOCP</span> but also to feed discussion about the concepts. These discussions were very fertile for everybody&#8217;s mental model of <span class="caps">ZOCP</span>. We have noticed this is a repeating subject when introducing the programming model of <span class="caps">ZOCP</span>. <br />
-After the workshop developers and artists started making simple applications using <span class="caps">ZOCP</span><sup class="footnote" id="fnrevfd3a642b41e349c1bfd1c5f28cf0fbc0"><a href="#fnfd3a642b41e349c1bfd1c5f28cf0fbc0">6</a></sup>. The 3rd session was also fed with an artistic context based on the play &#8220;No Exit&#8221; by Sartre<sup class="footnote" id="fnrev2199adbb248d460e92249126eac50095"><a href="#fn2199adbb248d460e92249126eac50095">7</a></sup> provided by Wijnand Veneberg and Erico Becker. A remediation of the play as a modern interpretation of the underground was created. Participants are immersed in the play in a setting in which six people sit in a circle with a vertical screen in front of each of them. The screens act as gateways to the underworld so the participants gaze into each other&#8217;s underworld. All of them have a room on their screen, of which three are represented with the three characters. In this way the participants become the characters. The other three screens contained visual animated representations with background information of the three characters.<br />
+The third Freaklab was aimed at using the new signals implementation of <span class="caps">ZOCP</span><sup class="footnote" id="fnreve492346a250445e2b738b42c9fa9c97e"><a href="#fne492346a250445e2b738b42c9fa9c97e">5</a></sup>. Signals should enable the artists easier exchange of data between nodes of <span class="caps">ZOCP</span>. This lab session was preceded by a <span class="caps">ZOCP</span> workshop on the 4th of May. The workshop was done to introduce new artists and developers to <span class="caps">ZOCP</span> and to refresh the knowledge of those already familiar with <span class="caps">ZOCP</span>. This workshop proved to be very important to practice teaching the concepts of <span class="caps">ZOCP</span> but also to feed discussion about the concepts. These discussions were very fertile for everybody&#8217;s mental model of <span class="caps">ZOCP</span>. We have noticed this is a repeating subject when introducing the programming model of <span class="caps">ZOCP</span>. <br />
+After the workshop developers and artists started making simple applications using <span class="caps">ZOCP</span><sup class="footnote" id="fnrevdf1b830e1ee24ba4aea5e5ecaae9ad53"><a href="#fndf1b830e1ee24ba4aea5e5ecaae9ad53">6</a></sup>. The 3rd session was also fed with an artistic context based on the play &#8220;No Exit&#8221; by Sartre<sup class="footnote" id="fnrevadd4cb6cefcc4c8f9b7e4563d8324fa0"><a href="#fnadd4cb6cefcc4c8f9b7e4563d8324fa0">7</a></sup> provided by Wijnand Veneberg and Erico Becker. A remediation of the play as a modern interpretation of the underground was created. Participants are immersed in the play in a setting in which six people sit in a circle with a vertical screen in front of each of them. The screens act as gateways to the underworld so the participants gaze into each other&#8217;s underworld. All of them have a room on their screen, of which three are represented with the three characters. In this way the participants become the characters. The other three screens contained visual animated representations with background information of the three characters.<br />
 <img alt="" src="fl3_setup.jpg" /><br />
 Initially a physical setup of 6 screens was build using the available hardware. These 6 screen were all controlled by Raspberry Pi machines running a simple <span class="caps">ZOCP</span> controlled videoplayer. <br />
 Before playing with the <span class="caps">ZOCP</span> apps commenced some developers presented new apps which were developed after the workshop. This was also an introduction to <span class="caps">ZOCP</span> for artists that were new to <span class="caps">ZOCP</span>.<br />
@@ -169,13 +173,13 @@ Having users play with the technology and have developers join seems a very natu
 	<h1>References</h1>
 
 	<ul>
-		<li><sup class="footnote"><a href="#fn3a419c5da99f41acaabe87ef69047316">1</a></sup> A. Loonstra, &#8220;Orchestrating computer systems, a research into a new protocol&#8221;, <span class="caps">FOSDEM</span> 2015 conference, Brussels, 01-Feb-2015. [Online]. Available: https://fosdem.org/2015/schedule/event/deviot02/. [Accessed: 08-Apr-2015].</li>
-		<li><sup class="footnote"><a href="#fn157817d7a07d4bc89a44cb1ab6a05007">2</a></sup> I. M. Greca and M. A. Moreira, &#8220;Mental models, conceptual models, and modelling&#8221;, Int. J. Sci. Educ., vol. 22, no. 1, pp. 1–11, Jan. 2000.</li>
-		<li><sup class="footnote"><a href="#fnaf5e1e3fb87c4c409489789cc567360d">3</a></sup> A. Robins, J. Rountree, and N. Rountree, &#8220;Learning and Teaching Programming: A Review and Discussion&#8221;, Comput. Sci. Educ., vol. 13, no. 2, pp. 137–172, Jun. 2003.</li>
-		<li><sup class="footnote"><a href="#fn3b2352b7939f4abf938e3d4caaf5e7fd">4</a></sup> S. Bhuiyan, J. E. Greer, and G. I. McCalla, &#8220;Learning recursion through the use of a mental model-based programming environment&#8221;, in Intelligent Tutoring Systems, C. Frasson, G. Gauthier, and G. I. McCalla, Eds. Springer Berlin Heidelberg, 1992, pp. 50–57.</li>
-		<li><sup class="footnote"><a href="#fnae8c1bb6e91043a8979117446f39749c">5</a></sup> A. Hoeben, &#8220;Implementation of Signals&#8221;, GitHub. [Online]. Available: https://github.com/z25/pyZOCP. [Accessed: 01-Jun-2015].</li>
-		<li><sup class="footnote"><a href="#fnfd3a642b41e349c1bfd1c5f28cf0fbc0">6</a></sup> &#8220;Collection of <span class="caps">ZOCP</span> applications&#8221;, GitHub. [Online]. Available: https://github.com/z25/ZOCPApps. [Accessed: 01-Jun-2015].</li>
-		<li><sup class="footnote"><a href="#fn2199adbb248d460e92249126eac50095">7</a></sup> GradeSaver, &#8220;No Exit Study Guide | GradeSaver&#8221;. [Online]. Available: http://www.gradesaver.com/no-exit. [Accessed: 28-May-2015].</li>
+		<li><sup class="footnote"><a href="#fn080bae37708641ad89bac6195e17fe11">1</a></sup> A. Loonstra, &#8220;Orchestrating computer systems, a research into a new protocol&#8221;, <span class="caps">FOSDEM</span> 2015 conference, Brussels, 01-Feb-2015. [Online]. Available: https://fosdem.org/2015/schedule/event/deviot02/. [Accessed: 08-Apr-2015].</li>
+		<li><sup class="footnote"><a href="#fn50dd6288bb2c47c98b57aa92750c4011">2</a></sup> I. M. Greca and M. A. Moreira, &#8220;Mental models, conceptual models, and modelling&#8221;, Int. J. Sci. Educ., vol. 22, no. 1, pp. 1–11, Jan. 2000.</li>
+		<li><sup class="footnote"><a href="#fn0ed868a12939402991405c794255fcb8">3</a></sup> A. Robins, J. Rountree, and N. Rountree, &#8220;Learning and Teaching Programming: A Review and Discussion&#8221;, Comput. Sci. Educ., vol. 13, no. 2, pp. 137–172, Jun. 2003.</li>
+		<li><sup class="footnote"><a href="#fn8befa3247d7b44a392cd1388e54267b1">4</a></sup> S. Bhuiyan, J. E. Greer, and G. I. McCalla, &#8220;Learning recursion through the use of a mental model-based programming environment&#8221;, in Intelligent Tutoring Systems, C. Frasson, G. Gauthier, and G. I. McCalla, Eds. Springer Berlin Heidelberg, 1992, pp. 50–57.</li>
+		<li><sup class="footnote"><a href="#fne492346a250445e2b738b42c9fa9c97e">5</a></sup> A. Hoeben, &#8220;Implementation of Signals&#8221;, GitHub. [Online]. Available: https://github.com/z25/pyZOCP. [Accessed: 01-Jun-2015].</li>
+		<li><sup class="footnote"><a href="#fndf1b830e1ee24ba4aea5e5ecaae9ad53">6</a></sup> &#8220;Collection of <span class="caps">ZOCP</span> applications&#8221;, GitHub. [Online]. Available: https://github.com/z25/ZOCPApps. [Accessed: 01-Jun-2015].</li>
+		<li><sup class="footnote"><a href="#fnadd4cb6cefcc4c8f9b7e4563d8324fa0">7</a></sup> GradeSaver, &#8220;No Exit Study Guide | GradeSaver&#8221;. [Online]. Available: http://www.gradesaver.com/no-exit. [Accessed: 28-May-2015].</li>
 	</ul>
 
 	<h1>Acknowledgements</h1>

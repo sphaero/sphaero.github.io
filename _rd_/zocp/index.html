@@ -15,10 +15,10 @@
         body {
             color: #DDD;
             background-color: #455c63;
-            background: -webkit-linear-gradient(#6e929e, #455c63); /* For Safari 5.1 to 6.0 */
-            background: -o-linear-gradient(#6e929e, #455c63); /* For Opera 11.1 to 12.0 */
-            background: -moz-linear-gradient(#6e929e, #455c63); /* For Firefox 3.6 to 15 */
-            background: linear-gradient(#6e929e, #455c63); /* Standard syntax */
+            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
             font-family: "Lucida Console", Monaco, monospace;
             height: 100%;
         }
@@ -48,6 +48,10 @@
             height: 10px;
             padding: 4px 10px;
         }
+        .navbar-default {
+            border-bottom: solid 1px #2A2A2A;
+            border-top: solid 1px #2A2A2A;
+        }
         .navbar-default .navbar-nav > .active {
             color: #000;
             background: #d65c14;
@@ -57,8 +61,8 @@
         .navbar-default .navbar-nav > .active > a:focus {
             color: #fff;
             background: #455c63;
-            border-bottom: #6e929e 1px solid;
-            border-top: #6e929e 1px solid;
+            border-bottom: #58747d 1px solid;
+            border-top: #58747d 1px solid;
         }
     </style>
 
@@ -96,7 +100,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" appie_key="home.textile" href="#" onclick="return appie_click(event);"><img src=""/></a>
+            <a class="navbar-brand" href="#" onclick="return appie_click(event);"><img src=""/></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -104,7 +108,7 @@
                 <li><a appie_key="projects" href="/#projects" class="appie_a">projects</a></li>
                 <li><a appie_key="_rd_" href="/#_rd_" class="appie_a">r&d</a></li>
                 <!--<li><a appie_key="blog" href="#blog" class="appie_a">blog</a></li>-->
-                <li><a appie_key="about.textile" href="/#about" class="appie_a">about</a></li>
+                <li><a href="/#about.textile" class="appie_a">about</a></li>
             </ul>
         </div>
     </div>

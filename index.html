@@ -172,7 +172,13 @@
     <script>
     
     var JSONDATA = {};
-    var img_slider_count = 0;
+    var IMG_SLIDER_COUNTER = 0;
+    
+    // Event: handle 'back' button
+    window.onpopstate = function(event) {
+        console.debug("window.onpopstate(): '"+ window.location.href.split('#')[1] +"'");
+        appie_route('#'+window.location.href.split('#')[1]);
+    };
     
     /* Helpers */
     
@@ -325,6 +331,7 @@
                 break;
             case "_home.html":
                 appie_jumbo_home(JSONDATA[json_key]);
+                $("#appie_grid").empty();
                 appie_latest();
                 break;
             case "about.textile":
@@ -370,8 +377,10 @@
             if (imgs.length > 1) 
             {
                 $('.appie_img_slider').hide();
-                img_slider();
+                IMG_SLIDER_COUNTER = 0;
+                $('#appie_img_slider0').show();
             }
+            else $('#appie_img_slider0').show();
         }
         else
         {
@@ -424,7 +433,8 @@
                     +'<button type="button" class="close" data-dismiss="modal">&times;</button>'+body+'</div></div>'
         $('#appie_jumboframe').append(modal);
         $('.appie_img_slider').hide();
-        img_slider();
+        IMG_SLIDER_COUNTER = 0;
+        $('#appie_img_slider0').show();
         $("#appie_jumboframe").show();
         $('#myModal button').click(function() { $(this).parent().hide();});
     }
@@ -653,7 +663,7 @@
             window.scrollTo(0, 0);
             console.log('appie_click: '+$(e.currentTarget).attr('href'));
             //var appie_key = $(e.target).attr('appie_key');
-            img_slider_count = 0;
+            IMG_SLIDER_COUNTER = 0;
             //just a fix to make the dropdown list dissappear after clicking
             if ($('div.navbar-collapse').hasClass('in')) {
                 $('button.navbar-toggle:visible').click();
@@ -677,6 +687,7 @@
             var img = jQuery('<img/>', {
                                         src: imgs[i],
                                         class: 'appie_img_slider img-responsive',
+                                        style: 'display: none;',
                                         id: 'appie_img_slider'+i
                                        });
             fig.append(img);
@@ -690,12 +701,12 @@
         var img_count = jQuery('#appie_img_slider_container').attr('img_count');
         if (img_count > 1)
         {
-            $('#appie_img_slider'+img_slider_count).fadeOut(800, function() 
+            $('#appie_img_slider'+IMG_SLIDER_COUNTER).fadeOut(800, function() 
             {
-                img_slider_count = img_slider_count+1;
-                if (img_slider_count >= img_count) img_slider_count = 0;
-                $('#appie_img_slider'+img_slider_count).fadeOut(0);
-                $('#appie_img_slider'+img_slider_count).fadeIn(800);
+                IMG_SLIDER_COUNTER += 1;
+                if (IMG_SLIDER_COUNTER >= img_count) IMG_SLIDER_COUNTER = 0;
+                $('#appie_img_slider'+IMG_SLIDER_COUNTER).hide();
+                $('#appie_img_slider'+IMG_SLIDER_COUNTER).fadeIn(800);
             });
         }
     }

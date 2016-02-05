@@ -161,6 +161,10 @@
             font-weight: bold;
             color: #BAA39C;
         }
+        table, th, tr, td {
+			padding-left: 6px;
+			padding-right: 6px;
+		}
     </style>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -481,7 +485,7 @@
         for (var key in pdata)
         {
             // test if valid project entry
-            if (keys_in(['_body.textile','_date','_description','_status','_title'], pdata[key]))
+            if (keys_in(['_date','_description','_status','_title'], pdata[key]))
             {
                 //console.log("project " + pdata[key]['_title']);
                 // Just get the project's data and put it in a div with
@@ -523,9 +527,18 @@
                 imgs.push(pdata['img'][img] + '/' + img);
             }
         }
+        //just a wacky hacky fix
+        var body = "";
+        if (keys_in(['body.md',], pdata)) {
+			body = pdata['body.md'];
+		}
+		else
+		{
+			body = pdata['_body.textile'];
+		}
         var el = appie_jumbo(pdata['_title'],
                     pdata['_description'],
-                    pdata['_body.textile'],
+                    body,
                     imgs);
     }
     

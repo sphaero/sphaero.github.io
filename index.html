@@ -398,6 +398,31 @@
         $("#appie_jumboframe").show();
     }
     
+    function _find_imgs_in_obj(obj, imgs) 
+    {
+        for (var key in obj)
+        {
+            if (key.endsWith(".png"))
+            {
+                //is img so save
+                if (keys_in(['web'], obj[key]))
+                {
+                    var img = obj[key]['path'] +'/'+ obj[key]['web'];
+                    imgs.push(img);
+                }
+            }
+            else if (key.endsWith(".jpg"))
+            {
+                var img = obj[key] + '/' + key;
+                imgs.push(img);
+            }
+            else if (typeof(obj[key]) === 'object') 
+            {
+                _find_img_in_obj(obj[key], imgs);
+            }
+        }
+    }
+    
     function _find_img_in_obj(obj, imgs) 
     {
         for (var key in obj)
@@ -411,11 +436,6 @@
                     imgs.push(img);
                     break;  //only get one img, so next iter
                 }
-            }
-            else if (key.endsWith(".jpg"))
-            {
-                var img = obj[key] + '/' + key;
-                imgs.push(img);
             }
             else if (typeof(obj[key]) === 'object') 
             {
@@ -665,7 +685,7 @@
     {
         var pdata = JSONDATA['_rd_'][rd];
         var imgs = [];
-        _find_img_in_obj(pdata['img'], imgs);
+        _find_imgs_in_obj(pdata['img'], imgs);
         var el = appie_jumbo(pdata['_title'],
                     pdata['_description'],
                     pdata['body.md'],

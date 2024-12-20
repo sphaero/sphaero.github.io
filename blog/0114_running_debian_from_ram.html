@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running debian from ram - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debirf.html">debirf</a></li>
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/ubuntu.html">ubuntu</a></li>
+    
+    <li><a href="/tags/embeded.html">embeded</a></li>
+    
+    <li><a href="/tags/initrd.html">initrd</a></li>
+    
+    <li><a href="/tags/rootstock.html">rootstock</a></li>
+    
+    <li><a href="/tags/multistrap.html">multistrap</a></li>
+    
+    <li><a href="/tags/debootstrap.html">debootstrap</a></li>
+    
+    <li><a href="/tags/emdebian.html">emdebian</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="running-debian-from-ram">Running Debian from RAM</h1>
+<p>Since about a year I'm investigating more appliance/embedded-like systems. Through all this research I stumbled upon <a href="http://cmrg.fifthhorseman.net/wiki/debirf">debirf</a>. This simple tool let's you create a full debian os in an initial ramdisk. This is especially handy for fully customised systems aimed at performance and not using harddrives or flash disks.</p>
+<h1 id="_1"></h1>
+<p>Firs install the tool and create a directory where you can place your images.</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install debirf
+mkdir debirf
+cd debirf/
+</code></pre></div>
+
+<p>To start simply we need to extract a profile. This profile is a set of scripts to setup a system. We'll try the 'minimal' profile first which is a simple minimal os.</p>
+<div class="codehilite"><pre><span></span><code>tar xzf /usr/share/doc/debirf/example-profiles/minimal.tgz
+</code></pre></div>
+
+<p>Debirf by default refers to some old distros so we'll first need to edit the debirf.conf in the profile dir.</p>
+<div class="codehilite"><pre><span></span><code>nano minimal/debirf.conf
+</code></pre></div>
+
+<p>Have a look around in the config to see what you can set. Change the following two vars to the distro/suite you are running:</p>
+<div class="codehilite"><pre><span></span><code>DEBIRF_SUITE=lucid
+DEBIRF_DISTRO=ubuntu
+</code></pre></div>
+
+<p>Next we can just create an image by issuing:</p>
+<div class="codehilite"><pre><span></span><code>debirf make minimal
+</code></pre></div>
+
+<p>This will take a while! The output is quite verbose so if anything fails look at the exact failure message.</p>
+<p>I've tried this on Ubuntu Lucid X86_64 which worked for me. However Oneiric failed which might be caused by some <a href="http://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=debirf;dist=unstable">outstanding bugs</a>.</p>
+<p>Don't try working around this by using sudo. I don't know how but it completely ruined my system :(</p>
+<h2 id="after-the-build">After the build</h2>
+<p>You're left with two files:
+* debirf-minimal_lucid_2.6.32-21-generic.cgz : The ramdisk image
+* vmlinuz-2.6.32-21-generic : The linux kernel</p>
+<p>Just run qemu to test the kernel, ie.:</p>
+<div class="codehilite"><pre><span></span><code>qemu -m 256 -serial stdio -net nic -net user -kernel vmlinuz-2.6.32-21-generic -initrd debirf-minimal_lucid_2.6.32-21-generic.cgz
+</code></pre></div>
+
+<h2 id="thoughts">Thoughts</h2>
+<ul>
+<li>I've found for the lucid minimal image that not everything works like it should. For example the serial console is started through inittab but inittab is obsolete in Lucid so it's never started.</li>
+<li>Debootstrap is being replaced by multistrap in Debian which makes it possible to build for different architectures.... It should be very easy to implement multistrap to replace debootstrap</li>
+<li>lots of fakeroot bugs I bumped into...</li>
+<li>It should be very interesting to build an image using emdebian... Hopefully I'll find time to test this</li>
+<li>The image can be optimised a lot. Documentation (/usr/share/doc/) is really not needed and just eats up 9MB of RAM. For example an Emdebian Grip root filesystem only uses 41MB!!!</li>
+<li>While investigating this tool I also discovered <a href="https://launchpad.net/project-rootstock">rootstock</a>. This is essentiale the same tool but with a little different approach. I think it uses qemu a lot. It also seems to be supported by Canonical.</li>
+<li>I think you'll have more personal control if you just a build a system using multistrap and some manual tweaking.</li>
+<li>The initrd of debirf builds a new ramdisk containing the root filesystem. I think it would be easier to just use the primary initrd as a root filesystem directly.</li>
+</ul>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

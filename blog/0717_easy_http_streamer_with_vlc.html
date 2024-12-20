@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy http streamer with vlc - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/vlc.html">vlc</a></li>
+    
+    <li><a href="/tags/streaming.html">streaming</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="easy-http-streamer-with-vlc">Easy http streamer with VLC</h1>
+<p>Today I needed a simple setup for streaming a camera locally on the network. I could do this with ffmpeg and ffserver and so but that's a whole lot more work than doing this with VLC which has a webserver built-in. Getting the right command line with this was a bit cumbersome however with some digging through the available docs I managed to get the right parameters.</p>
+<p>So run this in a terminal:</p>
+<div class="codehilite"><pre><span></span><code>cvlc --verbose 2 &quot;v4l2://&quot; --v4l2-dev /dev/video0 --v4l2-fps 25 &#39;:sout=#transcode{vcodec=mpeg2,vb=8000,scale=0,acodec=none}:http{mux=ts,dst=:8080/}&#39;
+</code></pre></div>
+
+<p>I have been tweaking a bit with the parameters but found using MPEG2 with a high bit rate to work best. I'm not using any audio. using H264 or MPEG4 gave me lots of errors.</p>
+<h1 id="some-more-tweaks">Some more tweaks</h1>
+<p>Instead of using</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="n">v4l</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video0</span>
+</code></pre></div>
+
+<p>you can also use</p>
+<div class="codehilite"><pre><span></span><code>v4l:///dev/video0:width=640:height=480
+</code></pre></div>
+
+<p>More docs available <a href="http://wiki.videolan.org/Documentation:Modules/v4l">here</a></p>
+<p>Use this as a bash script which is handy for tweaking</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="nv">OUT</span><span class="o">=</span><span class="s1">&#39;:sout=#transcode{vcodec=mpeg2,vb=8000,scale=0,acodec=none}:http{mux=ts,dst=:8080/}&#39;</span>
+cvlc<span class="w"> </span>--verbose<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">&quot;v4l2://&quot;</span><span class="w"> </span>--v4l2-dev<span class="w"> </span>/dev/video0<span class="w"> </span>--v4l2-fps<span class="w"> </span><span class="m">25</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$OUT</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p>If you want to make sure the stream never stops use a script like this</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+
+<span class="nv">OUT</span><span class="o">=</span><span class="s1">&#39;:sout=#transcode{vcodec=mpeg2,vb=8000,scale=0,acodec=none}:http{mux=ts,dst=:8080/}&#39;</span>
+
+<span class="k">while</span><span class="w"> </span><span class="nb">true</span>
+<span class="k">do</span>
+<span class="w">    </span>cvlc<span class="w"> </span>--verbose<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">&quot;v4l2://&quot;</span><span class="w"> </span>--v4l2-dev<span class="w"> </span>/dev/video0<span class="w"> </span>--v4l2-fps<span class="w"> </span><span class="m">25</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$OUT</span><span class="s2">&quot;</span>
+<span class="k">done</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

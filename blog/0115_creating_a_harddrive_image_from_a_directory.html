@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creating a harddrive image from a directory - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/qemu.html">qemu</a></li>
+    
+    <li><a href="/tags/virtualbox.html">virtualbox</a></li>
+    
+    <li><a href="/tags/ramdisk.html">ramdisk</a></li>
+    
+    <li><a href="/tags/dd.html">dd</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="creating-a-harddrive-image-from-a-directory">creating a harddrive image from a directory</h1>
+<p>Since I'm experimenting with tools for creating a minimal OS it would be handy to create a harddrive image from a directory. This is possible with a few commands.</p>
+<h2 id="_1"></h2>
+<p>First create an empty image using dd:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">dd</span><span class="w"> </span><span class="k">if</span><span class="o">=/</span><span class="nv">dev</span><span class="o">/</span><span class="nv">zero</span><span class="w"> </span><span class="nv">of</span><span class="o">=</span><span class="nv">disk</span>.<span class="nv">img</span><span class="w"> </span><span class="nv">bs</span><span class="o">=</span><span class="mi">1</span><span class="nv">MB</span><span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="mi">0</span><span class="w"> </span><span class="nv">seek</span><span class="o">=</span><span class="mi">1024</span>
+</code></pre></div>
+
+<p>This will create a 1GB image. Just change the seek value to create an image for your size.</p>
+<p>Next we need to format the image:</p>
+<div class="codehilite"><pre><span></span><code>mkfs.ext4 -F disk.img
+</code></pre></div>
+
+<p>This will format the image with an ext4 filesystem. Just use mkfs.ext3 if you want an ext3 filesystem. The -F option is the magic trick so don't forget that!</p>
+<p>Now you can mount your filesystem!</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">sudo</span><span class="w"> </span><span class="nv">mount</span><span class="w"> </span><span class="o">-</span><span class="nv">o</span><span class="w"> </span><span class="k">loop</span><span class="w"> </span><span class="nv">disk</span>.<span class="nv">img</span><span class="w"> </span><span class="o">/</span><span class="nv">mnt</span>
+</code></pre></div>
+
+<p>And put your files on it!
+For example:</p>
+<div class="codehilite"><pre><span></span><code>multistrap -f multistrap.conf -d /mnt
+</code></pre></div>
+
+<p>Now you could use qemu to boot the harddrive. Unmount the drive before giving qemu control over it!:</p>
+<div class="codehilite"><pre><span></span><code>sudo umount /mnt
+qemu -kernel vmlinuz -initrd initrd -hda disk.img -m 256 -append &quot;root=/dev/sda devtmpfs&quot;
+</code></pre></div>
+
+<p>Enjoy</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

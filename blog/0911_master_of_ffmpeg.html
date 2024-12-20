@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master of ffmpeg - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="master-of-ffmpeg">master of ffmpeg?</h1>
+<p>With increasing frequency I find myself reverting to ffmpeg to do video and audio conversion. So for my own reminder a few recipes I collected from my mind and the web:</p>
+<h1 id="updated-ffmpeg">Updated ffmpeg</h1>
+<p>newer versions of ffmpeg have different switches, ie:</p>
+<table>
+<thead>
+<tr>
+<th>old</th>
+<th>new</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-b</td>
+<td>-b:v</td>
+</tr>
+<tr>
+<td>-ba</td>
+<td>-b:a</td>
+</tr>
+<tr>
+<td>-vcodec</td>
+<td>-c:v</td>
+</tr>
+</tbody>
+</table>
+<h1 id="examples">examples</h1>
+<div class="codehilite"><pre><span></span><code><span class="c1">#Convert video to PNG&#39;s</span>
+<span class="c1">#don&#39;t forget the 0 in %05d otherwise you won&#39;t get leading zero&#39;s</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video.mov<span class="w"> </span>video-%05d.png
+<span class="c1">#better quality jpegs</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video.avi<span class="w"> </span>-f<span class="w"> </span>image2<span class="w"> </span>-sameq<span class="w"> </span>-qscale<span class="w"> </span><span class="m">1</span><span class="w"> </span>-qmax<span class="w"> </span><span class="m">1</span><span class="w"> </span>-qmin<span class="w"> </span><span class="m">1</span><span class="w"> </span>video-%05d.jpg
+
+<span class="c1">#Convert png&#39;s to mjpeg</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>stills-%5d.png<span class="w"> </span>-vcodec<span class="w"> </span>mjpeg<span class="w"> </span>-b<span class="w"> </span>10000k<span class="w"> </span>-qscale<span class="w"> </span><span class="m">4</span><span class="w"> </span>video.avi
+<span class="c1">#Convert png&#39;s to mjpeg + resize</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>stills-%5d.png<span class="w"> </span>-vcodec<span class="w"> </span>mjpeg<span class="w"> </span>-s<span class="w"> </span>960x540<span class="w"> </span>-b<span class="w"> </span>10000k<span class="w"> </span>-qscale<span class="w"> </span><span class="m">4</span><span class="w"> </span>video.avi
+
+<span class="c1">#Convert flac to mp3</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>audio.flac<span class="w"> </span>-ab<span class="w"> </span>196k<span class="w"> </span>audio.mp3
+
+<span class="c1">#Ipod:</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>source_video.avi<span class="w"> </span>input<span class="w"> </span>-acodec<span class="w"> </span>aac<span class="w"> </span>-ab<span class="w"> </span>128kb<span class="w"> </span>-vcodec<span class="w"> </span>mpeg4<span class="w"> </span>-b<span class="w"> </span>1200kb<span class="w"> </span>-mbd<span class="w"> </span><span class="m">2</span><span class="w"> </span>-flags<span class="w"> </span>+4mv+trell<span class="w"> </span>-aic<span class="w"> </span><span class="m">2</span><span class="w"> </span>-cmp<span class="w"> </span><span class="m">2</span><span class="w"> </span>-subcmp<span class="w"> </span><span class="m">2</span><span class="w"> </span>-s<span class="w"> </span>320x180<span class="w"> </span>-title<span class="w"> </span>X<span class="w"> </span>final_video.mp4
+Explanations<span class="w"> </span>:
+*<span class="w"> </span>Source<span class="w"> </span>:<span class="w"> </span>source_video.avi
+*<span class="w"> </span>Audio<span class="w"> </span>codec<span class="w"> </span>:<span class="w"> </span>aac
+*<span class="w"> </span>Audio<span class="w"> </span>bitrate<span class="w"> </span>:<span class="w"> </span>128kb/s
+*<span class="w"> </span>Video<span class="w"> </span>codec<span class="w"> </span>:<span class="w"> </span>mpeg4
+*<span class="w"> </span>Video<span class="w"> </span>bitrate<span class="w"> </span>:<span class="w"> </span>1200kb/s
+*<span class="w"> </span>Video<span class="w"> </span>size<span class="w"> </span>:<span class="w"> </span>320px<span class="w"> </span>by<span class="w"> </span>180px
+*<span class="w"> </span>Generated<span class="w"> </span>video<span class="w"> </span>:<span class="w"> </span>final_video.mp4
+
+<span class="c1">#extract sound from video:</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>source_video.avi<span class="w"> </span>-vn<span class="w"> </span>-ar<span class="w"> </span><span class="m">44100</span><span class="w"> </span>-ac<span class="w"> </span><span class="m">2</span><span class="w"> </span>-ab<span class="w"> </span><span class="m">192</span><span class="w"> </span>-f<span class="w"> </span>mp3<span class="w"> </span>sound.mp3
+
+<span class="c1">#convert to gif</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video_origine.avi<span class="w"> </span>gif_anime.gif
+
+<span class="c1">#convert to flah video</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video_origine.avi<span class="w"> </span>-ab<span class="w"> </span><span class="m">56</span><span class="w"> </span>-ar<span class="w"> </span><span class="m">44100</span><span class="w"> </span>-b<span class="w"> </span><span class="m">200</span><span class="w"> </span>-r<span class="w"> </span><span class="m">15</span><span class="w"> </span>-s<span class="w"> </span>320x240<span class="w"> </span>-f<span class="w"> </span>flv<span class="w"> </span>video_finale.flv
+
+<span class="c1">#Convert to DV video</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video_origine.avi<span class="w"> </span>-s<span class="w"> </span>pal<span class="w"> </span>-r<span class="w"> </span>pal<span class="w"> </span>-aspect<span class="w"> </span><span class="m">4</span>:3<span class="w"> </span>-ar<span class="w"> </span><span class="m">48000</span><span class="w"> </span>-ac<span class="w"> </span><span class="m">2</span><span class="w"> </span>video_finale.dv
+<span class="c1">#or:</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>video_origine.avi<span class="w"> </span>-target<span class="w"> </span>pal-dv<span class="w"> </span>video_finale.dv
+
+<span class="c1">#multipass encoding</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>fichierentree<span class="w"> </span>-pass<span class="w"> </span><span class="m">2</span><span class="w"> </span>-passlogfile<span class="w"> </span>ffmpeg2pass<span class="w"> </span>fichiersortie-2
+
+<span class="c1">#Convert MTS to ????</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>/tmp/00094.MTS<span class="w"> </span>-sameq<span class="w"> </span>-acodec<span class="w"> </span>copy<span class="w"> </span>test.mp4
+<span class="c1">#High quality!!! if your editor supports it</span>
+fmpeg<span class="w"> </span>-i<span class="w"> </span>/tmp/00094.MTS<span class="w"> </span>--vcodec<span class="w"> </span>ffv1<span class="w"> </span>-sameq<span class="w"> </span>-acodec<span class="w"> </span>copy<span class="w"> </span>test.avi
+
+<span class="c1">#Convert TOD to AVI</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>file.TOD<span class="w"> </span>-vcodec<span class="w"> </span>copy<span class="w"> </span>-acodec<span class="w"> </span>copy<span class="w"> </span>file.avi
+
+<span class="c1">#specify start time in seconds or hh:mm:ss[.xxx] this example starts after 2000 seconds</span>
+<span class="c1">#and encodes for 10 seconds</span>
+ffmpeg<span class="w"> </span>-ss<span class="w"> </span><span class="m">2000</span><span class="w"> </span>-t<span class="w"> </span><span class="m">10</span><span class="w"> </span>-i<span class="w"> </span>file.avi<span class="w"> </span>outputfile.mp4
+<span class="c1">#specify -ss after -i decodes the movie first. This can be handy for when the source</span>
+<span class="c1">#has keyframes instead of full frames</span>
+
+<span class="c1">#2pass mp4 encoding</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>bilderraus_hd_audio_ffv1.avi<span class="w"> </span>-pass<span class="w"> </span><span class="m">1</span><span class="w"> </span>-vcodec<span class="w"> </span>libx264<span class="w"> </span>-vpre<span class="w"> </span>fastfirstpass<span class="w"> </span>-fs<span class="w"> </span><span class="m">503316480</span><span class="w"> </span>-threads<span class="w"> </span><span class="m">8</span><span class="w"> </span>-f<span class="w"> </span>rawvideo<span class="w"> </span>-an<span class="w"> </span>-y<span class="w"> </span>/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>bilderraus_hd_audio_ffv1.avi<span class="w"> </span>-pass<span class="w"> </span><span class="m">2</span><span class="w"> </span>-vcodec<span class="w"> </span>libx264<span class="w"> </span>-vpre<span class="w"> </span>fastfirstpass<span class="w"> </span>-fs<span class="w"> </span><span class="m">503316480</span><span class="w"> </span>-b:v<span class="w"> </span>1M<span class="w"> </span>-bt<span class="w"> </span>4M<span class="w"> </span>-acodec<span class="w"> </span>libmp3lame<span class="w"> </span>-b:a<span class="w"> </span>192k<span class="w"> </span>-ac<span class="w"> </span><span class="m">2</span><span class="w"> </span>-threads<span class="w"> </span><span class="m">8</span><span class="w"> </span>test.mp4
+
+<span class="c1">#cropping or removing letterbox</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>watervoorbij-audiofix.mp4<span class="w"> </span>-croptop<span class="w"> </span><span class="m">84</span><span class="w"> </span>-cropbottom<span class="w"> </span><span class="m">84</span><span class="w"> </span>-s<span class="w"> </span>720x414<span class="w"> </span>-aspect<span class="w"> </span><span class="m">16</span>:9<span class="w"> </span>-vcodec<span class="w"> </span>mpeg4<span class="w"> </span>-sameq<span class="w"> </span>-acodec<span class="w"> </span>copy<span class="w"> </span>watervoorbij-audiofix2.mp4
+
+<span class="c1">#Concatenate MOV files from a Canon camera</span>
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>MVI_3044.MOV<span class="w"> </span>-f<span class="w"> </span>mpegts<span class="w"> </span>-vcodec<span class="w"> </span>copy<span class="w"> </span>-vbsf<span class="w"> </span>h264_mp4toannexb<span class="w"> </span>file-01.mpeg.ts
+ffmpeg<span class="w"> </span>-i<span class="w"> </span>MVI_3045.MOV<span class="w"> </span>-f<span class="w"> </span>mpegts<span class="w"> </span>-vcodec<span class="w"> </span>copy<span class="w"> </span>-vbsf<span class="w"> </span>h264_mp4toannexb<span class="w"> </span>file-02.mpeg.ts
+ffmpeg<span class="w"> </span>-isync<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;concat:file-01.mpeg.ts|file-02.mpeg.ts&quot;</span><span class="w"> </span>-vcodec<span class="w"> </span>copy<span class="w"> </span>test.mov
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

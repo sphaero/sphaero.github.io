@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thoughts about parallel computing - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/parallelcomputing.html">parallelcomputing</a></li>
+    
+    <li><a href="/tags/threads.html">threads</a></li>
+    
+    <li><a href="/tags/opengl.html">opengl</a></li>
+    
+    <li><a href="/tags/opencl.html">opencl</a></li>
+    
+    <li><a href="/tags/qt.html">qt</a></li>
+    
+    <li><a href="/tags/zeromq.html">zeromq</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="thoughts-about-parallel-computing">Thoughts about parallel computing</h1>
+<p>De future will be all about parallel computing and asynchronous design patterns. So how are we preparing for this? I'm doing some research into this and gathering thoughts and information in here about this subject.</p>
+<p>First of all, our focus for languages is C/C++, Python, Javascript. In the future we might add OpenCL to this. So I'm leaving out odd languages likes Erlang which are specifically build around these issues.</p>
+<h2 id="zeromq">ZeroMQ</h2>
+<p>The first happy thing I stumbled upon is that the ZeroMQ framework is used a lot in parallel computing and specifically is used for lock free multi threading! So this is another one-up for ZeroMQ!</p>
+<ul>
+<li>http://www.zeromq.org/blog:multithreading-magic</li>
+<li>http://www.zeromq.org/blog:zero-copy Zero Copying and large message transfers</li>
+</ul>
+<p>Already investigating how to do multithreading for the MapperTools app we don't want to copy data if do not need to. This is easily done by passing a pointer or reference. However this limits the message to a single process (a single process can still be multithreaded!) This is important to remember. There is no way to access the pointer outside the app since the operating system won't let you!</p>
+<ul>
+<li>http://lists.zeromq.org/pipermail/zeromq-dev/2011-February/009336.html discussion about pointer passing</li>
+</ul>
+<p>In fact ZeroMQ is great again. Since we are aiming for using every device we can, we will never be able to pass pointers to other processes of devices. So this is always done by value. Using zeroMQ as much as we can simpllfies this bigtime since there is no difference between inter-thread, inter-process or inter-device communication. Aint that fun! :)</p>
+<h2 id="qt-threading">QT Threading</h2>
+<p>QT has threading built-in. So you can use that either by sub-classing QThread or by passing your QObject to the thread (moveToThread). Actually this is a general approach used by most, if not all, threading implementations.</p>
+<ul>
+<li>http://qt-project.org/doc/qt-4.8/thread-basics.html intro to QThreads</li>
+</ul>
+<p>Remember this:</p>
+<blockquote>
+<p>"Developers need to be very careful with threads. It is easy to start other threads, but very hard to ensure that all shared data remains consistent. Problems are often hard to find because they may only show up once in a while or only on specific hardware configurations. Before creating threads to solve certain problems, possible alternatives should be considered."</p>
+</blockquote>
+<p>I still have a hard time figuring out the best approach to issuing threads. Running a thread isn't hard but communicating with threads is. Using slots and signals are the best approach in QT but I have a hard time working with parameters. Up until now I have figured best approach for parralel computing is to seperate the preparation of the work and the start of the work. To explain. Most threaded system have a run() function. This run() function is executed by start() automatically. As you can see it doens't accept parameters. So to get your work done in another thread you need to get the data in before run() is executed. This is an approach we could use as a standard. I'd like to call it "parameterless execution".</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">worker</span><span class="p">::</span><span class="nd">run</span><span class="o">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="err">printf(this-&gt;printString)</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nt">worker</span><span class="p">.</span><span class="nc">setPrintString</span><span class="o">(</span><span class="s2">&quot;blabla&quot;</span><span class="o">)</span>
+<span class="nt">worker</span><span class="p">.</span><span class="nc">run</span><span class="o">()</span>
+</code></pre></div>
+
+<p>I think this will be wise in order to get this into a GUI for visualising the programming. Using this approach as a standard pattern will make it easier to move certain parts of execution into a seperate threads.</p>
+<h2 id="opencl">OpenCL</h2>
+<ul>
+<li>http://www.drdobbs.com/parallel/a-gentle-introduction-to-opencl/231002854 A nice introduction to openCL</li>
+</ul>
+<p>OpenCL is a C-like programming language specifically to do parralel computation on devices like GPU's and CPU's. For now I think this is too hardcore. Note that openCV also has a openCL implementation!</p>
+<h2 id="python">Python</h2>
+<p>Python will never do multi-core multi-threading because of the "<a href="http://en.wikipedia.org/wiki/Global_Interpreter_Lock">Global interpreter lock</a>":. There are some ways around this but it usually involves spawning multiple processes. Once we'll get there we probably move to C/C++ anyways. So no trouble here.
+*http://taotetek.wordpress.com/2011/02/02/python-multiprocessing-with-zeromq/</p>
+<h2 id="opengl">OpenGL</h2>
+<p>OpenGL is <strong>NOT</strong> thread safe. So everything you do in OpenGL you do in the same thread. Don't even try to move it to a different thread. Remember openGL only does the drawing and not the processing! You capture your video in a seperate thread and move a pointer of the pixelbuffer to opengl. OPenGL draws it on screen.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

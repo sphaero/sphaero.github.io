@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Svn certificate error note - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/svn.html">svn</a></li>
+    
+    <li><a href="/tags/ssl.html">ssl</a></li>
+    
+    <li><a href="/tags/certificate.html">certificate</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="svn-certificate-error-note">SVN certificate error note</h1>
+<p>Just a quick note to self. If you run into a certificate error like this with svn:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">svn</span><span class="o">:</span><span class="w"> </span><span class="n">OPTIONS</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="s1">&#39;https:*server.com/repo&#39;</span><span class="o">:</span><span class="w"> </span><span class="n">Certificate</span><span class="w"> </span><span class="n">verification</span><span class="w"> </span><span class="n">error</span><span class="o">:</span><span class="w"> </span><span class="n">signed</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">insecure</span><span class="w"> </span><span class="n">algorithm</span><span class="w"> </span><span class="o">(</span><span class="n">https</span><span class="o">:*</span><span class="n">server</span><span class="o">.</span><span class="na">com</span><span class="o">/</span><span class="n">repo</span><span class="o">)</span>
+</code></pre></div>
+
+<p>You'll find lots of pointers to --non-interactive and --trust-server-cert which don't work...</p>
+<p>To fix the error go to your  ~/.subversion/servers and add this at the end:</p>
+<div class="codehilite"><pre><span></span><code>ssl-trust-default-ca = no
+</code></pre></div>
+
+<p>You'll be given an option next time :)</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

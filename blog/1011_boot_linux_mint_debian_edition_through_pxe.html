@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>boot linux mint debian edition through pxe - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/pxe.html">pxe</a></li>
+    
+    <li><a href="/tags/nfs.html">nfs</a></li>
+    
+    <li><a href="/tags/mint.html">mint</a></li>
+    
+    <li><a href="/tags/installer.html">installer</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="boot-linux-mint-debian-edition-through-pxe">Boot Linux Mint Debian Edition through PXE</h1>
+<p>Like all Debian based distro's it's very easy to boot the installer through PXE. However with Linux Mint this is not the case? Why? I don't know yet but since the installer of Linux Mint is just a live CD using <a href="http://live.debian.net/">casper</a> we can boot the whole live system with a little help from NFS through PXE</p>
+<h1 id="_1"></h1>
+<p>__I presume you have a working tftp and PXE setup!
+__</p>
+<p>First download the iso, get yourself a <a href="http://www.linuxmint.com/edition.php?id=101">closeby mirror</a>:</p>
+<div class="codehilite"><pre><span></span><code>wget http://mintlinux.mirror.triple-it.nl/iso/stable/debian/linuxmint-xfce-201104-dvd-32bit.iso
+wget http://mintlinux.mirror.triple-it.nl/iso/stable/debian/linuxmint-xfce-201104-dvd-64bit.iso
+</code></pre></div>
+
+<p>After download mount the CD:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">mount</span><span class="w"> </span><span class="o">-</span><span class="nv">t</span><span class="w"> </span><span class="nv">iso9660</span><span class="w"> </span><span class="nv">linuxmint</span><span class="o">-</span><span class="nv">xfce</span><span class="o">-</span><span class="mi">201104</span><span class="o">-</span><span class="nv">dvd</span><span class="o">-</span><span class="mi">32</span><span class="nv">bit</span>.<span class="nv">iso</span><span class="w"> </span><span class="o">/</span><span class="nv">mnt</span><span class="w"> </span><span class="o">-</span><span class="nv">o</span><span class="w"> </span><span class="k">loop</span>
+</code></pre></div>
+
+<p>Then make a dir in your tftproot (in my case /var/lib/tftpboot).
+__It is important to have a directory named 'live' in the root of your mint-lmde directory. Otherwise it won't work
+__</p>
+<div class="codehilite"><pre><span></span><code><span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">tftpboot</span><span class="o">/</span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="o">/</span><span class="n">live</span>
+</code></pre></div>
+
+<p>Copy the contents of the "casper" dir on the CD to the created directory</p>
+<div class="codehilite"><pre><span></span><code><span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">r</span><span class="w"> </span><span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">casper</span><span class="o">/*</span><span class="w"> </span><span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">tftpboot</span><span class="o">/</span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="o">/</span><span class="n">live</span><span class="o">/</span>
+</code></pre></div>
+
+<p>Now add the following lines to your pxelinux.cfg/default</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">################################################</span>
+<span class="c1">#</span>
+<span class="c1">#       LINUX MINT RELEASES</span>
+<span class="c1">#</span>
+<span class="c1">#################################################</span>
+
+<span class="n">label</span><span class="w"> </span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span>
+<span class="w">        </span><span class="n">kernel</span><span class="w"> </span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">vmlinuz</span>
+<span class="w">        </span><span class="n">append</span><span class="w"> </span><span class="n">root</span><span class="o">=/</span><span class="n">dev</span><span class="o">/</span><span class="n">nfs</span><span class="w"> </span><span class="n">live</span><span class="o">-</span><span class="n">media</span><span class="o">-</span><span class="n">path</span><span class="o">=/</span><span class="n">live</span><span class="w"> </span><span class="n">boot</span><span class="o">=</span><span class="n">live</span><span class="w"> </span><span class="n">initrd</span><span class="o">=</span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">initrd</span><span class="o">.</span><span class="n">lz</span><span class="w"> </span><span class="n">netboot</span><span class="o">=</span><span class="n">nfs</span><span class="w"> </span><span class="n">nfsroot</span><span class="o">=&lt;</span><span class="n">yournfsserver</span><span class="o">&gt;</span><span class="p">:</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">exported</span><span class="o">/</span><span class="n">dir</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="w"> </span><span class="n">nosplash</span><span class="w"> </span><span class="o">--</span>
+</code></pre></div>
+
+<p>Export the 'mint-lmde' dir with NFS. Add to your /etc/exports file:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">tftpboot</span><span class="o">/</span><span class="n">mint</span><span class="o">-</span><span class="n">lmde</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">ro</span><span class="p">,</span><span class="n">subtree_check</span><span class="p">,</span><span class="n">no_root_squash</span><span class="p">)</span>
+</code></pre></div>
+
+<p>At least I can install Mint now however my experience was really bad. :( The system couldn't update, apt keys were expired, repository url's were broken. I think Mint is really taking a wrong direction not supporting all Debian installer's options. CD's are sooo pre 2000. Why don't they have the textmode installer? It's way more robust. Why can't I install directly from the network repositories?</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

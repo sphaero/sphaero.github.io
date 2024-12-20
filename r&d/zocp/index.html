@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchestrating computer systems, a research into a new protocol - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/smart communication.html">smart communication</a></li>
+    
+    <li><a href="/tags/ protocol.html"> protocol</a></li>
+    
+    <li><a href="/tags/ zocp.html"> zocp</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2014</div>
+
+<content>
+	<h2>Introduction</h2>
+
+	<p>As artists embrace new technologies as an artistic medium these technologies often provide artists with new methods for cooperation. Networking technologies are used frequently for these purposes. Internet has been a driving force behind the development of networking hardware and open standards for connecting any to device to any device. These technologies are now a commodity and thus available for anybody to use. However we see a rising need to be able to implement these technologies in a flexible adaptive manner without the explicit fixed setups requiring manual configuration. </p>
+
+	<p>Open Sound Control (<span class="caps">OSC</span>) is a protocol developed for exchanging music performance data. <span class="caps">OSC</span> is often used as an alternative to <span class="caps">MIDI</span> however it has found its way to many use cases besides musical performances. We have found <span class="caps">OSC</span> to be an ideal de facto standard for connecting applications to each other in order to orchestrate them. However the flexibility of <span class="caps">OSC</span> tends to decrease exponentially when used in large setups because of it&#8217;s hard coded nature. I.e. many applications need to be instructed to use specific manual settings and agreements in order for applications to communicate. In large setups containing multiple systems and multiple applications this manual work is inflexible and error prone.</p>
+
+	<p>This document describes the results of an initial research into new methods and protocols which are more suited to handle the mentioned situations.</p>
+
+	<h2>Use cases and requirements</h2>
+
+	<p>Most networking technologies are designed to cope with almost any situation. Protocols used on the internet are often designed with reliability in mind. They guarantee delivery of the message or they will provide an error. In local networks technologies with different capabilities are found, e.g. transferring the message as fast as possible. As a lot of knowledge has been gained from these existing technologies we are keen on leaning on those resources as much as we can. The first requirements for our foreseen protocol are the following: </p>
+
+	<ul>
+		<li><span class="caps">KISS</span> (Keep it simple and stupid): We want this protocol not be in our way and we want to be able to understand it easily.</li>
+		<li>Zero Configuration: The protocol should be able to handle most, if not all configuration by itself. There is no need for setting up specific parameters unless requested.</li>
+		<li>Runs on anything <span class="caps">TCP</span>/IP: Since <span class="caps">TCP</span>/IP is the de facto standard for devices to communicate the technology should be able to run on any device that is able to talk <span class="caps">TCP</span>/IP</li>
+		<li>Open Standards: All used technologies, software, protocols should be freely and openly available.</li>
+	</ul>
+
+	<p>The use cases for a protocol we foresee are broad. However we initially focus on use cases for live performances and interactive setups. In these setups time is crucial. If a musician is interacting with a device we want the communication to be instant. Any possible delay should be as small as possible. We usually refer to these circumstances as &#8216;realtime&#8217;. When we require the latency to be as small as possible guaranteed message delivery is usually not required. E.g. a corrupted message is discarded since the mechanism to recover from the error takes more time then sending a new message. However there are other use cases when message reliability is important. E.g. An actor is switching a light on. We need to ensure the light switch message is received. Thus both requirements, message latency and message raliability need to be taken into account.</p>
+
+	<ul>
+		<li>Low latency, when needed</li>
+		<li>Reliability, when needed</li>
+	</ul>
+
+	<p>In any development situation one of the most important features is debugging. You want to know what is going on. Especially when you run into situations different from what is expected. In performative or improvising situations this feature is even more important than in regular development situations. When you want technology to be flexible you&#8217;ll need to ensure you can rely on the technology but more important rely on understanding what it is doing and being able to fix it when needed. Meanwhile all this debuging needs to be unintrusive as it cannot intervene with the live situation.</p>
+
+	<ul>
+		<li>Unintrusive debugging and monitoring</li>
+	</ul>
+
+	<h2>Transports</h2>
+
+	<p>As our main focus is <span class="caps">TCP</span>/IP because of its wide availability we have the following available de facto transports:</p>
+
+	<ul>
+		<li><span class="caps">TCP</span>: For the situations where reliability is required as <span class="caps">TCP</span> guarantees delivery</li>
+		<li><span class="caps">UDP</span>: Where latency is more important</li>
+	</ul>
+
+	<p>In order for multiple nodes to exchange data there are 3 network communication topologies to consider:</p>
+
+	<ul>
+		<li>Unicast for 1:1 communication</li>
+		<li>Multicast for 1:N communication</li>
+		<li>Broadcast for 1:all communication</li>
+	</ul>
+
+	<p>These topologies are essential to consider since these topologies are often being handled by hardware networking devices and can deliver very low latency transfers. They can also reduce traffic as a message can be sent once while being received by many. However it is important to understand that most of these communication topologies are not available in Wide Area Networks (<span class="caps">WAN</span>) like the internet. As we can imagine projects to include some exchanging through the internet we need to provide methods to do so while utilizing the efficiency of Local Area Network communication topologies. This essentially means every method topology should be available though a unicast topology since devices communicating across internet can only rely on unicast communication. Only in situations where other topologies are available these can be utilized to provide more efficiency. </p>
+
+	<p>When in a situation in which a program needs to communicate with an other program running on the same system it will be more efficient to communicate to communicate through other means than a network socket. Examples include an interprocess socket or named pipes. These need to be provided by the host operating system.</p>
+
+	<ul>
+		<li>Utilize communication topologies provided by hardware devices or host operating system where available</li>
+	</ul>
+
+	<p>If all these communication transports need to be accounted for we can conclude that the protocol running on these transports needs to be transport agnostic.</p>
+
+	<ul>
+		<li>Transport agnostic protocol</li>
+	</ul>
+
+	<h2>Decentralisation</h2>
+
+	<p>One final category to account for is traffic optimizing. In many environments messages are routed through a central device. It acts like the telephone operator connecting you to your requested line. This device becomes a single point of failure as well as a potential bottleneck. In mesh based networks this is essentially not necessary. If one node knows who to talk to it can do so directly without intervention by some central director. This prevents single point of failures as well potential bottlenecks. The protocol therefore needs to contain an &#8216;out of bound&#8217; control protocol which acts in parallel to the data it can transfer. When nodes can communicate directly they also need to know how to connect to each other interfaces. This requires logic in cases where interfaces don&#8217;t match. E.g. output is numbers, input is a string.</p>
+
+	<ul>
+		<li>Parallel out of bound control protocol</li>
+		<li>Logic for instructing interfaces to connect</li>
+	</ul>
+
+	<h2>Existing Technologies:</h2>
+
+	<p>While researching this new protocol we have studied many existing open technologies in order to prevent reinventing the wheel, find any meeting our requirements or to do cherry picking. Since the list of technologies is too extensive and the technologies itself as well we only mention the technologies we have considered or studied thoroughly as a reference:</p>
+
+	<ul>
+		<li><a href="http://www.mbus.org/">Mbus</a> The Message Bus (Mbus) is a light-weight local coordination protocol for developing component-based distributed applications that has been developed by Bremen University and University College London. While this was a very interesting candidate it isn&#8217;t suited for internet.</li>
+		<li><a href="http://opensoundcontrol.org/introduction-osc"><span class="caps">OSC</span></a> Open Sound Control is currently the most used protocol in creative applications</li>
+		<li><a href="https://www.ietf.org/rfc/rfc2328.txt"><span class="caps">OSPF</span></a> Open Shortest Path First is routing protocol which does neighbour discovery and exchanges information about networks in order to build routing tables for routers using the most optimal path. This protocol has been studies extensively in order to copy mechanisms it uses.</li>
+		<li><a href="http://zeromq.org/">ZeroMQ</a> A high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications</li>
+		<li><a href="http://nanoms.org">NanoMsg</a> Successor to ZeroMQ</li>
+		<li><a href="http://dbus.freedesktop.org">D-Bus</a> D-Bus is a inter-process communication (<span class="caps">IPC</span>) system, allowing multiple, concurrently-running computer programs to communicate with one another.</li>
+		<li><a href="http://xmpp.org/"><span class="caps">XMPP</span></a> <span class="caps">XMPP</span> is the Extensible Messaging and Presence Protocol, a set of open technologies for instant messaging, presence, multi-party chat, voice and video calls, collaboration, lightweight middleware, content syndication, and generalized routing of <span class="caps">XML</span> data.</li>
+	</ul>
+
+	<h2>Phase 1: Discovery</h2>
+
+	<p>The first thing our protocol needs to do is some sort of discovery mechanism. The <span class="caps">OSPF</span> protocol uses a multicast address to discover neighbours and initiate unicast handshake. <span class="caps">DHCP</span> uses broadcast to discover clients and uses unicast to finish a handshake. <span class="caps">MDNS</span> uses multicast to discover services. Bonjour/Avahi is a popular ZeroConf implementation which uses multicast as well. Most mechanism rely on either multicast or broadcast technology. As noted before since these technologies are very uncommon on <span class="caps">WAN</span> networks this limits the use case. In a lab tested prototype we have had very good results using a simple mechanism with multicast. Using this mechanism with a broadcast topology is easy to implement. </p>
+
+	<p>An other possibility would be to use an existing protocol for doing discovery. The most suitable candidate would be the ZeroConf service like Avahi or Bonjour. We have opted not to do since the scope of these protocols is much wider than our use case. It would make our protocol rely on other software which the operating system would need to provide. In cases where the operating system lacks these services we would need to provide these ourselves. As there is no platform independent solution for these ZeroConf services the dependencies would become overly complicated.</p>
+
+	<p>While settling on a multicast discovery mechanism our research into existing technologies found a very similar protocol coming from the ZeroMQ community. The Zyre project is a an open-source framework for proximity-based peer-to-peer applications. Zyre has been designed with unreliable wireless networks in mind. Zyre implements Zbeacon which uses a broadcast technology for discovery of nodes. We have have compared our initial discovery prototype with Zyre and concluded that the differences are too small to not embrace this existing technology. However since we would rather rely on multicast technology as opposed to broadcast technology we have joined the ZeroMQ community in order to add this to the Zyre project.</p>
+
+	<p>Designing our protocol on the foundations of the Zyre project is very beneficial since we can build upon the experience of the ZeroMQ community. This would mean we instantly have a lot of cross platform compatibility and an already tested framework.</p>
+
+	<p>However we have no discovery mechanism which would work across <span class="caps">WAN</span> networks. This needs to be researched. Our initial research tends to point towards implementing a system based on <span class="caps">DNS</span> using <span class="caps">SRV</span> records like done in the <span class="caps">XMPP</span> protocol. This is a subject of interest for the Zyre project as well. Since in any case manual discovery remains an option we will research this further in the future.</p>
+
+	<h2>Phase 2: Communication and exchange</h2>
+
+	<p>After nodes have discovered each other they need to communicate. In any real situation where one enters a room full of people we can imagine one would announce itself and introduce itself personally accompanied by a physical handshake. In the digital realm this is not different. The protocol is able to discover all nodes in its vicinity and so can introduce itself personally to another node and can receive introductions. In a human situation it is a custom to shake hands. In the digital realm we can do a handshake through the network however nodes need information on how to connect to another node. So the discovery beacon contains an address of where the node can be contacted. This address in <span class="caps">TCP</span>/IP terms would consist of an ipaddress and a port number.</p>
+
+	<p>Fortunately the Zyre framework provides exactly this as well. It provides in the broadcast beacon besides some other information the ipaddress and port number of the node&#8217;s unicast socket. </p>
+
+	<h2>Phase 3: Interfacing</h2>
+
+	<p>When we would use the protocol as we have described up until here it is usable as a replacement for <span class="caps">OSC</span>. We don&#8217;t need to enter ipaddresses and port numbers anymore. We could just select nodes from a list of discovered nodes and let them communicate like they do now using <span class="caps">OSC</span>. However to fully meet our zero configuration requirement we would like to implement a mechaniscm so nodes tell each other what they are able to send and receive. In order to do so they would need to exchange their capabilities. </p>
+
+	<p>Again when in a human social situation we would know of means to exchange our capabilities and requirements. One could ask another what they do and so find out how somebody could be useful or how somebody could be of use for another. In the digital realm we don&#8217;t have these etiquettes so we need to agree on a formalisation of one. </p>
+
+	<p>There are many frameworks to provide Remote Procedure Calls (<span class="caps">RPC</span>) mechanisms. However there are only few that provide mechanisms for exchanging what <span class="caps">RPC</span> calls can be done automatically. Apart from just exchanging <span class="caps">RPC</span> capabilities a formalisation of capabilities would mean nodes can already expect certain capabilities and can act upon them. It would be the basis for autonomous operation of nodes which is also necessary for decentralised operation. However this would be a subject for further research beyond the scope of this initial research. Therefore we settle on a practical initial design of how nodes interface with each other.</p>
+
+	<p>Before we can start exchanging capabilities we need to agree on what messages look like. We need some serialization format which contains the information of the messages. As there are many options like: <span class="caps">BSON</span>, MessagePack, Protocol Buffers, <span class="caps">OSC</span>, etc. We have settled for <span class="caps">JSON</span> for this research purely for practical reasons. In any further iteration of the design we will focus on the message serialization formats.</p>
+
+	<p>When we want nodes to communicate there a multitude of possible things they can exchange. We have reduced these options to the following:
+	<ul>
+		<li>parameters: simple values to get or set on a node</li>
+		<li>signals: event messages emitted from a node</li>
+		<li>sensors: events receivers on a node which can receive signals from a node</li>
+		<li>methods: custom functions which can be called on a node</li>
+	</ul></p>
+
+	<p>These possibilities to exchange are all meta data. When this is done using the Zyre framework we are using a reliable unicast transport. However we required to also provide methods for low latency where raliability is not of concern. Therefore we provide a mechanism to completely bypass the protocol so direct communication between programs is made possible. This would be the best setup for any low latency situation as it would be done using custom sockets. This mechanism would also provide a method to wrap other protocols inside our protocol. E.g. one could wrap a video data stream through an <span class="caps">RTP</span> socket. For this mechanism we provide the following extra options:
+	<ul>
+		<li>sources: data emitted from the node through a custom socket using an alien protocol</li>
+		<li>sinks: receiver for data emitted from a custom socket using an alien protocol</li>
+	</ul></p>
+
+	<p>The requirements for exchanging capabilities would then become:
+	<ul>
+		<li>provide information for all capabilty objects of the node</li>
+		<li>provide methods to get and modify parameters of these objects</li>
+		<li>provide methods to call methods on these objects</li>
+		<li>provide methods to subscribe or unsubscribe signals to/from sensors of these objects</li>
+		<li>provide methods to subscribe or unsubscribe streams to/from sinks of these objects</li>
+	</ul></p>
+
+	<p>A node&#8217;s capability would be a tree-like data structure containing all relevant information. E.g:<br />
+<pre>
+node:          name
+  root:        physical base properties where node is located
+  objects      objects accessible through this node
+    object     object properties and data
+      signals  signals emitted from this object
+      sensors  available sensors on this object
+      methods  available methods to be called on this object
+      sinks    available stream sinks at this object
+      sources  available stream sources at this object
+      ...      any data belonging to the object e.g.
+      localMat local matrix
+      type     type of object (camera, processor, projector, etc)
+      visible  visibility state
+</pre></p>
+
+	<p>Of course we have researched exiting technologies. We have found many <span class="caps">RPC</span> and <span class="caps">IPC</span> technologies and found D-Bus closest to meeting our requirements. We are currently investigating if we want to use D-Bus fully or if we want to map D-Bus onto our design.</p>
+
+	<h2>Initial implementation</h2>
+
+	<p>During this research we have implemented a prototype. The results have been published on Github:</p>
+
+	<p><span class="caps">ZOCP</span> implementation in Python:
+	<ul>
+		<li>http://github.com/z25/pyZOCP</li>
+	</ul></p>
+
+	<p>Pyre an implementation of Zyre in Python:
+	<ul>
+		<li>http://github.com/zeromq/pyre</li>
+	</ul></p>
+
+	<h2>Conclusions</h2>
+
+	<p>Our research has resulted in an initial design for a protocol providing a way for systems to automatically discover each other, exchange capabilities and provide mechanism for setting up communication. The design provides methods for incorporating any other protocols like the legacy <span class="caps">OSC</span> protocol. It therefore provides a migration path towards fully implementing this protocol in current software. As this design has been developed inside a laboratory environment it still needs to be tested thoroughly in practical situations. New insights gained from these tests will result in modifications of the design. However we believe the design is a sane foundation to meet our set requirements.</p>
+
+	<h3>Future work</h3>
+
+	<p>Multiple areas for future research are mentioned:
+	<ul>
+		<li>utilizing multicast and broadcast topologies</li>
+		<li>discovery mechanisms on <span class="caps">WAN</span> networks</li>
+		<li>autonomous interfacing and exchange</li>
+		<li>serialization formats</li>
+		<li>implementing or mapping D-Bus</li>
+		<li>researching logic for connecting interfaces</li>
+	</ul></p>
+
+	<p>The current prototype has embraced the Zyre (<span class="caps">ZRE</span>) framework as the basis. There are still some design considerations which need to be looked into. One important aspect is our wish to design the protocol as close to hardware implementations as possible. One practical area of research for <span class="caps">ZRE</span> would be to compare Zyre&#8217;s group messaging system to network multicast technologies like <span class="caps">IGMP</span>. </p>
+
+	<p>Lastly, discovery in it&#8217;s current state will only operate on networks enabled with multicast routing or it will be limited to the local segment of the network. This is a subject for the Zyre project as well which we hope to tackle together with the ZeroMQ community. </p>
+
+	<p>Any future iteration of the protocol will be published in repositories owned by the Z25 Foundation. Currently these can be found on Github.</p>
+
+	<h2>References</h2>
+
+	<ul>
+		<li><a href="http://projects.z25.org/projects/plab/wiki/OrchestratorControlProtocolSpec"><span class="caps">ZOCP</span> specification</a> http://projects.z25.org/projects/plab/wiki/OrchestratorControlProtocolSpec Retrieved on 2014-03-06</li>
+		<li><a href="http://www.itcertnotes.com/2011/02/ospf-neighbor-establishment-process.html"><span class="caps">OSPF</span> discovery</a> http://www.itcertnotes.com/2011/02/ospf-neighbor-establishment-process.html Retrieved on 2014-03-06</li>
+		<li><a href="http://lists.zeromq.org/pipermail/zeromq-dev/attachments/20130502/75df19e8/attachment.pdf"><span class="caps">CERN</span> ZeroMQ review</a> http://lists.zeromq.org/pipermail/zeromq-dev/attachments/20130502/75df19e8/attachment.pdf Retrieved on 2014-03-06</li>
+		<li><a href="http://hintjens.com/blog%3A32">Solving the discovery problem</a> http://hintjens.com/blog:32 Retrieved on 2014-03-06</li>
+		<li><a href="http://zguide.zeromq.org/php%3Achapter8"><span class="caps">ZYRE</span> design</a> http://zguide.zeromq.org/php:chapter8 Retrieved on 2014-03-06</li>
+	</ul>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

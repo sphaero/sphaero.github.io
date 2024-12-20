@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7zip self extracting autostart exe - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/windows.html">windows</a></li>
+    
+    <li><a href="/tags/setup.html">setup</a></li>
+    
+    <li><a href="/tags/7zip.html">7zip</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="7zip-self-extracting-autostart-exe">7zip self extracting autostart exe</h1>
+<p>In my searches for an easy way to create a self extracting zip file which would automatically start a command after extract I came across some extra 7zip magic. The following intsructions enables exactly this.</p>
+<h2 id="ingredients">Ingredients</h2>
+<ul>
+<li>latest 7Zip : http://sourceforge.net/projects/sevenzip/files/7-Zip/ [^1]</li>
+</ul>
+<p>[^1]: The latest version for your architecture
+* 7z*_extra.7z : http://sourceforge.net/projects/sevenzip/files/7-Zip/ [^1]</p>
+<p>[^1]: It's in the same directory
+* some .exe you want to start. In my test 'notepad.exe'</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li>Install 7zip!</li>
+<li>Make a directory somewhere convenient</li>
+<li>Extract the 7zS.sfx from the 7z*_extra.7z into the convenient directory</li>
+<li>Create a 7zip file from the notepad.exe file. If you installed 7zip correctly you can right-click 'notepad.exe' and select '7zip - add to archive'.</li>
+<li>Put the created 7zip file into the convenient directory</li>
+<li>Now create a <strong>UTF8 encoded</strong> text file called "config.txt" containing the following:</li>
+</ol>
+<div class="codehilite"><pre><span></span><code><span class="p">;</span><span class="err">!</span><span class="nv">@Install</span><span class="err">@!</span><span class="n">UTF</span><span class="o">-</span><span class="mi">8</span><span class="err">!</span>
+<span class="n">RunProgram</span><span class="o">=</span><span class="ss">&quot;notepad\notepad.exe&quot;</span>
+<span class="p">;</span><span class="err">!</span><span class="nv">@InstallEnd</span><span class="err">@!</span>
+</code></pre></div>
+
+<ol>
+<li>Your convenient dir should look as follows:</li>
+</ol>
+<div class="codehilite"><pre><span></span><code>convenientdir\7zS.sfx
+convenientdir\notepad.7z
+convenientdir\config.txt
+</code></pre></div>
+
+<p>And now the magic. We will concatenate the three files so we will end up with one file. Just open a command prompt and change to the convenient dir. Then issue the following command:</p>
+<div class="codehilite"><pre><span></span><code>copy /b 7zs.sfx + config.txt + notepad.7z notepad.exe
+</code></pre></div>
+
+<p>Test your notepad.exe file by double clicking it :)</p>
+<p>If you are using '*nix' to get your Windows work done you van also create the .exe in with a simple shell script:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="nb">set</span><span class="w"> </span>-e
+
+7zr<span class="w"> </span>a<span class="w"> </span>bin.7z<span class="w"> </span>notepad.exe
+cat<span class="w"> </span>7zS.sfx<span class="w"> </span>config.txt<span class="w"> </span>notepad.7z<span class="w"> </span>&gt;<span class="w"> </span>notepad.exe
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

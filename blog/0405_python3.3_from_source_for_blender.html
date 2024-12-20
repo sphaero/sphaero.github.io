@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python3.3 from source for blender - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/blender.html">blender</a></li>
+    
+    <li><a href="/tags/python.html">python</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    <li><a href="/tags/pip.html">pip</a></li>
+    
+    <li><a href="/tags/distribute.html">distribute</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="python33-from-source-for-blender">Python3.3 from source for Blender</h1>
+<p>It's very handy to have a full featured python 3.3 available in Blender. So this is how how you do that. For linux that is... but it should be sort of similar for Windows and OSX.</p>
+<h1 id="_1"></h1>
+<p>Make sure you have all the needed development libraries installed. I'm not going to tell you how it's just a bunch of lib*-dev packages.</p>
+<p>First <a href="http://python.org/download/">download the source</a> and unpack it in a convenient directory. Then cd into the directory and run './configure'.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">cd</span><span class="w"> </span><span class="n">Downloads</span><span class="o">/</span>
+<span class="n">wget</span><span class="w"> </span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">python</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">ftp</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="n">Python</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mf">0.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+<span class="n">tar</span><span class="w"> </span><span class="o">-</span><span class="n">xjf</span><span class="w"> </span><span class="n">Python</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mf">0.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+<span class="n">cd</span><span class="w"> </span><span class="n">Python</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span>
+<span class="o">./</span><span class="n">configure</span>
+</code></pre></div>
+
+<p>This will check if you have all needed files and warn you if you haven't. If you haven't, fix it! :)</p>
+<p>If you want to build python3.3 in  your home directory or any other directory you have to tell ./configure this by doing.</p>
+<div class="codehilite"><pre><span></span><code>./configure --prefix=$HOME/lib/python3.3
+</code></pre></div>
+
+<p>Now build it:</p>
+<div class="codehilite"><pre><span></span><code>make
+</code></pre></div>
+
+<p>or if you have 2 cpu's:</p>
+<div class="codehilite"><pre><span></span><code>make -J 2
+</code></pre></div>
+
+<p>When finished you can try 'make test' but it usually fails. You can just skipt it since it is a test.
+So to install issue:
+<core bash>
+make install
+</code>
+I've installed to the 'lib' dir in my home directory. Change to the directory where you installed it and to the python3.3/bin dir. Issue './python3.3' to check wether you build is working.</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">cd</span><span class="w"> </span>$<span class="nv">HOME</span><span class="o">/</span><span class="nv">lib</span><span class="o">/</span>
+<span class="nv">cd</span><span class="w"> </span><span class="nv">python3</span>.<span class="mi">3</span><span class="o">/</span><span class="nv">bin</span>
+$<span class="w"> </span>.<span class="o">/</span><span class="nv">python3</span>.<span class="mi">3</span>
+<span class="nv">Python</span><span class="w"> </span><span class="mi">3</span>.<span class="mi">3</span>.<span class="mi">0</span><span class="w"> </span><span class="ss">(</span><span class="nv">default</span>,<span class="w"> </span><span class="nv">Apr</span><span class="w">  </span><span class="mi">5</span><span class="w"> </span><span class="mi">2013</span>,<span class="w"> </span><span class="mi">13</span>:<span class="mi">06</span>:<span class="mi">46</span><span class="ss">)</span>
+[<span class="nv">GCC</span><span class="w"> </span><span class="mi">4</span>.<span class="mi">7</span>.<span class="mi">2</span>]<span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">linux</span>
+<span class="nv">Type</span><span class="w"> </span><span class="s2">&quot;help&quot;</span>,<span class="w"> </span><span class="s2">&quot;copyright&quot;</span>,<span class="w"> </span><span class="s2">&quot;credits&quot;</span><span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="s2">&quot;license&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">information</span>.
+<span class="o">&gt;&gt;&gt;</span>
+</code></pre></div>
+
+<h2 id="extra-modules">Extra modules</h2>
+<p>Python has various ways of installing extra modules. The most basic one is to get the original source of the module and issue inside the unpacked source:</p>
+<div class="codehilite"><pre><span></span><code>$HOME/lib/python3.3/bin/python3.3 setup.py build
+$HOME/lib/python3.3/bin/python3.3 setup.py install
+</code></pre></div>
+
+<h3 id="distribute">Distribute</h3>
+<p><a href="http://pythonhosted.org/distribute/">Distribute</a> is the recomended tool for installing extra modules easily. To install distribute do the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># download setup script</span>
+<span class="n">wget</span><span class="w"> </span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">python</span><span class="o">-</span><span class="n">distribute</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">distribute_setup</span><span class="o">.</span><span class="n">py</span>
+<span class="c1"># execute setup script</span>
+<span class="o">$</span><span class="n">HOME</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">3</span><span class="w"> </span><span class="n">distribute_setup</span><span class="o">.</span><span class="n">py</span>
+<span class="c1"># remove the setup script and archive</span>
+<span class="n">rm</span><span class="w"> </span><span class="n">distribute_setup</span><span class="o">.</span><span class="n">py</span>
+<span class="n">rm</span><span class="w"> </span><span class="n">distribute</span><span class="o">-*.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</code></pre></div>
+
+<h3 id="pip">PIP</h3>
+<p><em>this needs 'distribute' installed!!!</em></p>
+<p>Another way of installing extra modules is through 'pip'. You can add 'pip' to your python setup by issuing:</p>
+<div class="codehilite"><pre><span></span><code>wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+$HOME/lib/python3.3/bin/python3.3 get-pip.py
+# remove the setup script and archive
+rm get-pip.py
+</code></pre></div>
+
+<p>Now you can easily install extra modules. For example to install <a href="http://webob.org/">'webob'</a> just do:</p>
+<div class="codehilite"><pre><span></span><code>$HOME/lib/python3.3/bin/pip install webob
+</code></pre></div>
+
+<p>Easy!</p>
+<h2 id="blender-and-python">Blender and Python</h2>
+<p>Blender is supplied with a minimal python version. As long as Blender finds this supplied version it will not use anything else. So the first thing we do is remove the supplied Blender python.</p>
+<div class="codehilite"><pre><span></span><code>rm -rf /path/to/blender-2.66a/2.66/python
+</code></pre></div>
+
+<p>Now we need to tell Blender where to find python. There multiple ways to do this. The easiest is to tell Blender at startup:</p>
+<div class="codehilite"><pre><span></span><code>PYTHONHOME=&quot;$HOME/lib/python3.3&quot; blender
+</code></pre></div>
+
+<p>You can also set the PYTHONHOME by doing:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="n">PYTHONHOME</span><span class="o">=</span><span class="s2">&quot;$HOME/lib/python3.3&quot;</span>
+<span class="n">blender</span>
+</code></pre></div>
+
+<p>This 'export' line you can add to your .bashrc for example.</p>
+<p>Another way is to just replace the Blender supplied python version with the version you created.</p>
+<h3 id="importing-modules-in-blender">Importing modules in Blender</h3>
+<p>If you did well you can just start Blender and it just <em>just</em> works.
+If you get errors while importing python modules like:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">webob</span>
+<span class="n">Traceback</span><span class="w"> </span><span class="p">(</span><span class="n">most</span><span class="w"> </span><span class="n">recent</span><span class="w"> </span><span class="n">call</span><span class="w"> </span><span class="n">last</span><span class="p">):</span>
+<span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="s2">&quot;&lt;blender_console&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="n">ImportError</span><span class="p">:</span><span class="w"> </span><span class="n">No</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="n">named</span><span class="w"> </span><span class="s1">&#39;webob&#39;</span>
+</code></pre></div>
+
+<p>It might be that the 'site_packages' is missing from the search path. You need to add this directory to sys.path.</p>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;/path/to/your/python/version/python3.3/lib/python3.3/site-packages&#39;</span><span class="p">)</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

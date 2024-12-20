@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat output without interpretation - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/cmdline.html">cmdline</a></li>
+    
+    <li><a href="/tags/bash.html">bash</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="cat-output-without-interpretation">Cat output without interpretation</h1>
+<p>I usually use cat in a bash script to create files. However sometimes the text for output through cat is interpreted and this causes script errors or wrong files. Especially with ASCII art output. The fix for this is to quote the 'EOF' string.</p>
+<h1 id="_1"></h1>
+<p>For example creating a ASCII art output through a script. If I do the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+cat<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+<span class="s">                                  ********************_</span>
+<span class="s">                                    /        **_    ******\   </span>
+<span class="s">                                   /       /&#39;**_`\ /\  **_  </span>
+<span class="s">                                  / ****  /\_\ /\ \\ \ \__/ \  </span>
+<span class="s">                                 / /\_ ,`\\/_/// /**\ \**_``  </span>
+<span class="s">                                /\ \/_/  /_  // /_\ \\/\ \L\  </span>
+<span class="s">                                \ \  /\****\/\******/ \ \**__/ \</span>
+<span class="s">                                 \ \ \/****/\/****_/   \/___/   \</span>
+<span class="s">                                  \ \****************************\</span>
+<span class="s">                                   \/****************************/</span>
+<span class="s">EOF</span>
+</code></pre></div>
+
+<p>it will result in</p>
+<div class="codehilite"><pre><span></span><code>bash:  / : No such file or directory
+bash: /: is a directory
+bash: /: is a directory
+                                  ********************_
+                                    /        **_    ******\   
+                                   /       /&#39;**_\/_/// /**\ \___\
+                                /\ \/_/  /_  // /_\ \/\ \L\ \
+                                \ \  /\****\/\******/ \ \**__/          
+</code></pre></div>
+
+<p>The fix for this is to quote the end string with single quotes. If you use no quotes or double quote the text will be interpreted by cat. With single quotes it's taken literal.</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+cat<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">                                  ********************_</span>
+<span class="s">                                    /        **_    ******\   </span>
+<span class="s">                                   /       /&#39;**_`\ /\  **_  </span>
+<span class="s">                                  / ****  /\_\ /\ \\ \ \__/ \  </span>
+<span class="s">                                 / /\_ ,`\\/_/// /**\ \**_``  </span>
+<span class="s">                                /\ \/_/  /_  // /_\ \\/\ \L\  </span>
+<span class="s">                                \ \  /\****\/\******/ \ \**__/ \</span>
+<span class="s">                                 \ \ \/****/\/****_/   \/___/   \</span>
+<span class="s">                                  \ \****************************\</span>
+<span class="s">                                   \/****************************/</span>
+<span class="s">EOF</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Globe - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+
+<div class="date">~2012</div>
+
+
+	<h1>The Globe</h1>
+
+	<p>I worked on this project in conjunction with <a href="http://www.z25.org">Stichting z25.org</a>, the <a href="http://www.maplab.nl">Media And Performance Lab</a> (<span class="caps">MAPLAB</span>) to create a data visualisation pilot for the iZone, an environment at the Utrecht office of <a href="http://www.deloitte.nl">Deloitte</a> which stimulates to think and act differently through it&#8217;s innovative design.</p>
+
+	<p>We created a concept for experiencing data interactively and immersively. For this pilot we used open data from <a href="http://epp.eurostat.ec.europa.eu/portal/page/portal/eurostat/home/">Eurostat</a> consisting of EU Industrial R&amp;D Investment ScoreBoard from 2002 until 2010.</p>
+
+	<p>The visualisation consists of a realtime 3D world which you can browse and control with a tablet to explore the different data on R&amp;D investments filtered by year, industry branch, continent or country. By making this available interactively, users can validate and compare different scenarios in new explorative ways.</p>
+
+	<h2>Technology</h2>
+
+	<p>We chose the <a href="http://blender.org">Blender Game Engine</a> (<span class="caps">BGE</span>) as the realtime 3D engine to run the actual visualisation, displayed on the iZone&#8217;s so called <em>Experience Wall</em>, an 8 meter wide, high resolution screen. It consists of 12 full HD screens and has a total resolution of 5760 &#215; 1080.</p>
+
+	<p>The tablet app is a webapp which implements jQuery and ajax to communicate with an http server running in the <span class="caps">BGE</span>.</p>
+
+	<h3>z25 Blender <span class="caps">HTTP</span> Server</h3>
+
+	<p>To establish the connection between the web app and Blender we developed an <span class="caps">HTTP</span> server with a <span class="caps">REST</span> <span class="caps">API</span> that runs in <span class="caps">BGE</span>. This server is automatically aware of all the objects in a given scene by means of introspection. This means that with this webservice it is possible to retrieve information on all objects in a scene and manipulate their characteristics remotely.</p>
+
+	<p>A standalone version of the Blender <span class="caps">HTTP</span> Server can be found on github and includes a working <span class="caps">HTTP</span> server with example Blender scene and web client and documentation.</p>
+
+	<ul>
+		<li><a href="https://github.com/z25/z25-blender-http-server"><span class="caps">BGE</span> <span class="caps">HTTP</span> Server git repository</a></li>
+	</ul>
+
+	<h2>Credits</h2>
+
+	<ul>
+		<li>Deloitte Innovation Utrecht</li>
+		<li><span class="caps">HKU</span> <span class="caps">MAPLAB</span></li>
+		<li>Stichting z25.org</li>
+	</ul>
+
+
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070589.png">
+      <img src=/projects/farpoint/img/P1070589.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070569.png">
+      <img src=/projects/farpoint/img/P1070569.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070517.png">
+      <img src=/projects/farpoint/img/P1070517.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070659.png">
+      <img src=/projects/farpoint/img/P1070659.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070672.png">
+      <img src=/projects/farpoint/img/P1070672.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070601.png">
+      <img src=/projects/farpoint/img/P1070601.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070656.png">
+      <img src=/projects/farpoint/img/P1070656.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070572.png">
+      <img src=/projects/farpoint/img/P1070572.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070559.png">
+      <img src=/projects/farpoint/img/P1070559.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070513.png">
+      <img src=/projects/farpoint/img/P1070513.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070677.png">
+      <img src=/projects/farpoint/img/P1070677.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    <a target="_blank" href="/projects/farpoint/img/P1070524.png">
+      <img src=/projects/farpoint/img/P1070524.png alt="The Globe image">
+    </a>
+  </div>
+</div>
+
+
+
+
+
+<div class="responsive">
+  <div class="gallery">
+    
+    <iframe width="100%" height="100" src="https://www.youtube.com/embed/1zYcGe7zn8c" title="video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    
+  </div>
+</div>
+
+<div class="responsive">
+  <div class="gallery">
+    
+    <iframe width="100%" height="100" src="https://www.youtube.com/embed/0TG9hInWwO4" title="video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    
+  </div>
+</div>
+
+
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

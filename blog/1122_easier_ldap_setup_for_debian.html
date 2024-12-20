@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>easier ldap setup for debian - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/wheezy.html">wheezy</a></li>
+    
+    <li><a href="/tags/ldap.html">ldap</a></li>
+    
+    <li><a href="/tags/pam.html">pam</a></li>
+    
+    <li><a href="/tags/authentication.html">authentication</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="easier-ldap-setup-for-debian">Easier LDAP setup for Debian</h1>
+<p>IMHO the documentation on the <a href="http://wiki.debian.org/LDAP/PAM">Debian Wiki</a> is a bit outdated. Here's my way to configuring LDAP client authentication on Debian (Wheezy)</p>
+<h1 id="_1"></h1>
+<p>Install pam-ldapd</p>
+<div class="codehilite"><pre><span></span><code>apt-get install libpam-ldapd
+</code></pre></div>
+
+<p>And answer all the questions! I'm only setting up for 'group' and 'passwd'!</p>
+<p>Add this line to /etc/security/group.conf</p>
+<div class="codehilite"><pre><span></span><code>*;*;*;Al0000-2400;audio,floppy,adm,dialout,cdrom,plugdev,lpadmin,sudo
+</code></pre></div>
+
+<p>This will make sure users will be members of those groups automatically</p>
+<p>Add this to new file /usr/share/pam-configs/z25groups</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Name</span><span class="o">:</span><span class="w"> </span><span class="n">activate</span><span class="w"> </span><span class="sr">/etc/security/g</span><span class="n">roup</span><span class="o">.</span><span class="na">conf</span>
+<span class="n">Default</span><span class="o">:</span><span class="w"> </span><span class="n">yes</span>
+<span class="n">Priority</span><span class="o">:</span><span class="w"> </span><span class="mi">900</span>
+<span class="n">Auth</span><span class="o">-</span><span class="n">Type</span><span class="o">:</span><span class="w"> </span><span class="n">Primary</span>
+<span class="n">Auth</span><span class="o">:</span>
+<span class="w">        </span><span class="n">required</span><span class="w">                        </span><span class="n">pam_group</span><span class="o">.</span><span class="na">so</span><span class="w"> </span><span class="n">use_first_pass</span>
+</code></pre></div>
+
+<p>Add this to new file /usr/share/pam-configs/mkhomedir</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Name</span><span class="o">:</span><span class="w"> </span><span class="n">activate</span><span class="w"> </span><span class="n">mkhomedir</span>
+<span class="n">Default</span><span class="o">:</span><span class="w"> </span><span class="n">yes</span>
+<span class="n">Priority</span><span class="o">:</span><span class="w"> </span><span class="mi">900</span>
+<span class="n">Session</span><span class="o">-</span><span class="n">Type</span><span class="o">:</span><span class="w"> </span><span class="n">Additional</span>
+<span class="n">Session</span><span class="o">:</span>
+<span class="w">        </span><span class="n">required</span><span class="w">                        </span><span class="n">pam_mkhomedir</span><span class="o">.</span><span class="na">so</span><span class="w"> </span><span class="n">umask</span><span class="o">=</span><span class="mi">0022</span><span class="w"> </span><span class="n">skel</span><span class="o">=/</span><span class="n">etc</span><span class="o">/</span><span class="n">skel</span>
+</code></pre></div>
+
+<p>Activate the configurations</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">pam</span><span class="o">-</span><span class="nx">auth</span><span class="o">-</span><span class="nx">update</span><span class="w"> </span><span class="o">--</span><span class="kn">package</span>
+</code></pre></div>
+
+<p>That does the trick for me.</p>
+<h1 id="debugging">Debugging</h1>
+<p>As I've found not being able to login after a cold boot. Make sure you stop nscd when you want to debug as it caches everything. Switching it off makes sure you are talking with ldap directly and not some cached info!</p>
+<div class="codehilite"><pre><span></span><code>/etc/init.d/nscd stop
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

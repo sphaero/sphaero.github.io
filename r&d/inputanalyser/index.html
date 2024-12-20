@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Analyser
+ - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+
+<div class="date">~2003</div>
+
+<content>
+<h1 id="live-sound-input-analyser-for-virtools-2x">Live Sound Input Analyser for Virtools 2.x</h1>
+<p>For the project <a href="/#project?takt">TAKT</a> we needed a plugin for the program Virtools 2.1 to analyse sound input 'real time'. We dived into the Virtools SDK and main coder of Knip 'n Plak wreck and myself coded the plugin. Now the <a href="/#project?takt">TAKT</a> project has finished and performed we decided to release the plugin and code under the GNU Lesser Public License.</p>
+<p><img alt="http://www.k-n-p.org" src="_rd_/inputanalyser/knp.png" /></p>
+<p><strong>UPDATE</strong>: Version 2 supports stereo sound. We know some people have been adding this already. We've included this feature in this new release.</p>
+<p>Thanks to Jon Lee we now have the plugin running under Dev2.5. It's compiled against DirectX 9. We haven't tested it ourselves so please provide us with feedback.  </p>
+<h2 id="downloads">Downloads</h2>
+<p><strong>NEW!!!</strong> stereo support</p>
+<ul>
+<li><a href="ia:InputAnalyser-v2.0.zip">InputAnalyser version 2.0</a></li>
+<li><a href="ia:ia2-test.cmo">InputAnalyser version 2.0 basic test cmo</a></li>
+<li>
+<p><a href="ia:InputAnalyser-v2.0-src.zip">InputAnalyser version 2.0 source code</a></p>
+</li>
+<li>
+<p><a href="ia:InputAnalyser-v0.6.zip">InputAnalyser version 0.6</a></p>
+</li>
+<li><a href="ia:InputAnalyser-v0.6_Dev2.5.zip">InputAnalyser version 0.6 - Dev 2.5</a></li>
+<li><a href="ia:ia-test.cmo">InputAnalyser version 0.6 basic test cmo</a></li>
+<li><a href="ia:InputAnalyser-v0.6-src.zip">InputAnalyser version 0.6 source code</a></li>
+</ul>
+<p>Please report any problems since this plugin has not been tested thoroughly</p>
+<h2 id="virtools-4050">Virtools 4.0/5.0</h2>
+<p>Ben Cole has provided the dll's for version 4.0 and 5.0:</p>
+<ul>
+<li><a href="ia:inputanalyservt40.dll">InputAnalyser for Virtools 4.0</a></li>
+<li>
+<p><a href="ia:inputanalyservt50.dll">InputAnalyser for Virtools 5.0</a></p>
+<p>The error was caused because the variable "left" was a BOOL which seems to be understood differently in the newer version of Visual Studio. I simply changed it to a float or integer to solve the problem.</p>
+<p>Attached are the dll's for Virtools 4.0 and Virtools 5.0, I have tested and confirmed that the 4.0 one is working beautifully. I will test the 5.0 out tomorrow, but I do not forsee any problems. Feel free to post them on your site and do whatever you want with them.</p>
+<p>-Ben Cole</p>
+</li>
+</ul>
+<h2 id="system-requirements">System requirements</h2>
+<ul>
+<li>DirectX 8.1 or higher</li>
+<li>Soundcard installed.</li>
+<li>Virtools 2.x (Virtools 2.5 has not been tested by us)</li>
+</ul>
+<p><em>We've found problems while using Windows '98. Best results were with Windows 2000 which is the target platform.</em></p>
+<h2 id="installation-notes">Installation notes</h2>
+<p>Just copy the DLL into your 'managers' directory. When you start Virtools you will find a new section Building Blocks - Sound - InputAnalyser in which you'll find three Building Blocks:</p>
+<ul>
+<li><strong>IAGetFreqBB:</strong> This building block will output FFT frequency analysis. The freqeuncy range is 0 - 22KHz. This is divided into 256. You can add input parameters (integers) so you can select a range of frequencies. (i.e. integer 1 and 3 will output a range of about 87 Hz to 261 Hz).</li>
+</ul>
+<p><img alt="" src="ia:iaBB-action2.gif" /></p>
+<p>From version 2.0 the plugin supports stereo sound. You can set which side to output.</p>
+<ul>
+<li>
+<p><strong>IAGetMaxFreqBB:</strong> This Building block will output the array number (number between 0-255) of the frequency most found in the sound. From this number you can calculate the frequency range. (the output number times 87)</p>
+</li>
+<li>
+<p><strong>IAGetVolBB:</strong> This building block will output the volume of the sound. The output is an integer</p>
+</li>
+</ul>
+<h2 id="license-copyrights">License &amp; copyrights</h2>
+<p>This plugin is copyright 2003/2004 sphaero.org/KnP. All rights reserved. The plugin has been released under the Gnu Lesser Public License for others to enjoy.</p>
+<p>We would like to know if people are using this plugin for any purpose. If you make modifications or additions to this plugin please let us know so we might include it into future releases of the plugin.</p>
+<p>Problems or questions please contact us by email</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

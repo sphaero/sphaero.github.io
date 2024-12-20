@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dell e6330 linux ubuntu install - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ubuntu.html">ubuntu</a></li>
+    
+    <li><a href="/tags/bcm43228.html">bcm43228</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    <li><a href="/tags/dell.html">dell</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="dell-e6330-linux-ubuntu-installation">Dell e6330 Linux Ubuntu installation</h1>
+<p>Some trouble running Ubuntu raring on the Dell e6330 out of the box... here are my solutions.</p>
+<h2 id="_1"></h2>
+<p>Wireless doesn't work out of the box. My e6330 contains a Broadcom BCM43228 chip. To install a driver these commands:</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install ubuntu-restricted-extras ubuntu-restricted-addons linux-headers-generic linux-firmware-nonfree
+sudo apt-get install bcmwl-kernel-source
+</code></pre></div>
+
+<p>Optionally install this as well</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install broadcom-sta-common
+#and reboot
+sudo reboot
+</code></pre></div>
+
+<h2 id="mouse-sensitivity">Mouse sensitivity</h2>
+<p>I couldn't work with the touchpad on the laptop and I had a hard time finding a fix for that. I found someone advising the following command which fixed it for me:</p>
+<div class="codehilite"><pre><span></span><code>xset m 50 1
+</code></pre></div>
+
+<h2 id="audio-output">Audio Output</h2>
+<p>Built-in speakers didn't work. I think I fixed it by setting the mixer settings right:</p>
+<div class="codehilite"><pre><span></span><code><span class="gh">#</span> set mixer settings right
+alsamixer
+<span class="gh">#</span> test
+aplay /usr/share/sounds/alsa/Front_Center.wav
+</code></pre></div>
+
+<p>No further issues... yet</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

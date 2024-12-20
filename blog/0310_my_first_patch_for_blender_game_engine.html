@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>my first patch for blender game engine - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/blender.html">blender</a></li>
+    
+    <li><a href="/tags/bgecpp.html">bgecpp</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="my-first-patch-for-blender-game-engine">My first patch for Blender Game Engine</h1>
+<p>So I figured I should get myself a new challenge. I work for <a href="http://www.z25.org">z25</a> and we are consolidating the software and tools we use. Blender is one of those beauties we completely embrace. However for realtime usuage Blender is not there yet. So why not help making it better?</p>
+<h1 id="_1"></h1>
+<p>First I need to get familiar with the source. So first mission is to checkout the repo and compile from source to see if blender works <strong>before</strong> we make changes.</p>
+<p>I'm doing this on Ubuntu Lucid which doesn't have python3.2 packages. Later versions do I presume. Just found a ppa containing those packages which I just added:</p>
+<div class="codehilite"><pre><span></span><code>sudo add-apt-repository ppa:cheleb/blender-svn
+</code></pre></div>
+
+<p>So start with installing the dependencies:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">#</span><span class="nx">dependencies</span>
+<span class="nx">sudo</span><span class="w"> </span><span class="nx">apt</span><span class="o">-</span><span class="nx">get</span><span class="w"> </span><span class="nx">update</span><span class="p">;</span><span class="w"> </span><span class="nx">sudo</span><span class="w"> </span><span class="nx">apt</span><span class="o">-</span><span class="nx">get</span><span class="w"> </span><span class="nx">install</span><span class="w"> </span><span class="nx">subversion</span><span class="w"> </span><span class="nx">build</span><span class="o">-</span><span class="nx">essential</span><span class="w"> </span><span class="nx">gettext</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libxi</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libsndfile1</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libpng12</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libfftw3</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libopenexr</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libopenjpeg</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libopenal</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libalut</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libvorbis</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libglu1</span><span class="o">-</span><span class="nx">mesa</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libsdl1</span><span class="m m-Double">.2</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libfreetype6</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libtiff4</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libavdevice</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libavformat</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libavutil</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libavcodec</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libjack</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libswscale</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libx264</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">libmp3lame</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">python3</span><span class="m m-Double">.2</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span>\
+<span class="w"> </span><span class="nx">libspnav</span><span class="o">-</span><span class="nx">dev</span><span class="w"> </span><span class="nx">cmake</span><span class="w"> </span><span class="nx">cmake</span><span class="o">-</span><span class="nx">curses</span><span class="o">-</span><span class="nx">gui</span>
+</code></pre></div>
+
+<p>Then get all the Blender gear:</p>
+<div class="codehilite"><pre><span></span><code>mkdir blender-svn
+cd blender-svn
+#blender source
+svn co https://svn.blender.org/svnroot/bf-blender/trunk/blender
+#precompiled libs
+svn co https://svn.blender.org/svnroot/bf-blender/trunk/lib/linux64 lib/linux64
+#compile
+cd blender
+make
+</code></pre></div>
+
+<p>After the compile try to run your build</p>
+<div class="codehilite"><pre><span></span><code>cd ../build/linux/bin/
+./blender
+</code></pre></div>
+
+<p>Crap! The build is without Ffmpeg support. Fix this by editing ../build/linux/CMakeCache.txt and set:</p>
+<div class="codehilite"><pre><span></span><code>*Enable FFMPeg Support (http:*ffmpeg.org)
+WITH_CODEC_FFMPEG:BOOL=ON
+</code></pre></div>
+
+<p>now do 'make' again.</p>
+<p>OK, that seems to work just fine. Now I can safely edit the source knowing that everything that fails is my fault.</p>
+<h1 id="ide">IDE</h1>
+<p>But before I start editing sources I would like to use an IDE. I'm pretty much new to the c/c++ world but since using OpenFrameworks I'm used to CodeBlocks. So I would like to use that.</p>
+<p>Reading doc/build_systems/cmake.txt I came up with this:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">cd</span><span class="w"> </span><span class="o">../</span>
+<span class="n">mkdir</span><span class="w"> </span><span class="n">codeblocks</span>
+<span class="n">cd</span><span class="w"> </span><span class="n">codeblocks</span>
+<span class="n">cmake</span><span class="w"> </span><span class="o">-</span><span class="n">G</span><span class="w"> </span><span class="s2">&quot;CodeBlocks - Unix Makefiles&quot;</span><span class="w"> </span><span class="o">../</span><span class="n">blender</span><span class="o">/</span>
+<span class="n">ccmake</span><span class="w"> </span><span class="o">../</span><span class="n">blender</span><span class="o">/</span><span class="w"> </span><span class="c1">#Configure your needs, look for ffmpeg here! (c - g to accept default)</span>
+<span class="c1">#also pay attention to the FFMPEG setting in advanced mode you might need to add the path there</span>
+<span class="n">codeblocks</span><span class="w"> </span><span class="n">Blender</span><span class="o">.</span><span class="n">cbp</span><span class="w"> </span><span class="c1">#This might take a while for codeblocks to load everything</span>
+</code></pre></div>
+
+<p>*Also check <a href="http:*wiki.blender.org/index.php/User:Nazg-gul/FFmpegUpdate">this</a> for ffmpeg settings. I added://</p>
+<div class="codehilite"><pre><span></span><code><span class="n">FFMPEG</span><span class="o">:</span><span class="n">avformat</span><span class="o">;</span><span class="n">avcodec</span><span class="o">;</span><span class="n">avutil</span><span class="o">;</span><span class="n">avdevice</span><span class="o">;</span><span class="n">swscale</span><span class="o">;</span><span class="n">dirac_encoder</span><span class="o">;</span><span class="n">mp</span>
+<span class="mi">3</span><span class="n">lame</span><span class="o">;</span><span class="n">ogg</span><span class="o">;</span><span class="n">orc</span><span class="o">-</span><span class="mf">0.4</span><span class="o">;</span><span class="n">schroedinger</span><span class="o">-</span><span class="mf">1.0</span><span class="o">;</span><span class="n">theora</span><span class="o">;</span><span class="n">vorbis</span><span class="o">;</span><span class="n">vorbisenc</span><span class="o">;</span><span class="n">vpx</span><span class="o">;</span><span class="n">x264</span><span class="o">;</span><span class="n">xvidcore</span><span class="o">;</span><span class="n">faad</span>
+<span class="o">;</span><span class="n">asound</span><span class="o">;</span><span class="n">jack</span>
+</code></pre></div>
+
+<p><em>Don't know why really, but it works</em></p>
+<p>To build and run blender select the 'blender' target. By default is set at 'all'. If it starts you'll notice it's completely crippled. This is because it cannot find all it's extra files. You'll need to execute 'make install' before it'll work. What I've done is add the following command to the post-build phase in build-options:</p>
+<div class="codehilite"><pre><span></span><code>make install
+</code></pre></div>
+
+<p>So it's executed every time your build is finished.</p>
+<p>Pheew, that wasn't too hard, even building Blender worked out of the box after some tweaking. So let's get to the hard work.</p>
+<p>*Working with Codeblocks (10.05 rev0) it frequently freezes while working with the source. I reported this at the CB forum and this seems to be a bug which is already fixed in the source. See <a href="http:*forums.codeblocks.org/index.php/topic,16149.new.html">http:*forums.codeblocks.org/index.php/topic,16149.new.html</a> //</p>
+<h1 id="what-needs-patching">What needs patching?</h1>
+<p>The Blender Game Engine (BGE) is able to use a webcam as a source for a texture. BGE uses ffmpeg to accomplish this. However while using this feature I discovered that ffmpeg isn't used to it's full potential. BGE is hardcoded to use vfwcap on Windows and video4linux on Linux or dv1394. However ffmpeg supports more formats like:</p>
+<ul>
+<li>video4linux2</li>
+<li>bktr (BSD)</li>
+<li>dshow</li>
+<li>fbdev</li>
+<li>X11 grabbing</li>
+</ul>
+<p>Or even http streaming could be supported. However reading in the source it already should be supported. In theory the source should be modified so that two extra options can be added to the capture code (python). We would essentially need to add the format option and the input option. Optionally we could add more options to support specific format options.</p>
+<p>However since I'm new to this source let's start simple.</p>
+<p>Line 585 in VideoFFmpeg.cpp reads:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb nb-Type">void</span><span class="w"> </span><span class="n">VideoFFmpeg</span><span class="p">::</span><span class="n">openCam</span><span class="w"> </span><span class="p">(</span><span class="nb">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">short</span><span class="w"> </span><span class="n">camIdx</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">open</span><span class="w"> </span><span class="n">camera</span><span class="w"> </span><span class="n">source</span>
+<span class="w">    </span><span class="n">AVInputFormat</span><span class="w">       </span><span class="o">*</span><span class="n">inputFormat</span><span class="p">;</span>
+<span class="w">    </span><span class="n">AVFormatParameters</span><span class="w">  </span><span class="n">formatParams</span><span class="p">;</span>
+<span class="w">    </span><span class="n">AVRational</span><span class="w">          </span><span class="n">frameRate</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">char</span><span class="w">                </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">[</span><span class="mi">28</span><span class="p">],</span><span class="w"> </span><span class="n">rateStr</span><span class="p">[</span><span class="mi">20</span><span class="p">];</span>
+
+<span class="n">do_init_ffmpeg</span><span class="p">();</span>
+
+<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">formatParams</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">sizeof</span><span class="p">(</span><span class="n">formatParams</span><span class="p">));</span>
+<span class="c1">#ifdef WIN32</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">video</span><span class="w"> </span><span class="n">capture</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">windows</span><span class="w"> </span><span class="n">only</span><span class="w"> </span><span class="n">through</span><span class="w"> </span><span class="n">Video</span><span class="w"> </span><span class="n">For</span><span class="w"> </span><span class="n">Windows</span><span class="w"> </span><span class="n">driver</span>
+<span class="w">    </span><span class="n">inputFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">av_find_input_format</span><span class="p">(</span><span class="s2">&quot;vfwcap&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">inputFormat</span><span class="p">)</span>
+<span class="w">        </span><span class="o">//</span><span class="w"> </span><span class="n">Video</span><span class="w"> </span><span class="n">For</span><span class="w"> </span><span class="n">Windows</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">supported</span><span class="err">??</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="n">sprintf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">camIdx</span><span class="p">);</span>
+<span class="c1">#else</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">In</span><span class="w"> </span><span class="n">Linux</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">support</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">types</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">devices</span><span class="p">:</span><span class="w"> </span><span class="n">VideoForLinux</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">DV1394</span><span class="o">.</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">specify</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">filename</span><span class="p">:</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="p">[</span><span class="o">&lt;</span><span class="n">device_type</span><span class="o">&gt;</span><span class="p">][:</span><span class="o">&lt;</span><span class="n">standard</span><span class="o">&gt;</span><span class="p">]</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="o">&lt;</span><span class="n">device_type</span><span class="o">&gt;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;v4l&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">VideoForLinux</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;dv1394&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">DV1394</span><span class="o">.</span><span class="w"> </span><span class="n">By</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="s1">&#39;v4l&#39;</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="o">&lt;</span><span class="n">standard</span><span class="o">&gt;</span><span class="w">    </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;pal&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;secam&#39;</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;ntsc&#39;</span><span class="o">.</span><span class="w"> </span><span class="n">By</span><span class="w"> </span><span class="n">default</span><span class="w"> </span><span class="s1">&#39;ntsc&#39;</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">driver</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">constructed</span><span class="w"> </span><span class="n">automatically</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="n">type</span><span class="p">:</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">v4l</span><span class="w">   </span><span class="p">:</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video</span><span class="o">&lt;</span><span class="n">camIdx</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">dv1394</span><span class="p">:</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">dv1394</span><span class="o">/&lt;</span><span class="n">camIdx</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">If</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">have</span><span class="w"> </span><span class="n">different</span><span class="w"> </span><span class="n">driver</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">specify</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">driver</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">explicitly</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">instead</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="n">type</span><span class="o">.</span><span class="w"> </span><span class="n">Examples</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">valid</span><span class="w"> </span><span class="n">filename</span><span class="p">:</span>
+<span class="w">    </span><span class="o">//</span><span class="w">    </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">v4l</span><span class="o">/</span><span class="n">video0</span><span class="p">:</span><span class="n">pal</span>
+<span class="w">    </span><span class="o">//</span><span class="w">    </span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ieee1394</span><span class="o">/</span><span class="mi">1</span><span class="p">:</span><span class="n">ntsc</span>
+<span class="w">    </span><span class="o">//</span><span class="w">    </span><span class="n">dv1394</span><span class="p">:</span><span class="n">secam</span>
+<span class="w">    </span><span class="o">//</span><span class="w">    </span><span class="n">v4l</span><span class="p">:</span><span class="n">pal</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strstr</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;1394&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">//</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">specifies</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">driver</span><span class="p">,</span><span class="w"> </span><span class="n">check</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">v4l</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">d41394</span>
+<span class="w">        </span><span class="n">inputFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">av_find_input_format</span><span class="p">(</span><span class="s2">&quot;dv1394&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">sprintf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/dev/dv1394/</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">camIdx</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">inputFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">av_find_input_format</span><span class="p">(</span><span class="s2">&quot;video4linux&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">sprintf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/dev/video</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">camIdx</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">inputFormat</span><span class="p">)</span>
+<span class="w">        </span><span class="o">//</span><span class="w"> </span><span class="n">these</span><span class="w"> </span><span class="n">format</span><span class="w"> </span><span class="n">should</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">supported</span><span class="p">,</span><span class="w"> </span><span class="n">check</span><span class="w"> </span><span class="n">ffmpeg</span><span class="w"> </span><span class="n">compilation</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/dev&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">//</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">does</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">specify</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">driver</span>
+<span class="w">        </span><span class="n">strncpy</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">sizeof</span><span class="p">(</span><span class="n">filename</span><span class="p">));</span>
+<span class="w">        </span><span class="n">filename</span><span class="p">[</span><span class="n">sizeof</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">[</span><span class="o">^</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="p">[</span><span class="o">^</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strchr</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="o">*</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strchr</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="p">))</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="n">formatParams</span><span class="o">.</span><span class="n">standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+<span class="c1">#endif</span>
+<span class="w">    </span><span class="o">//</span><span class="n">frame</span><span class="w"> </span><span class="n">rate</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">m_captRate</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.</span><span class="n">f</span><span class="p">)</span>
+<span class="w">        </span><span class="n">m_captRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">defFrameRate</span><span class="p">;</span>
+<span class="w">    </span><span class="n">sprintf</span><span class="p">(</span><span class="n">rateStr</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">m_captRate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">av_parse_video_rate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">frameRate</span><span class="p">,</span><span class="w"> </span><span class="n">rateStr</span><span class="p">);</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">populate</span><span class="w"> </span><span class="n">format</span><span class="w"> </span><span class="n">parameters</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">need</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">specify</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">time</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inverse</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">rate</span>
+<span class="w">    </span><span class="n">formatParams</span><span class="o">.</span><span class="n">time_base</span><span class="o">.</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameRate</span><span class="o">.</span><span class="n">den</span><span class="p">;</span>
+<span class="w">    </span><span class="n">formatParams</span><span class="o">.</span><span class="n">time_base</span><span class="o">.</span><span class="n">den</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameRate</span><span class="o">.</span><span class="n">num</span><span class="p">;</span>
+<span class="w">    </span><span class="n">formatParams</span><span class="o">.</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_captWidth</span><span class="p">;</span>
+<span class="w">    </span><span class="n">formatParams</span><span class="o">.</span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_captHeight</span><span class="p">;</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">openStream</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">inputFormat</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">formatParams</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="o">//</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">video</span><span class="w"> </span><span class="n">capture</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">important</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">do</span><span class="w"> </span><span class="n">non</span><span class="w"> </span><span class="n">blocking</span><span class="w"> </span><span class="n">read</span>
+<span class="w">    </span><span class="n">m_formatCtx</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">AVFMT_FLAG_NONBLOCK</span><span class="p">;</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">open</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="k">class</span>
+<span class="w">    </span><span class="n">VideoBase</span><span class="p">::</span><span class="n">openCam</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">camIdx</span><span class="p">);</span>
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="n">check</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">should</span><span class="w"> </span><span class="n">do</span><span class="w"> </span><span class="n">multi</span><span class="o">-</span><span class="n">threading</span><span class="err">?</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">BLI_system_thread_count</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">//</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">need</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">thread</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">system</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">single</span><span class="w"> </span><span class="n">core</span>
+<span class="w">        </span><span class="n">m_isThreaded</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="bp">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>If you skimmed it quickly you'll see it's not the nicest way to determine the capture input. Especially when you know Ffmpeg a little bit.</p>
+<p>To test, I quickly changed line 625 to:</p>
+<div class="codehilite"><pre><span></span><code>inputFormat = av_find_input_format(&quot;video4linux2&quot;);
+</code></pre></div>
+
+<p>And recompiled blender. I now have a working webcam. :)</p>
+<p>We need some better code to select the webcam or camera. In Ffmpeg commandline this works by selecting the format, i.e. video4linux2 and the input device. Optionally you set the width and height of the camera and the capture rate. For example:</p>
+<div class="codehilite"><pre><span></span><code>ffmpeg -f video4linux2 -s vga -r 15 -i /dev/video0 capture.mp4
+</code></pre></div>
+
+<p>The VideoFFmpeg::openCam function just prepares all settings. It doesn't do any capturing itself.</p>
+<p>It basically sets the input format:</p>
+<div class="codehilite"><pre><span></span><code>inputFormat = av_find_input_format(&quot;video4linux&quot;);
+</code></pre></div>
+
+<p>and sets some format parameters:</p>
+<div class="codehilite"><pre><span></span><code>formatParams.time_base.num = frameRate.den;
+formatParams.time_base.den = frameRate.num;
+formatParams.width = m_captWidth;
+formatParams.height = m_captHeight;
+</code></pre></div>
+
+<p>Finally it passes a job to openStream:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="ss">(</span><span class="nv">openStream</span><span class="ss">(</span><span class="nv">filename</span>,<span class="w"> </span><span class="nv">inputFormat</span>,<span class="w"> </span><span class="o">&amp;</span><span class="nv">formatParams</span><span class="ss">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="ss">)</span>
+<span class="w">        </span><span class="k">return</span><span class="c1">;</span>
+</code></pre></div>
+
+<p>//PS. What I found very weird was that openCam overwrites 'filename' with a string constructed from the camIdx variable. But that's for later worry.
+//
+So there are 5 parameters:
+1. device
+2. input format
+3. framerate
+4. width
+5. height</p>
+<p>The <a href="http://www.blender.org/documentation/blender_python_api_2_62_1/bge.texture.html#video-texture-bge-texture">python code controlling all this</a> is:</p>
+<div class="codehilite"><pre><span></span><code>bge.texture.VideoFFmpeg(file[, capture=-1, rate=25.0, width=0, height=0])
+</code></pre></div>
+
+<p>So in python we have 5 parameters as well:
+6. file (which is the device when capturing)
+7. capture
+8. rate
+9. width
+10. height</p>
+<p>The 'capture' parameter is basically a switch to determine if openCam should be used or if openFile should be used. It's later used to construct the filename parameter which is IMHO a very weird construction.</p>
+<p>Basically best setup would be to use the filename and input format parameter together to determine input. This is also how Ffmpeg works. Let's see different ffmpeg input examples:
+* video4linux2: ffmpeg -f video4linux2 -s vga -r 15 -i /dev/video0 capture.mp4 (tested)
+* dshow: ffmpeg -f dshow -i video="Camera"
+* dshow: ffmpeg -f dshow -video_device_number 1 -i video="Camera" (second camera, this won't work)
+* vfwcap: ffmpeg -f vfwcap -i 1 (second camera)
+* x11grab: ffmpeg -f x11grab -r 25 -s cif -i :0.0 (capture display 0.0)
+In theory this should work as well....
+* ffmpeg -i http://stream.some.site/webcam.mp4 [^1]</p>
+<p>[^1]: As I heard on IRC http streaming already works in BGE, thanks Kassandra!</p>
+<p>If we would just add an optional parameter input_format we can manage most setups.</p>
+<div class="codehilite"><pre><span></span><code>bge.texture.VideoFFmpeg(file[, capture=-1, rate=25.0, width=0, height=0, inputfmt=&quot;&quot;])
+</code></pre></div>
+
+<p>So I think the easiest for now would be to expand the python function:</p>
+<div class="codehilite"><pre><span></span><code>bge.texture.VideoFFmpeg(file[, capture=-1, rate=25.0, width=0, height=0, capturefmt=&quot;&quot;])
+</code></pre></div>
+
+<p>The VideoFFmpeg class will be expanded with a 'char * m_captFormat;' to hold the format. The 'initParams' gets an extra optional argument for the format. We than have all the ingredients and only need to change the logic.</p>
+<p>I'm not going to explain all the logic. You can see a diff the VideoFFmpeg class here:</p>
+<div class="codehilite"><pre><span></span><code><span class="gh">Index: VideoFFmpeg.h</span>
+############### ===========================
+
+1.-- VideoFFmpeg.h  (revision 44807)
+<span class="gi">+++ VideoFFmpeg.h   (working copy)</span>
+<span class="gu">@@ -77,7 +77,7 @@</span>
+<span class="w"> </span>   virtual ~VideoFFmpeg ();
+
+/// set initial parameters
+2.  void initParams (short width, short height, float rate, bool image=false);
+<span class="gi">+   void initParams (short width, short height, float rate, bool image=false, char * format=NULL);</span>
+<span class="w"> </span>   /// open video/image file
+<span class="w"> </span>   virtual void openFile (char * file);
+<span class="w"> </span>   /// open video capture device
+<span class="gu">@@ -150,6 +150,10 @@</span>
+<span class="w"> </span>   /// frame rate of capture in frames per seconds
+<span class="w"> </span>   float m_captRate;
+
+<span class="gi">+   /// format short name of capture (dshow, vfwcap, video4linux2 etc)</span>
+<span class="gi">+   */ see: http:*ffmpeg.org/ffmpeg.html#Input-Devices</span>
+<span class="gi">+   char * m_captFormat;</span>
+<span class="gi">+</span>
+<span class="w"> </span>   /// is file an image?
+<span class="w"> </span>   bool m_isImage;
+
+<span class="gh">Index: VideoFFmpeg.cpp</span>
+############### ===========================
+
+3.-- VideoFFmpeg.cpp    (revision 44807)
+<span class="gi">+++ VideoFFmpeg.cpp (working copy)</span>
+<span class="gu">@@ -62,8 +62,8 @@</span>
+<span class="w"> </span>m_frame(NULL), m_frameDeinterlaced(NULL), m_frameRGB(NULL), m_imgConvertCtx(NULL),
+<span class="w"> </span>m_deinterlace(false), m_preseek(0),    m_videoStream(-1), m_baseFrameRate(25.0),
+<span class="w"> </span>m_lastFrame(-1),  m_eof(false), m_externTime(false), m_curPosition(-1), m_startTime(0),
+4.m_captWidth(0), m_captHeight(0), m_captRate(0.f), m_isImage(false),
+5.m_isThreaded(false), m_isStreaming(false), m_stopThread(false), m_cacheStarted(false)
+<span class="gi">+m_captWidth(0), m_captHeight(0), m_captRate(0.f), m_isImage(false), m_captFormat(NULL),</span>
+<span class="gi">+m_isThreaded(false), m_isStreaming(false), m_stopThread(false), m_cacheStarted(false)   </span>
+<span class="w"> </span>{
+<span class="w"> </span>   // set video format
+<span class="w"> </span>   m_format = RGB24;
+<span class="gu">@@ -153,12 +153,13 @@</span>
+<span class="w"> </span>}
+
+// set initial parameters
+6.void VideoFFmpeg::initParams (short width, short height, float rate, bool image)
+<span class="gi">+void VideoFFmpeg::initParams (short width, short height, float rate, bool image, char * format)</span>
+<span class="w"> </span>{
+<span class="w"> </span>   m_captWidth = width;
+<span class="w"> </span>   m_captHeight = height;
+<span class="w"> </span>   m_captRate = rate;
+<span class="w"> </span>   m_isImage = image;
+<span class="gi">+   m_captFormat = format;</span>
+<span class="w"> </span>}
+
+<span class="gu">@@ -593,52 +594,68 @@</span>
+<span class="w"> </span>   do_init_ffmpeg();
+
+memset(&amp;formatParams, 0, sizeof(formatParams));
+<span class="gi">+   </span>
+<span class="gi">+   if (m_captFormat == NULL )</span>
+<span class="gi">+   {</span>
+<span class="w"> </span>#ifdef WIN32
+7.  // video capture on windows only through Video For Windows driver
+8.  inputFormat = av_find_input_format(&quot;vfwcap&quot;);
+9.  if (!inputFormat)
+10.     // Video For Windows not supported??
+11.     return;
+12. sprintf(filename, &quot;%d&quot;, camIdx);
+13.#else
+14. // In Linux we support two types of devices: VideoForLinux and DV1394.
+15. // the user specify it with the filename:
+16. // [&lt;device_type&gt;][:&lt;standard&gt;]
+17. // &lt;device_type&gt; : &#39;v4l&#39; for VideoForLinux, &#39;dv1394&#39; for DV1394. By default &#39;v4l&#39;
+18. // &lt;standard&gt;    : &#39;pal&#39;, &#39;secam&#39; or &#39;ntsc&#39;. By default &#39;ntsc&#39;
+19. // The driver name is constructed automatically from the device type:
+20. // v4l   : /dev/video&lt;camIdx&gt;
+21. // dv1394: /dev/dv1394/&lt;camIdx&gt;
+22. // If you have different driver name, you can specify the driver name explicitly
+23. // instead of device type. Examples of valid filename:
+24. //    /dev/v4l/video0:pal
+25. //    /dev/ieee1394/1:ntsc
+26. //    dv1394:secam
+27. //    v4l:pal
+28. if (file &amp;&amp; strstr(file, &quot;1394&quot;) != NULL)
+<span class="gi">+       // video capture on windows only through Video For Windows driver</span>
+<span class="gi">+       inputFormat = av_find_input_format(&quot;vfwcap&quot;);</span>
+<span class="gi">+       if (!inputFormat)</span>
+<span class="gi">+           // Video For Windows not supported??</span>
+<span class="gi">+           return;</span>
+<span class="gi">+       sprintf(filename, &quot;%d&quot;, camIdx);</span>
+<span class="gi">+   #else</span>
+<span class="gi">+       // In Linux we support two types of devices: VideoForLinux and DV1394.</span>
+<span class="gi">+       // the user specify it with the filename:</span>
+<span class="gi">+       // [&lt;device_type&gt;][:&lt;standard&gt;]</span>
+<span class="gi">+       // &lt;device_type&gt; : &#39;v4l&#39; for VideoForLinux, &#39;dv1394&#39; for DV1394. By default &#39;v4l&#39;</span>
+<span class="gi">+       // &lt;standard&gt;    : &#39;pal&#39;, &#39;secam&#39; or &#39;ntsc&#39;. By default &#39;ntsc&#39;</span>
+<span class="gi">+       // The driver name is constructed automatically from the device type:</span>
+<span class="gi">+       // v4l   : /dev/video&lt;camIdx&gt;</span>
+<span class="gi">+       // dv1394: /dev/dv1394/&lt;camIdx&gt;</span>
+<span class="gi">+       // If you have different driver name, you can specify the driver name explicitly</span>
+<span class="gi">+       // instead of device type. Examples of valid filename:</span>
+<span class="gi">+       //    /dev/v4l/video0:pal</span>
+<span class="gi">+       //    /dev/ieee1394/1:ntsc</span>
+<span class="gi">+       //    dv1394:secam</span>
+<span class="gi">+       //    v4l:pal</span>
+<span class="gi">+       if (file &amp;&amp; strstr(file, &quot;1394&quot;) != NULL)</span>
+<span class="gi">+       {</span>
+<span class="gi">+           // the user specifies a driver, check if it is v4l or d41394</span>
+<span class="gi">+           inputFormat = av_find_input_format(&quot;dv1394&quot;);</span>
+<span class="gi">+           sprintf(filename, &quot;/dev/dv1394/%d&quot;, camIdx);</span>
+<span class="gi">+       } else</span>
+<span class="gi">+       {</span>
+<span class="gi">+           inputFormat = av_find_input_format(&quot;video4linux&quot;);</span>
+<span class="gi">+           sprintf(filename, &quot;/dev/video%d&quot;, camIdx);</span>
+<span class="gi">+       }</span>
+<span class="gi">+       if (!inputFormat)</span>
+<span class="gi">+           // these format should be supported, check ffmpeg compilation</span>
+<span class="gi">+           return;</span>
+<span class="gi">+       if (file &amp;&amp; strncmp(file, &quot;/dev&quot;, 4) == 0)</span>
+<span class="gi">+       {</span>
+<span class="gi">+           // user does not specify a driver</span>
+<span class="gi">+           strncpy(filename, file, sizeof(filename));</span>
+<span class="gi">+           filename[sizeof(filename)-1] = 0;</span>
+<span class="gi">+           if [^1]</span>
+
+[^1]: p = strchr(filename, &#39;:&#39; != 0)
+<span class="gi">+               *p = 0;</span>
+<span class="gi">+       }</span>
+<span class="gi">+       if (file &amp;&amp; (p = strchr(file, &#39;:&#39;)) != NULL)</span>
+<span class="gi">+           formatParams.standard = p+1;</span>
+<span class="gi">+#endif</span>
+<span class="gi">+   } else</span>
+<span class="w"> </span>   {
+29.     // the user specifies a driver, check if it is v4l or d41394
+30.     inputFormat = av_find_input_format(&quot;dv1394&quot;);
+31.     sprintf(filename, &quot;/dev/dv1394/%d&quot;, camIdx);
+32. } else
+33. {
+34.     inputFormat = av_find_input_format(&quot;video4linux&quot;);
+35.     sprintf(filename, &quot;/dev/video%d&quot;, camIdx);
+<span class="gi">+       inputFormat = av_find_input_format(m_captFormat);</span>
+<span class="gi">+       strncpy(filename, file, sizeof(filename));</span>
+<span class="w"> </span>   }
+<span class="gi">+   </span>
+<span class="w"> </span>   if (!inputFormat)
+36.     // these format should be supported, check ffmpeg compilation
+<span class="gi">+   {</span>
+<span class="gi">+       // input format not supported??</span>
+<span class="gi">+        printf(&quot;%s not supported\n&quot;, m_captFormat);</span>
+<span class="w"> </span>       return;
+37. if (file &amp;&amp; strncmp(file, &quot;/dev&quot;, 4) == 0)
+38. {
+39.     // user does not specify a driver
+40.     strncpy(filename, file, sizeof(filename));
+41.     filename[sizeof(filename)-1] = 0;
+42.     if [^1]
+
+[^1]: p = strchr(filename, &#39;:&#39; != 0)
+43.         *p = 0;
+<span class="w"> </span>   }
+44. if (file &amp;&amp; (p = strchr(file, &#39;:&#39;)) != NULL)
+45.     formatParams.standard = p+1;
+46.#endif
+<span class="gi">+</span>
+<span class="w"> </span>   //frame rate
+<span class="w"> </span>   if (m_captRate &lt;= 0.f)
+<span class="w"> </span>       m_captRate = defFrameRate;
+<span class="gu">@@ -1096,12 +1113,14 @@</span>
+<span class="w"> </span>   short height = 0;
+<span class="w"> </span>   // capture rate, only if capt is &gt;= 0
+<span class="w"> </span>   float rate = 25.f;
+<span class="gi">+   // capture format, only if capt is &gt;= 0</span>
+<span class="gi">+   char * capturefmt = NULL;</span>
+<span class="gi">+   </span>
+<span class="gi">+   static const char *kwlist[] = {&quot;file&quot;, &quot;capture&quot;, &quot;rate&quot;, &quot;width&quot;, &quot;height&quot;, &quot;format&quot;, NULL};</span>
+
+47. static const char *kwlist[] = {&quot;file&quot;, &quot;capture&quot;, &quot;rate&quot;, &quot;width&quot;, &quot;height&quot;, NULL};
+48.
+<span class="w"> </span>   // get parameters
+49. if (!PyArg_ParseTupleAndKeywords(args, kwds, &quot;s|hfhh&quot;,
+50.     const_cast&lt;char**&gt;(kwlist), &amp;file, &amp;capt, &amp;rate, &amp;width, &amp;height))
+<span class="gi">+   if (!PyArg_ParseTupleAndKeywords(args, kwds, &quot;s|hfhhs&quot;,</span>
+<span class="gi">+       const_cast&lt;char**&gt;(kwlist), &amp;file, &amp;capt, &amp;rate, &amp;width, &amp;height, &amp;capturefmt))</span>
+<span class="w"> </span>       return -1;
+
+try
+<span class="gu">@@ -1110,7 +1129,7 @@</span>
+<span class="w"> </span>       Video_init&lt;VideoFFmpeg&gt;(self);
+
+// set thread usage
+51.     getVideoFFmpeg(self)-&gt;initParams(width, height, rate);
+<span class="gi">+       getVideoFFmpeg(self)-&gt;initParams(width, height, rate, false, capturefmt);</span>
+
+// open video source
+<span class="w"> </span>       Video_open(getVideo(self), file, capt);
+</code></pre></div>
+
+<p>So now let's see what this does.</p>
+<p>The original code is still in place but that always refused to work on my machine since it was hardcoded to use video4linux. In Blender I use the following code to test this:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">bge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bge</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">texture</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bge</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">logic</span>
+
+<span class="n">cont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">logic</span><span class="o">.</span><span class="n">getCurrentController</span><span class="p">()</span>
+<span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cont</span><span class="o">.</span><span class="n">owner</span>
+
+<span class="c1"># the creation of the texture must be done once: save the</span>
+<span class="c1"># texture object in an attribute of bge.logic module makes it persistent</span>
+<span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="s1">&#39;video&#39;</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">obj</span><span class="p">:</span>
+
+<span class="c1"># identify a static texture by name</span>
+<span class="w">    </span><span class="n">matID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">texture</span><span class="o">.</span><span class="n">materialID</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;IMRedellious.jpg&#39;</span><span class="p">)</span>
+
+<span class="c1"># create a dynamic texture that will replace the static texture</span>
+<span class="w">    </span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;video&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">texture</span><span class="o">.</span><span class="n">Texture</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="n">matID</span><span class="p">)</span>
+
+<span class="c1"># define a source of image for the texture, here a movie</span>
+<span class="w">    </span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;video&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">texture</span><span class="o">.</span><span class="n">VideoFFmpeg</span><span class="p">(</span><span class="s1">&#39;/dev/video0&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">320</span><span class="p">,</span><span class="w"> </span><span class="mi">240</span><span class="p">)</span>
+<span class="w">    </span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;video&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">True</span>
+
+<span class="c1"># quick off the movie, but it wont play in the background</span>
+<span class="w">    </span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;video&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+<span class="c1"># you need to call this function every frame to ensure update of the texture.</span>
+<span class="n">obj</span><span class="p">[</span><span class="s1">&#39;video&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This is just code pasted from the documentation. It doesn't work like I said before but if I had camera with video4linux support it would. With my patch I can now change VideoFFmpeg line like this:</p>
+<div class="codehilite"><pre><span></span><code>obj[&#39;video&#39;].source = texture.VideoFFmpeg(&#39;/dev/video0&#39;, 0, 15, 320, 240, &quot;video4linux2&quot;)
+</code></pre></div>
+
+<p>That works like a charm. 8-)</p>
+<p>In theory the following should work as well:</p>
+<div class="codehilite"><pre><span></span><code>obj[&#39;video&#39;].source = texture.VideoFFmpeg(&#39;:0.0&#39;, 0, 15, 320, 240, &quot;x11grab&quot;)
+</code></pre></div>
+
+<p>But it doesn't. Reading lib/linux64/ffmpeg/Readme.txt I noticed the supplied ffmpeg is compiled without x11grab support:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">52.</span><span class="o">-</span><span class="n">disable</span><span class="o">-</span><span class="n">x11grab</span>
+</code></pre></div>
+
+<p>Too bad... but I could compile my own version of Ffmpeg.</p>
+<p>Other options could consist of:</p>
+<div class="codehilite"><pre><span></span><code>#<span class="nv">dshow</span>
+<span class="nv">obj</span>[<span class="s1">&#39;video&#39;</span>].<span class="nv">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">texture</span>.<span class="nv">VideoFFmpeg</span><span class="ss">(</span><span class="s1">&#39;video=&quot;Camera&quot;&#39;</span>,<span class="w"> </span><span class="mi">0</span>,<span class="w"> </span><span class="mi">15</span>,<span class="w"> </span><span class="mi">320</span>,<span class="w"> </span><span class="mi">240</span>,<span class="w"> </span><span class="s2">&quot;dshow&quot;</span><span class="ss">)</span>
+#<span class="nv">video</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">windows</span>
+<span class="nv">obj</span>[<span class="s1">&#39;video&#39;</span>].<span class="nv">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">texture</span>.<span class="nv">VideoFFmpeg</span><span class="ss">(</span><span class="s1">&#39;0&#39;</span>,<span class="w"> </span><span class="mi">0</span>,<span class="w"> </span><span class="mi">15</span>,<span class="w"> </span><span class="mi">320</span>,<span class="w"> </span><span class="mi">240</span>,<span class="w"> </span><span class="s2">&quot;vfwcap&quot;</span><span class="ss">)</span>
+#<span class="w"> </span><span class="nv">blackmagic</span><span class="w"> </span><span class="nv">linux</span><span class="w"> </span><span class="ss">(</span><span class="nv">not</span><span class="w"> </span><span class="nv">sure</span><span class="w"> </span><span class="nv">about</span><span class="w"> </span><span class="nv">this</span><span class="ss">)</span>
+<span class="nv">obj</span>[<span class="s1">&#39;video&#39;</span>].<span class="nv">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">texture</span>.<span class="nv">VideoFFmpeg</span><span class="ss">(</span><span class="s1">&#39;/dev/blackmagic/serial0&#39;</span>,<span class="w"> </span><span class="mi">0</span>,<span class="w"> </span><span class="mi">15</span>,<span class="w"> </span><span class="mi">320</span>,<span class="w"> </span><span class="mi">240</span>,<span class="w"> </span><span class="s2">&quot;rawvideo&quot;</span><span class="ss">)</span>
+</code></pre></div>
+
+<p>Anyway enough for now. I think my first patch is ready.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

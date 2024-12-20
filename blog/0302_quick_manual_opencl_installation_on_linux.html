@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick manual opencl installation on linux - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/opencl.html">opencl</a></li>
+    
+    <li><a href="/tags/libs.html">libs</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="quick-manual-opencl-installation-on-linux">Quick manual OpenCL installation on Linux</h1>
+<p>According to Debian docs you should be able to do</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install amd-libopencl1
+</code></pre></div>
+
+<p>However on Ubuntu Quantal this is bugged. So here's a quick manual installation using AMD's implementation which should get you up and running using the CPU.</p>
+<h1 id="_1"></h1>
+<p>First download the AMD-APP-SDK for your platform:
+* http://developer.amd.com/tools/heterogeneous-computing/amd-accelerated-parallel-processing-app-sdk/downloads/</p>
+<p><em>Note: I'm assuming a x86_64 architecture!</em></p>
+<p>Extract the SDK and copy the libs to /usr/local/lib.</p>
+<div class="codehilite"><pre><span></span><code>tar -xzf AMD-APP-SDK-v2.8-RC-lnx64.tgz
+sudo cp AMD-APP-SDK-v2.8-RC-lnx64/lib/x86_64/lib* /usr/local/lib/
+sudo ldcondig
+</code></pre></div>
+
+<p>You need to set the ICD settings so it's known which openCL implementation you are using. Just create the file /etc/OpenCL/vendors/amdocl64.icd containing:</p>
+<div class="codehilite"><pre><span></span><code>libamdocl64.so
+</code></pre></div>
+
+<p>Now try the clinfo binary supplied with the SDK:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">$</span><span class="w"> </span><span class="n">AMD</span><span class="o">-</span><span class="n">APP</span><span class="o">-</span><span class="n">SDK</span><span class="o">-</span><span class="n">v2</span><span class="o">.</span><span class="mi">8</span><span class="o">-</span><span class="n">RC</span><span class="o">-</span><span class="n">lnx64</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">x86_64</span><span class="o">/</span><span class="n">clinfo</span>
+<span class="n">Setting</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">real</span><span class="o">/</span><span class="n">effective</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">Id</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="w"> </span><span class="n">failed</span>
+<span class="n">FATAL</span><span class="p">:</span><span class="w"> </span><span class="n">Module</span><span class="w"> </span><span class="n">fglrx</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">found</span><span class="o">.</span>
+<span class="n">Error</span><span class="o">!</span><span class="w"> </span><span class="n">Fail</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="nb">load</span><span class="w"> </span><span class="n">fglrx</span><span class="w"> </span><span class="n">kernel</span><span class="w"> </span><span class="n">module</span><span class="o">!</span><span class="w"> </span><span class="n">Maybe</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">switch</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">root</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="nb">load</span><span class="w"> </span><span class="n">kernel</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="n">directly</span>
+<span class="n">Number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">platforms</span><span class="p">:</span><span class="w">                 </span><span class="mi">1</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Profile</span><span class="p">:</span><span class="w">              </span><span class="n">FULL_PROFILE</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Version</span><span class="p">:</span><span class="w">              </span><span class="n">OpenCL</span><span class="w"> </span><span class="mf">1.2</span><span class="w"> </span><span class="n">AMD</span><span class="o">-</span><span class="n">APP</span><span class="w"> </span><span class="p">(</span><span class="mf">1113.2</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Name</span><span class="p">:</span><span class="w">                 </span><span class="n">AMD</span><span class="w"> </span><span class="n">Accelerated</span><span class="w"> </span><span class="n">Parallel</span><span class="w"> </span><span class="n">Processing</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Vendor</span><span class="p">:</span><span class="w">               </span><span class="n">Advanced</span><span class="w"> </span><span class="n">Micro</span><span class="w"> </span><span class="n">Devices</span><span class="p">,</span><span class="w"> </span><span class="n">Inc</span><span class="o">.</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Extensions</span><span class="p">:</span><span class="w">               </span><span class="n">cl_khr_icd</span><span class="w"> </span><span class="n">cl_amd_event_callback</span><span class="w"> </span><span class="n">cl_amd_offline_devices</span>
+
+<span class="n">Platform</span><span class="w"> </span><span class="n">Name</span><span class="p">:</span><span class="w">               </span><span class="n">AMD</span><span class="w"> </span><span class="n">Accelerated</span><span class="w"> </span><span class="n">Parallel</span><span class="w"> </span><span class="n">Processing</span>
+<span class="n">Number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">devices</span><span class="p">:</span><span class="w">               </span><span class="mi">1</span>
+<span class="w">  </span><span class="n">Device</span><span class="w"> </span><span class="n">Type</span><span class="p">:</span><span class="w">                   </span><span class="n">CL_DEVICE_TYPE_CPU</span>
+<span class="w">  </span><span class="n">Device</span><span class="w"> </span><span class="n">ID</span><span class="p">:</span><span class="w">                     </span><span class="mi">4098</span>
+<span class="w">  </span><span class="n">Board</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w">                   </span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">compute</span><span class="w"> </span><span class="n">units</span><span class="p">:</span><span class="w">                 </span><span class="mi">2</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">items</span><span class="w"> </span><span class="n">dimensions</span><span class="p">:</span><span class="w">             </span><span class="mi">3</span>
+<span class="w">    </span><span class="n">Max</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="w">               </span><span class="mi">1024</span>
+<span class="w">    </span><span class="n">Max</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w">               </span><span class="mi">1024</span>
+<span class="w">    </span><span class="n">Max</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span><span class="w">               </span><span class="mi">1024</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">               </span><span class="mi">1024</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb">char</span><span class="p">:</span><span class="w">           </span><span class="mi">16</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">short</span><span class="p">:</span><span class="w">          </span><span class="mi">8</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb nb-Type">int</span><span class="p">:</span><span class="w">            </span><span class="mi">4</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">long</span><span class="p">:</span><span class="w">           </span><span class="mi">2</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb nb-Type">float</span><span class="p">:</span><span class="w">          </span><span class="mi">4</span>
+<span class="w">  </span><span class="n">Preferred</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">double</span><span class="p">:</span><span class="w">         </span><span class="mi">2</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb">char</span><span class="p">:</span><span class="w">          </span><span class="mi">16</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">short</span><span class="p">:</span><span class="w">             </span><span class="mi">8</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb nb-Type">int</span><span class="p">:</span><span class="w">           </span><span class="mi">4</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">long</span><span class="p">:</span><span class="w">          </span><span class="mi">2</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="nb nb-Type">float</span><span class="p">:</span><span class="w">             </span><span class="mi">4</span>
+<span class="w">  </span><span class="n">Native</span><span class="w"> </span><span class="n">vector</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="n">double</span><span class="p">:</span><span class="w">            </span><span class="mi">2</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">clock</span><span class="w"> </span><span class="n">frequency</span><span class="p">:</span><span class="w">               </span><span class="mi">800</span><span class="n">Mhz</span>
+<span class="w">  </span><span class="n">Address</span><span class="w"> </span><span class="n">bits</span><span class="p">:</span><span class="w">                  </span><span class="mi">64</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">allocation</span><span class="p">:</span><span class="w">             </span><span class="mi">2147483648</span>
+<span class="w">  </span><span class="n">Image</span><span class="w"> </span><span class="n">support</span><span class="p">:</span><span class="w">                 </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">images</span><span class="w"> </span><span class="n">read</span><span class="w"> </span><span class="n">arguments</span><span class="p">:</span><span class="w">       </span><span class="mi">128</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">images</span><span class="w"> </span><span class="n">write</span><span class="w"> </span><span class="n">arguments</span><span class="p">:</span><span class="w">      </span><span class="mi">8</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="mi">2</span><span class="n">D</span><span class="w"> </span><span class="n">width</span><span class="p">:</span><span class="w">                </span><span class="mi">8192</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="mi">2</span><span class="n">D</span><span class="w"> </span><span class="n">height</span><span class="p">:</span><span class="w">               </span><span class="mi">8192</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="mi">3</span><span class="n">D</span><span class="w"> </span><span class="n">width</span><span class="p">:</span><span class="w">                </span><span class="mi">2048</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="mi">3</span><span class="n">D</span><span class="w"> </span><span class="n">height</span><span class="p">:</span><span class="w">               </span><span class="mi">2048</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="mi">3</span><span class="n">D</span><span class="w"> </span><span class="n">depth</span><span class="p">:</span><span class="w">                </span><span class="mi">2048</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">samplers</span><span class="w"> </span><span class="n">within</span><span class="w"> </span><span class="n">kernel</span><span class="p">:</span><span class="w">            </span><span class="mi">16</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">kernel</span><span class="w"> </span><span class="n">argument</span><span class="p">:</span><span class="w">           </span><span class="mi">4096</span>
+<span class="w">  </span><span class="n">Alignment</span><span class="w"> </span><span class="p">(</span><span class="n">bits</span><span class="p">)</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="n">address</span><span class="p">:</span><span class="w">      </span><span class="mi">1024</span>
+<span class="w">  </span><span class="n">Minimum</span><span class="w"> </span><span class="n">alignment</span><span class="w"> </span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">any</span><span class="w"> </span><span class="n">datatype</span><span class="p">:</span><span class="w">    </span><span class="mi">128</span>
+<span class="w">  </span><span class="n">Single</span><span class="w"> </span><span class="n">precision</span><span class="w"> </span><span class="n">floating</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">capability</span>
+<span class="w">    </span><span class="n">Denorms</span><span class="p">:</span><span class="w">                     </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">Quiet</span><span class="w"> </span><span class="n">NaNs</span><span class="p">:</span><span class="w">                  </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">Round</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">nearest</span><span class="w"> </span><span class="n">even</span><span class="p">:</span><span class="w">           </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">Round</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">zero</span><span class="p">:</span><span class="w">               </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">Round</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="o">+</span><span class="n">ve</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">infinity</span><span class="p">:</span><span class="w">           </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">IEEE754</span><span class="o">-</span><span class="mi">2008</span><span class="w"> </span><span class="n">fused</span><span class="w"> </span><span class="n">multiply</span><span class="o">-</span><span class="n">add</span><span class="p">:</span><span class="w">         </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Cache</span><span class="w"> </span><span class="n">type</span><span class="p">:</span><span class="w">                    </span><span class="n">Read</span><span class="o">/</span><span class="n">Write</span>
+<span class="w">  </span><span class="n">Cache</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">               </span><span class="mi">64</span>
+<span class="w">  </span><span class="n">Cache</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">                    </span><span class="mi">32768</span>
+<span class="w">  </span><span class="n">Global</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">                </span><span class="mi">3975372800</span>
+<span class="w">  </span><span class="n">Constant</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">              </span><span class="mi">65536</span>
+<span class="w">  </span><span class="n">Max</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">constant</span><span class="w"> </span><span class="n">args</span><span class="p">:</span><span class="w">           </span><span class="mi">8</span>
+<span class="w">  </span><span class="n">Local</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">type</span><span class="p">:</span><span class="w">                 </span><span class="n">Global</span>
+<span class="w">  </span><span class="n">Local</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w">                 </span><span class="mi">32768</span>
+<span class="w">  </span><span class="n">Kernel</span><span class="w"> </span><span class="n">Preferred</span><span class="w"> </span><span class="n">work</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="n">multiple</span><span class="p">:</span><span class="w">     </span><span class="mi">1</span>
+<span class="w">  </span><span class="n">Error</span><span class="w"> </span><span class="n">correction</span><span class="w"> </span><span class="n">support</span><span class="p">:</span><span class="w">          </span><span class="mi">0</span>
+<span class="w">  </span><span class="n">Unified</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Host</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">Device</span><span class="p">:</span><span class="w">        </span><span class="mi">1</span>
+<span class="w">  </span><span class="n">Profiling</span><span class="w"> </span><span class="n">timer</span><span class="w"> </span><span class="n">resolution</span><span class="p">:</span><span class="w">            </span><span class="mi">1</span>
+<span class="w">  </span><span class="n">Device</span><span class="w"> </span><span class="n">endianess</span><span class="p">:</span><span class="w">              </span><span class="n">Little</span>
+<span class="w">  </span><span class="n">Available</span><span class="p">:</span><span class="w">                     </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Compiler</span><span class="w"> </span><span class="n">available</span><span class="p">:</span><span class="w">                </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Execution</span><span class="w"> </span><span class="n">capabilities</span><span class="p">:</span><span class="w">               </span>
+<span class="w">    </span><span class="n">Execute</span><span class="w"> </span><span class="n">OpenCL</span><span class="w"> </span><span class="n">kernels</span><span class="p">:</span><span class="w">          </span><span class="n">Yes</span>
+<span class="w">    </span><span class="n">Execute</span><span class="w"> </span><span class="n">native</span><span class="w"> </span><span class="n">function</span><span class="p">:</span><span class="w">             </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Queue</span><span class="w"> </span><span class="n">properties</span><span class="p">:</span><span class="w">             </span>
+<span class="w">    </span><span class="n">Out</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">Order</span><span class="p">:</span><span class="w">                </span><span class="n">No</span>
+<span class="w">    </span><span class="n">Profiling</span><span class="w"> </span><span class="p">:</span><span class="w">                  </span><span class="n">Yes</span>
+<span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">ID</span><span class="p">:</span><span class="w">                   </span><span class="mh">0x00007fafc98664e0</span>
+<span class="w">  </span><span class="n">Name</span><span class="p">:</span><span class="w">                      </span><span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span><span class="w"> </span><span class="n">Core</span><span class="p">(</span><span class="n">TM</span><span class="p">)</span><span class="mi">2</span><span class="w"> </span><span class="n">Duo</span><span class="w"> </span><span class="n">CPU</span><span class="w">     </span><span class="n">L9400</span><span class="w">  </span><span class="err">@</span><span class="w"> </span><span class="mf">1.86</span><span class="n">GHz</span>
+<span class="w">  </span><span class="n">Vendor</span><span class="p">:</span><span class="w">                    </span><span class="n">GenuineIntel</span>
+<span class="w">  </span><span class="n">Device</span><span class="w"> </span><span class="n">OpenCL</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="n">version</span><span class="p">:</span><span class="w">           </span><span class="n">OpenCL</span><span class="w"> </span><span class="n">C</span><span class="w"> </span><span class="mf">1.2</span>
+<span class="w">  </span><span class="n">Driver</span><span class="w"> </span><span class="n">version</span><span class="p">:</span><span class="w">                </span><span class="mf">1113.2</span><span class="w"> </span><span class="p">(</span><span class="n">sse2</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Profile</span><span class="p">:</span><span class="w">                   </span><span class="n">FULL_PROFILE</span>
+<span class="w">  </span><span class="n">Version</span><span class="p">:</span><span class="w">                   </span><span class="n">OpenCL</span><span class="w"> </span><span class="mf">1.2</span><span class="w"> </span><span class="n">AMD</span><span class="o">-</span><span class="n">APP</span><span class="w"> </span><span class="p">(</span><span class="mf">1113.2</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Extensions</span><span class="p">:</span><span class="w">                    </span><span class="n">cl_khr_fp64</span><span class="w"> </span><span class="n">cl_amd_fp64</span><span class="w"> </span><span class="n">cl_khr_global_int32_base_atomics</span><span class="w"> </span><span class="n">cl_khr_global_int32_extended_atomics</span><span class="w"> </span><span class="n">cl_khr_local_int32_base_atomics</span><span class="w"> </span><span class="n">cl_khr_local_int32_extended_atomics</span><span class="w"> </span><span class="n">cl_khr_int64_base_atomics</span><span class="w"> </span><span class="n">cl_khr_int64_extended_atomics</span><span class="w"> </span><span class="n">cl_khr_3d_image_writes</span><span class="w"> </span><span class="n">cl_khr_byte_addressable_store</span><span class="w"> </span><span class="n">cl_khr_gl_sharing</span><span class="w"> </span><span class="n">cl_ext_device_fission</span><span class="w"> </span><span class="n">cl_amd_device_attribute_query</span><span class="w"> </span><span class="n">cl_amd_vec3</span><span class="w"> </span><span class="n">cl_amd_printf</span><span class="w"> </span><span class="n">cl_amd_media_ops</span><span class="w"> </span><span class="n">cl_amd_popcnt</span>
+</code></pre></div>
+
+<p>For coding you need the header files which are also in the SDK but also supplied by your distribution probably:</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install opencl-headers
+</code></pre></div>
+
+<p>I've found this blog post most helpful and also nice suggestion of how to install multiple vendors:
+* http://streamcomputing.eu/blog/2011-06-24/install-opencl-on-debianubuntu-orderly/</p>
+<p>Also note; I've found the opencl SDK supplies a libGLEW as well which interferes with my system wide installed version when using tools like cmake and sorts.</p>
+<h5 id="update">Update</h5>
+<p>Here's another great post about the current OpenCL situation on Linux:
+* http://mhr3.blogspot.nl/2013/06/opencl-on-ubuntu-1304.html</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

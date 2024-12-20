@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosody jabber and ldap - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ldap.html">ldap</a></li>
+    
+    <li><a href="/tags/jabber.html">jabber</a></li>
+    
+    <li><a href="/tags/prosody.html">prosody</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="prosody-jabber-and-ldap">Prosody jabber and ldap</h1>
+<p>I've often been searching for a nice simple Jabber server. Today I was strolling the internet a bit and stumbled upon <a href="http://prosody.im/">Prosody</a>. Looking through the docs I noticed I should be able to get it to authenticate agains an LDAP server. So let's give it a shot!</p>
+<p>I've tested on Debian Squeeze using the version supplied in the standard repositories. Version 0.7. I noticed the newer versions have a different configuration for ldap authentication.</p>
+<h1 id="installing-prosody">Installing Prosody</h1>
+<p>First install Prosody and Sasl on a clean system.</p>
+<div class="codehilite"><pre><span></span><code>apt-get install prosody liblua5.1-cyrussasl0 libsasl2-modules-ldap libsasl2-2 libsasl2-modules sasl2-bin
+</code></pre></div>
+
+<p>Get sasl to operate properly. By default it authenticates to PAM.</p>
+<p>Change this entry in /etc/default/saslauthd</p>
+<div class="codehilite"><pre><span></span><code>START=yes
+</code></pre></div>
+
+<p>Test authentication against a user on your system:</p>
+<div class="codehilite"><pre><span></span><code>testsaslauthd -u someuser -p somepass
+0: OK &quot;Success.&quot;
+</code></pre></div>
+
+<p>Now let's see if we can let Sasl talk against an LDAP server. Of course you don't do this if you only need PAM authentication....</p>
+<p>Change an entry in /etc/default/saslauthd</p>
+<div class="codehilite"><pre><span></span><code>MECHANISMS=&quot;ldap&quot;
+</code></pre></div>
+
+<p>Create /etc/saslauthd.conf:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">ldap_servers</span><span class="o">:</span><span class="w"> </span><span class="n">ldap</span><span class="o">://</span><span class="n">ldap</span><span class="o">.</span><span class="na">example</span><span class="o">.</span><span class="na">com</span><span class="o">:</span><span class="mi">389</span><span class="o">/</span>
+<span class="n">ldap_search_base</span><span class="o">:</span><span class="w"> </span><span class="o">,</span><span class="n">ou</span><span class="o">=</span><span class="n">people</span><span class="o">,</span><span class="n">dc</span><span class="o">=</span><span class="n">example</span><span class="o">,</span><span class="n">dc</span><span class="o">=</span><span class="n">com</span>
+</code></pre></div>
+
+<p>Read LDAP_SASLAUTHD (google) for more information on configuration parameters.</p>
+<p>Restart Sasl and run a test again this time for a user in your ldap tree.</p>
+<div class="codehilite"><pre><span></span><code>/etc/init.d/saslauthd restart
+Stopping SASL Authentication Daemon: saslauthd.
+Starting SASL Authentication Daemon: saslauthd.
+testsaslauthd -u someldapuser -p hispassword
+0: OK &quot;Success.&quot;
+</code></pre></div>
+
+<p>Right that seems to go well. Let's have a look at Prosody. By default it enables an 'localhost' host. Open /etc/prosody/conf.d/localhost.cfg.lua and edit it correspondingly to enable ldap login on localhost:</p>
+<p>//Leave localhost as is if you are doing test on a local system. In my case I have setup an domain with the SRV records needed for Jabber. That's a different story.
+//
+/etc/prosody/conf.d/localhost.cfg.lua:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="o">-</span><span class="w"> </span><span class="n">Section</span><span class="w"> </span><span class="kr">for</span><span class="w"> </span><span class="n">localhost</span>
+
+<span class="mf">2.</span><span class="o">-</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">allows</span><span class="w"> </span><span class="n">clients</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">connect</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">localhost</span><span class="mf">.</span><span class="w"> </span><span class="n">No</span><span class="w"> </span><span class="n">harm</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">it</span><span class="mf">.</span>
+<span class="n">VirtualHost</span><span class="w"> </span><span class="s">&quot;localhost&quot;</span>
+<span class="w">    </span><span class="n">sasl_backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;cyrus&quot;</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="mf">0.7</span>
+<span class="w">    </span><span class="n">anonymous_login</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span>
+<span class="w">    </span><span class="n">allow_unencrypted_plain_auth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">false</span>
+<span class="w">    </span><span class="n">cyrus_application_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;xmpp&quot;</span>
+<span class="w">    </span><span class="n">c2s_require_encryption</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">true</span>
+</code></pre></div>
+
+<p>Prosody runs as the prosody user by default. This user needs to have access to the sasl directory and sockets. This is accomplished by adding the user to the sasl group.</p>
+<div class="codehilite"><pre><span></span><code>usermod -a -G sasl prosody
+</code></pre></div>
+
+<p>Restart Prosody and test if your jabber client can login. I'm using telepathy on Ubuntu and it seems to work. Finally a simple Jabber setup with an LDAP backend :)</p>
+<p>Ow, and of course we need to add valid certificates to the setup!</p>
+<p>I've had some trouble getting SASL to work. In order to fix it I added the file /etc/sasl/xmpp.conf</p>
+<div class="codehilite"><pre><span></span><code><span class="n">pwcheck_method</span><span class="o">:</span><span class="w"> </span><span class="n">saslauthd</span><span class="w">  </span>
+<span class="n">mech_list</span><span class="o">:</span><span class="w"> </span><span class="n">PLAIN</span>
+</code></pre></div>
+
+<h1 id="real-domain-setup">real domain setup</h1>
+<p>create the file /etc/prosody/conf.avail/yourdomain.com.cfg.lua and enter the following:</p>
+<div class="codehilite"><pre><span></span><code>VirtualHost &quot;yourdomain.com&quot;
+        enabled = true -- Remove this line to enable this host
+
+3.- Assign this host a certificate for TLS, otherwise it would use the one
+      4.- set in the global section (if any).
+      5.- Note that old-style SSL on port 5223 only supports one certificate, and will always
+      6.- use the global one.
+        ssl = {
+                key = &quot;/etc/prosody/certs/yourdomain.com.key&quot;;
+                certificate = &quot;/etc/prosody/certs/yourdomain.com.crt&quot;;
+                }
+        sasl_backend = &quot;cyrus&quot; -- 0.7
+        anonymous_login = false
+        allow_unencrypted_plain_auth = false
+        cyrus_application_name = &quot;xmpp&quot;
+        c2s_require_encryption = true
+</code></pre></div>
+
+<p>Create a symbolic link to the config file:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">cd /etc/prosody/conf.d</span>
+<span class="n">ln -s ../conf.avail/yourdomain.com.cfg.lua yourdomain.com.cfg.lua</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

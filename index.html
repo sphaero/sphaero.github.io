@@ -1,803 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>sphaero.org</title>
-    <meta name="description" content="{{ _abstract }}" />
-    <!-- Bootstrap -->
-    <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-    <!-- Custom styles -->
-    <style type="text/css">
-        html {
-            height: 100%;
-        }
-        body {
-            color: #DDD;
-            background-color: #455c63;
-            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
-            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
-            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
-            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
-            font-family: "Lucida Console", Monaco, monospace;
-            height: 100%;
-        }
-        .no-gutter [class*="col-"] {
-            padding-left:0;
-            padding-right:0;
-        }
-        .appie_modal {
-            position: absolute;
-            top: 10em;
-            left: 2em;
-            z-index: 10;
-        }
-        .appie_modal-content {
-            border: #BAA39C 1px solid;        
-            background-color: rgba(0,0,0,0.8);
-        }
-        .close {
-            margin: 5px 10px;
-            color: #BAA39C;
-        }
-        .navbar {
-            margin-bottom: 0px;
-            border: none;
-            border-radius: 0px;
-            min-height: 10px;
-        }
-        .navbar-nav li a {
-            padding: 4px 10px;
-        }
-        .navbar-brand {
-            height: 10px;
-            padding: 4px 10px;
-        }
-        .navbar-default {
-            border-bottom: solid 1px #2A2A2A;
-            border-top: solid 1px #2A2A2A;
-        }
-        .navbar-default .navbar-nav > .active {
-            color: #000;
-            background: #d65c14;
-        }
-        .navbar-default .navbar-nav > .active > a, 
-        .navbar-default .navbar-nav > .active > a:hover, 
-        .navbar-default .navbar-nav > .active > a:focus {
-            color: #fff;
-            background: #455c63;
-            border-bottom: #58747d 1px solid;
-            border-top: #58747d 1px solid;
-        }
-        #main_container {
-            margin-top: -1px;
-            background-color: #455c63;
-            background: -webkit-linear-gradient(#58747d, #38494f); /* For Safari 5.1 to 6.0 */
-            background: -o-linear-gradient(#58747d, #38494f); /* For Opera 11.1 to 12.0 */
-            background: -moz-linear-gradient(#58747d, #38494f); /* For Firefox 3.6 to 15 */
-            background: linear-gradient(#58747d, #38494f); /* Standard syntax */
-        }
-        #appie_grid {
-            color: white;
-        }
-        #appie_grid h2 span {
-            color: rgba(200,20,7,0.9);
-            background-color: rgba(20,20,20,0.5);
-            white-space:nowrap;
-            overflow:hidden;
-        }
-        #appie_grid .descr
-        {
-            font-size: 1em;
-            height : 7.0em;
-            overflow: hidden;
-        }
-        #appie_grid .descr span 
-        {
-            background-color: rgba(20,20,20,0.5);
-        }
-        .appie_cell {
-            /*box-shadow: 10px 10px 5px #38494f;*/
-            height : 17.4em;
-            border: #222 1px solid;
-        }
-        .appie_cell_img {
-            background-color: rgba(40,100,100,0.6); 
-            background-blend-mode: luminosity;
-        }
-        .appie_cell_img:hover {
-            background-color: rgba(0,0,0,0.0);
-        }
-        div.appie_cell:hover .appie_cell_header {
-            background-color: #455c63;
-            border: solid 1px #58747d;
-            padding-left: 10px;
-        }
-        .appie_cell_header {
-            font-weight: bold;
-            margin: -1px;
-            background-color: #222;
-            border-bottom: solid 1px #2A2A2A;
-            border-top: solid 1px #2A2A2A;
-            border-right: solid 1px #2A2A2A;
-            padding-left: 10px;
-        }
-        .appie_cell p {
-            margin: 30px;
-        }
-        .appie_text {
-            margin: 20px;
-            margin-bottom: 60px;
-        }
-        #appie_footer {
-            background-color: #000;
-            border-bottom: solid 1px #111;
-            border-top: solid 1px #111;
-        }
-        .appie_img_slider{
-            width: 100%; display: block;
-        }
-        .img_slider_container {
-            overflow: hidden;
-            width: 100%;
-            height: 480px;
-        }
-        div#slider { overflow: hidden;}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
         
-        .appie_a.btn {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-        }
-        .btn-success:visited {
-            color: #fff;
-        }
-        /* std styling */
-        a, a:hover, a:visited {
-            color: #BAA39C;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        h1, h2, h3, h4, h5, h6, caption, legend {
-            font-weight: bold;
-            color: #BAA39C;
-        }
-        table, th, tr, td {
-			padding-left: 6px;
-			padding-right: 6px;
-		}
-    </style>
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <script>
-    
-    var JSONDATA = {};
-    var IMG_SLIDER_COUNTER = 0;
-    
-    // Event: handle 'back' button
-    window.onpopstate = function(event) {
-        console.debug("window.onpopstate(): '"+ window.location.href.split('#')[1] +"'");
-        appie_route('#'+window.location.href.split('#')[1]);
-    };
-    
-    /* Helpers */
-    
-    //twitter widget
-    function twit(d,s,id)
-    {
-        var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';
-        if(!d.getElementById(id))
-        {
-            js=d.createElement(s);
-            js.id=id;
-            js.src=p+"://platform.twitter.com/widgets.js";
-            fjs.parentNode.insertBefore(js,fjs);
-        }
-    }
-    //(document,"script","twitter-wjs");
-    
-    // Returns false if a key is not in the object otherwise returns
-    // true
-    function keys_in(keys, ob)
-    {
-        if (!(typeof(ob) === 'object')) return false;
-        for (var i=0; i < keys.length; i++)
-        {
-            if (!(keys[i] in ob)) return false;
-        }
-        return true;
-    }
-    
-    function object_sorter(data,sortkey,reversed) {
-        // Prep
-        if (!sortkey) { sortkey = "_title"; }
-        var dataSorted = {};
-        var tmp = []; // filled with sortkey
-        var tmp2 = {}; // filled with obj, key=sortkey so we can find it
-        var tmp3 = {}; // filled with key, key==sortkey so we can find it
-        // Populate array with sortkey values
-        for (var key in data) {
-            try { 
-                tmp.push(data[key][sortkey]); 
-                tmp2[data[key][sortkey]] = data[key];
-                tmp3[data[key][sortkey]] = key;
-            } catch(e) { console.warn(" > data[key][sortkey] undefined: "+key+", "+sortkey); }
-        }
-        // Sort
-        tmp.sort();
-        if (reversed) { tmp.reverse(); }
-        // Build new data
-        for (var i=0; i<tmp.length; i++) {
-            var tmpkey = tmp[i];
-            var datakey = tmp3[tmpkey];
-            dataSorted[datakey] = tmp2[tmpkey];
-        }
-        return dataSorted;
-    }
-    
-    function date_format(date) 
-    {
-        var monthNames = [
-          "January", "February", "March",
-          "April", "May", "June", "July",
-          "August", "September", "October",
-          "November", "December"
-        ];
-        var year = date.substring(0,4);
-        var month = monthNames[parseInt(date.substring(5,6))];
-        var day = date.substring(7,8);
-        return ""+day+' '+month+' '+year;
-    }
-    /* End helpers */
-    
-    /* Appie methods */
-
-    function appie_kickstart() 
-    {
-        jQuery.getJSON("all.json", function(data) {
-            JSONDATA = data;
-            var location = window.location.href.split('#')[1] || "";
-            setInterval(img_slider, 5000);
-            appie_route('#'+location);
-        }).error(function(e) {
-            console.log("error getting all.json");
-            console.log(e);
-        });
-    }
-    
-    function appie_latest()
-    {
-        // add latest project
-        appie_latest_something(['projects']);
-        appie_latest_something(['_rd_']);     
-        // add twitter widget
-        appie_grid_cell("Twitter @sphaero", '<a class="twitter-timeline"  height="15.3em" href="https://twitter.com/sphaero" data-chrome="nofooter transparent noheader noscrollbar" data-theme="dark" data-link-color="#BAA39C" data-widget-id="343804020034514944">Tweets by @sphaero</a>');
-        twit(document,"script","twitter-wjs");
-        try 
-        {
-            twttr.widgets.load();
-        }
-        catch(err) {
-        }
-    }
-    
-    // clear the containers and load with data from the JSONDATA based
-    // on location
-    function appie_route(location_path)
-    {
-        if (location_path === undefined || location_path == "#") 
-        {
-            location_path = "#_home.html";
-        }
-        console.log("Appie parse location: "+location_path);
-        // update address bar
-        history.pushState({}, "location_path", location_path);
-        var path = location_path.split('?');
-        // set navbar active item
-        $('#navbarCollapse li').removeClass('active');
-        $('#navbarCollapse a[href="'+path[0]+'"]').parent().addClass('active');
-        $("#appie_jumboframe").hide();
+        <a href="/blog/">/blog</a>
         
-        var json_key = path[0].substring(1);
-        var location_data = JSONDATA[json_key];
-        switch (json_key)
-        {
-            case "projects":
-                if (path.length == 2)
-                {
-                    // single project so full display it
-                    location_data = location_data[path[1]];
-                    appie_project(path[1]);
-                }
-                else 
-                {
-                    $("#appie_grid").empty();
-                    appie_projects(["projects"]);
-                }
-                break;
-            case "_rd_":
-                if (path.length == 2)
-                {
-                    // single project so full display it
-                    location_data = location_data[path[1]];
-                    console.log('rd '+path[1]);
-                    appie_rd(path[1]);
-                }
-                else 
-                {
-                    $("#appie_grid").empty();
-                    appie_rds(['_rd_']);
-                }
-                break;
-            case "_home.html":
-                appie_jumbo_home(JSONDATA[json_key]);
-                $("#appie_grid").empty();
-                appie_latest();
-                break;
-            case "about.textile":
-                appie_jumbo("", "", JSONDATA[json_key], []);
-                break;
-            default:
-	        $("#appie_grid").empty();
-	        appie_latest();
-        }
-        // fixup the ui
-        //$('#main_container img').addClass('img-responsive');
-        $('.appie_a').off().on("click", appie_click);
-    }
-    
-    function appie_navbar_add(title, key_path)
-    {   // obsolete
-        if (NAVBAR_DONE) return;
-        var key_path_str = key_path.join("?");   // used in appie_key
-        $('#navbarCollapse ul').append('<li><a appie_key="'
-                +key_path_str+'" href="#'+key_path_str+'" class="appie_a">'
-                +title.toUpperCase()
-                +'</a></li>');
-    }
-    
-    function appie_jumbo(title, desc, body, imgs)
-    {
-        console.log("Rendering jumbo frame: "+title);
-        $("#appie_jumboframe").empty();
-        if (imgs.length >= 1)
-        {
-            var img = img_slider_container(imgs);            
-            var elmnt = jQuery('<div/>', {
-                            id: "appie_images",
-                            class: "col-sm-12 col-md-8 col-lg-6"})
-                        .append(img);
-            $('#appie_jumboframe').append(elmnt);
-            var el2 = jQuery('<div/>', {
-                            class: "col-sm-12 col-md-4 col-lg-6"})
-                        .append('<div class=appie_text><p>'
-                        +body
-                        +'</p></div>');
-            $('#appie_jumboframe').append(el2);
-            if (imgs.length > 1) 
-            {
-                $('.appie_img_slider').hide();
-                IMG_SLIDER_COUNTER = 0;
-                $('#appie_img_slider0').show();
-            }
-            else $('#appie_img_slider0').show();
-        }
-        else
-        {
-            var el = jQuery('<div/>', {
-                            class: "col-sm-12 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3"})
-                        .append('<div class=appie_text><p>'
-                        +body
-                        +'</p></div>');
-            $('#appie_jumboframe').append(el);
-        }
-        $("#appie_jumboframe").show();
-    }
-    
-    function _find_imgs_in_obj(obj, imgs) 
-    {
-        for (var key in obj)
-        {
-            if (key.endsWith(".png"))
-            {
-                //is img so save
-                if (keys_in(['web'], obj[key]))
-                {
-                    var img = obj[key]['path'] +'/'+ obj[key]['web'];
-                    imgs.push(img);
-                }
-            }
-            else if (key.endsWith(".jpg"))
-            {
-                var img = obj[key] + '/' + key;
-                imgs.push(img);
-            }
-            else if (typeof(obj[key]) === 'object') 
-            {
-                _find_img_in_obj(obj[key], imgs);
-            }
-        }
-    }
-    
-    function _find_img_in_obj(obj, imgs) 
-    {
-        for (var key in obj)
-        {
-            if (key.endsWith(".png"))
-            {
-                //is img so save
-                if (keys_in(['web'], obj[key]))
-                {
-                    var img = obj[key]['path'] +'/'+ obj[key]['web'];
-                    imgs.push(img);
-                    break;  //only get one img, so next iter
-                }
-            }
-            else if (typeof(obj[key]) === 'object') 
-            {
-                _find_img_in_obj(obj[key], imgs);
-            }
-        }
-    }
-    
-    function appie_jumbo_home(body)
-    {
-        console.log("Rendering jumbo home frame");
-        $("#appie_jumboframe").empty();
-        var imgs = [];
-        //get all images
-        _find_img_in_obj(JSONDATA, imgs); //this should fill the array
-        var img = img_slider_container(imgs);            
-        var elmnt = jQuery('<div/>', {
-                            id: "appie_images",
-                            class: "col-xs-12 col-sm-12"})
-                        .append(img);
-        $('#appie_jumboframe').append(elmnt);
-        // set height based on screen width
-        $('#appie_img_slider_container').height(($(window).width()*0.5625)-10);
-        var modal = '<div class="appie_modal" id="myModal"><div class="appie_modal-content">'
-                    +'<button type="button" class="close" data-dismiss="modal">&times;</button>'+body+'</div></div>'
-        $('#appie_jumboframe').append(modal);
-        $('.appie_img_slider').hide();
-        IMG_SLIDER_COUNTER = 0;
-        $('#appie_img_slider0').show();
-        $("#appie_jumboframe").show();
-        $('#myModal button').click(function() { $(this).parent().hide();});
-    }
-    
-    function appie_grid_cell(title, descr, img, link)
-    {
-        console.log("Rendering grid cell: "+title);
-        if (!(link === undefined)) 
-        {
-            var attrs = {class: "appie_cell col-sm-6 col-md-4 col-lg-3"};
-            if (img) 
-            {
-                attrs['style'] = 'background-image: url("'+img+'"); background-size: cover;';
-                attrs['class'] = "appie_cell appie_cell_img col-sm-6 col-md-4 col-lg-3";
-            }
-            var elmnt = jQuery('<div/>', attrs)
-                        .html('<div class="appie_cell_header">'+title+'</div><p class="descr"><span>'
-                        +descr
-                        +'</span></p><p><a'
-                        +'" href="'+link
-                        +'" class="btn btn-success pull-right appie_a">More &raquo;</a></p>');
-        }
-        else
-        {
-            //simple entry
-            var elmnt = jQuery('<div/>', {
-                        class: "appie_cell appie_cell col-sm-6 col-md-4 col-lg-3"
-                    }).html('<div class="appie_cell_header">'+title+'</div>'
-                        +descr);
-        }
-        $('#appie_grid').append(elmnt);
-    }
-    
-    //render a grid of projects
-    function appie_projects(json_path)
-    {
-        //json_path should be a list
-        var pdata = JSONDATA;
-        for (var i in json_path)
-        {
-            pdata = pdata[json_path[i]];
-        }
-        pdata = object_sorter(pdata, '_date', true);
-        for (var key in pdata)
-        {
-            // test if valid project entry
-            if (keys_in(['_date','_description','_status','_title'], pdata[key]))
-            {
-                //console.log("project " + pdata[key]['_title']);
-                // Just get the project's data and put it in a div with
-                // a button
-                firstimgentry = Object.keys(pdata[key]['img'])[0];
-                if (firstimgentry.endsWith(".png"))
-                {
-                    var thumbimg = json_path.join("/") + '/' 
-                                        + key +'/img/' 
-                                        + pdata[key]['img'][firstimgentry]['thumb'];
-                }
-                else
-                {
-                    var thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
-                }
-                // add to the grid
-                appie_grid_cell(pdata[key]['_title'], 
-                                pdata[key]['_description'],
-                                thumbimg,
-                                '#projects?'+key);
-            }
-        }
-    }
-    
-    //render a view of a single project
-    function appie_project(prj)
-    {
-        var pdata = JSONDATA['projects'][prj];
-        // prep images first
-        imgs = [];
-        for (var img in pdata['img'])
-        {
-            if (img.endsWith(".png"))
-            {
-                imgs.push('projects/'+prj+'/img/'+pdata['img'][img]['web']);
-            }
-            else
-            {
-                imgs.push(pdata['img'][img] + '/' + img);
-            }
-        }
-        //just a wacky hacky fix
-        var body = "";
-        if (keys_in(['body.md',], pdata)) {
-			body = pdata['body.md'];
-		}
-		else
-		{
-			body = pdata['_body.textile'];
-		}
-        var el = appie_jumbo(pdata['_title'],
-                    pdata['_description'],
-                    body,
-                    imgs);
-    }
-    
-    //get the latest project
-    function appie_latest_something(json_path, amount) 
-    {
-        if (amount === undefined) amount = 1;
-        var pdata = JSONDATA;
-        for (var i in json_path)
-        {
-            pdata = pdata[json_path[i]];
-        }
-        pdata = object_sorter(pdata, '_date', true);
-        // test if valid project entry
-        for (var key in pdata)
-        {
-            if (keys_in(['_date','_title'], pdata[key]))
-            {
-                console.log("latest: " + pdata[key]['_title']);
-                // Just get the project's data and put it in a div with
-                // a button
-                var thumbimg = "";
-                if (keys_in(['img'], pdata[key]))
-                {
-                    firstimgentry = Object.keys(pdata[key]['img'])[0];
-                    //console.log(firstimgentry);
-                    if (firstimgentry.endsWith(".png"))
-                    {
-                        thumbimg = json_path.join('/') +'/'+ key 
-                                    + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
-                    }
-                    else
-                    {
-                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
-                    }
-                }
-                // add to the grid
-                var descr = pdata[key]['_description'] || pdata[key]['_abstract'];
-                var link = '#'+json_path.join('?') +'?'+key;
-                if (keys_in(["_abstract", "_author"], pdata[key]))
-                {
-                    // link to paper html
-                    link = json_path.join('/') + '/' + key;
-                }
-                appie_grid_cell("latest: "+pdata[key]['_title'], 
-                                descr,
-                                thumbimg,
-                                link);
-                amount--;
-                if (amount == 0) return;
-            }
-        }
-    }
-
-    //render a grid of r&d entries
-    function appie_rds(json_path) 
-    {
-        //json_path should be a list
-        var pdata = JSONDATA;
-        console.log(pdata);
-        for (var i in json_path)
-        {
-            pdata = pdata[json_path[i]];
-        }
-        pdata = object_sorter(pdata, '_date', true);
+        <a href="/projects/">/projects</a>
         
-        for (var key in pdata)
-        {
-            // test if valid entry
-            if (keys_in(['body.md','_title','_description'], pdata[key]))
-            {
-                //console.log("_rd_ " + pdata[key]['_title']);
-                // Just get the r&d's data and put it in a div with
-                // a button
-                var thumbimg = "";
-                if (keys_in(['img'], pdata[key]))
-                {
-                    firstimgentry = Object.keys(pdata[key]['img'])[0];
-                    if (firstimgentry.endsWith(".png"))
-                    {
-                        thumbimg = '/_rd_/' + key + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
-                    }
-                    else
-                    {
-                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
-                    }
-                }
-                var el = appie_grid_cell(pdata[key]['_title'], 
-                                pdata[key]['_description'],
-                                thumbimg,
-                                '#_rd_?'+key);
-                $('#appie_grid').append(el);
-            }
-            // z25 r&d entry
-            else if (keys_in(['_body.textile','_title','_abstract', '_author', '_date'], pdata[key]))
-            {
-                //console.log("z25_rd_ " + pdata[key]['_title']);
-                var thumbimg = "";
-                if (keys_in(['img'], pdata[key]))
-                {
-                    firstimgentry = Object.keys(pdata[key]['img'])[0];
-                    if (firstimgentry.endsWith(".png"))
-                    {
-                        thumbimg = '/_rd_/' + key + '/img/' + pdata[key]['img'][firstimgentry]['thumb'];
-                    }
-                    else
-                    {
-                        thumbimg = pdata[key]['img'][firstimgentry] + '/' + firstimgentry
-                    }
-                }
-                var el = appie_grid_cell(pdata[key]['_title'], 
-                                pdata[key]['_abstract'],
-                                thumbimg,
-                                '_rd_/'+ key);
-            }
-        }
-    }
-    
-    function appie_rd(rd)
-    {
-        var pdata = JSONDATA['_rd_'][rd];
-        var imgs = [];
-        _find_imgs_in_obj(pdata['img'], imgs);
-        var el = appie_jumbo(pdata['_title'],
-                    pdata['_description'],
-                    pdata['body.md'],
-                    imgs);
-    }
-    
-    function appie_click(e) 
-    {
-        var href = $(e.currentTarget).attr('href');
-        if ( href.startsWith('#') )
-        {
-            //e.preventDefault();
-            appie_route(href);
-            window.scrollTo(0, 0);
-            console.log('appie_click: '+$(e.currentTarget).attr('href'));
-            //var appie_key = $(e.target).attr('appie_key');
-            IMG_SLIDER_COUNTER = 0;
-            //just a fix to make the dropdown list dissappear after clicking
-            if ($('div.navbar-collapse').hasClass('in')) {
-                $('button.navbar-toggle:visible').click();
-            }
-            return false;
-        }
-        console.log('normal_click: '+href);
-        window.location.href = href;
-        return true;
-    }
-    
-    function img_slider_container(imgs)
-    {
-        var div = jQuery('<div/>', { 
-                                    id: 'appie_img_slider_container', 
-                                    class: 'img_slider_container',
-                                    img_count: imgs.length
-                                   });
-        for (var i in imgs) 
-        {
-            var img = jQuery('<img/>', {
-                                        src: imgs[i],
-                                        class: 'appie_img_slider img-responsive',
-                                        style: 'display: none;',
-                                        id: 'appie_img_slider'+i
-                                       });
-            div.append(img);
-        }
-        //div.append(fig);
-        return div;
-    }
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
 
-    function img_slider() 
-    {
-        var img_count = jQuery('#appie_img_slider_container').attr('img_count');
-        if (img_count > 1)
-        {
-            $('#appie_img_slider'+IMG_SLIDER_COUNTER).fadeOut(800, function() 
-            {
-                IMG_SLIDER_COUNTER += 1;
-                if (IMG_SLIDER_COUNTER >= img_count) IMG_SLIDER_COUNTER = 0;
-                $('#appie_img_slider'+IMG_SLIDER_COUNTER).hide();
-                $('#appie_img_slider'+IMG_SLIDER_COUNTER).fadeIn(800);
-            });
-        }
-    }
-    </script>    
-  </head>
-<body>
-<nav id="myNavbar" class="navbar navbar-default navbar-inverse" role="navigation">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbarCollapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand appie_a" href="#"><img src=""/></a>
-        </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="nav navbar-nav">
-                <li><a href="#projects" class="appie_a">projects</a></li>
-                <li><a href="#_rd_" class="appie_a">r&d</a></li>
-                <!--<li><a appie_key="blog" href="#blog" class="appie_a">blog</a></li>-->
-                <li><a href="#about.textile" class="appie_a">about</a></li>
-            </ul>
+    <main>
+        
+    
+    
+    
+    <div style="padding:270px 4em 4em 4em;width:100%;background-image:url(agtergront.gif);background-position:center;background-repeat:no-repeat">
+        <a href="/about.html">
+            
+                <img style="float:right;" src=/logo.PNG />
+            
+            <h1></h1>
+        </a>
+        <p>
+            
+                Exploring creativity and computing through empowering artists and 
+inspriring developers!
+                <p><a href="/about.html"> (read more)</a></p>
+            
+        </p>
+    </div>
+    
+    
+
+
+    <h3>Latest</h3>
+    
+    <div class="responsive">
+        <div class="gallery">
+            <a href="/r&d/creativeconcur">
+            
+                <div class="bgimg" style="background-image: url('/r&d/creativeconcur/img/philtable_thumb.jpg');">
+                <span>Concurrency for Creative Coding
+</span>
+                </div>
+            
+            </a>
         </div>
     </div>
-</nav>
-<div id="main_container" class="container-fluid">
-    <div id="appie_jumboframe" class="no-gutter row">
-    </div>
-    <div id="appie_grid" class="no-gutter row">
-    </div>
-    <div id="appie_footer" class="no-gutter row">
-        <div class="col-sm-12">
-            <div style="float:left;">© Copyright Arnaud Loonstra</div>
-            <div style="float:right; color: #0f0;">E: 95.211.58.198</div>
+    
+    <div class="responsive">
+        <div class="gallery">
+            <a href="/blog/20241220_site_restart.html">
+            
+                <div class="bgimg" style="background-image: url('/agtergront.gif');">
+                <span>restarting a site</span>
+                </div>
+            
+            </a>
         </div>
     </div>
-</div>
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-    <script>jQuery(document).ready(appie_kickstart());</script>
+    
+    <div class="responsive">
+        <div class="gallery">
+            <a href="/projects/shitload">
+            
+                <div class="bgimg" style="background-image: url('/projects/shitload/img/foto2Particulier_thumb.jpg');">
+                <span>Shitload of Data
+</span>
+                </div>
+            
+            </a>
+        </div>
+    </div>
+    
+
+<div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+
+<tags>
+    <ul class="center">
+    <div>TAGS</div>
+    
+    <li><a href="/tags/7zip.html">7zip</a></li>
+    
+    <li><a href="/tags/apache.html">apache</a></li>
+    
+    <li><a href="/tags/architecture.html">architecture</a></li>
+    
+    <li><a href="/tags/authentication.html">authentication</a></li>
+    
+    <li><a href="/tags/bash.html">bash</a></li>
+    
+    <li><a href="/tags/bcm43228.html">bcm43228</a></li>
+    
+    <li><a href="/tags/bge.html">bge</a></li>
+    
+    <li><a href="/tags/bgecpp.html">bgecpp</a></li>
+    
+    <li><a href="/tags/blender.html">blender</a></li>
+    
+    <li><a href="/tags/bluetooth.html">bluetooth</a></li>
+    
+    <li><a href="/tags/busybox.html">busybox</a></li>
+    
+    <li><a href="/tags/c.html">c</a></li>
+    
+    <li><a href="/tags/c++.html">c++</a></li>
+    
+    <li><a href="/tags/camera.html">camera</a></li>
+    
+    <li><a href="/tags/certificate.html">certificate</a></li>
+    
+    <li><a href="/tags/cgi.html">cgi</a></li>
+    
+    <li><a href="/tags/cherrypy.html">cherrypy</a></li>
+    
+    <li><a href="/tags/cmdline.html">cmdline</a></li>
+    
+    <li><a href="/tags/compiling.html">compiling</a></li>
+    
+    <li><a href="/tags/dd.html">dd</a></li>
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/debirf.html">debirf</a></li>
+    
+    <li><a href="/tags/debootstrap.html">debootstrap</a></li>
+    
+    <li><a href="/tags/dell.html">dell</a></li>
+    
+    <li><a href="/tags/distribute.html">distribute</a></li>
+    
+    <li><a href="/tags/dnsmasq.html">dnsmasq</a></li>
+    
+    <li><a href="/tags/dpi.html">dpi</a></li>
+    
+    <li><a href="/tags/eap.html">eap</a></li>
+    
+    <li><a href="/tags/education.html">education</a></li>
+    
+    <li><a href="/tags/email.html">email</a></li>
+    
+    <li><a href="/tags/embeded.html">embeded</a></li>
+    
+    <li><a href="/tags/emdebian.html">emdebian</a></li>
+    
+    <li><a href="/tags/ext3.html">ext3</a></li>
+    
+    <li><a href="/tags/fdisk.html">fdisk</a></li>
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/filesystem.html">filesystem</a></li>
+    
+    <li><a href="/tags/freeradius.html">freeradius</a></li>
+    
+    <li><a href="/tags/gcc.html">gcc</a></li>
+    
+    <li><a href="/tags/glsl.html">glsl</a></li>
+    
+    <li><a href="/tags/gnutls.html">gnutls</a></li>
+    
+    <li><a href="/tags/groups.html">groups</a></li>
+    
+    <li><a href="/tags/grub.html">grub</a></li>
+    
+    <li><a href="/tags/hack.html">hack</a></li>
+    
+    <li><a href="/tags/honeypot.html">honeypot</a></li>
+    
+    <li><a href="/tags/init.html">init</a></li>
+    
+    <li><a href="/tags/initramfs.html">initramfs</a></li>
+    
+    <li><a href="/tags/initrd.html">initrd</a></li>
+    
+    <li><a href="/tags/insight.html">insight</a></li>
+    
+    <li><a href="/tags/installer.html">installer</a></li>
+    
+    <li><a href="/tags/jabber.html">jabber</a></li>
+    
+    <li><a href="/tags/javascript.html">javascript</a></li>
+    
+    <li><a href="/tags/jdap.html">jdap</a></li>
+    
+    <li><a href="/tags/lab.html">lab</a></li>
+    
+    <li><a href="/tags/ldap.html">ldap</a></li>
+    
+    <li><a href="/tags/libs.html">libs</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/logging.html">logging</a></li>
+    
+    <li><a href="/tags/mapping.html">mapping</a></li>
+    
+    <li><a href="/tags/mercurial.html">mercurial</a></li>
+    
+    <li><a href="/tags/mesa.html">mesa</a></li>
+    
+    <li><a href="/tags/mint.html">mint</a></li>
+    
+    <li><a href="/tags/mta.html">mta</a></li>
+    
+    <li><a href="/tags/mts.html">mts</a></li>
+    
+    <li><a href="/tags/multistrap.html">multistrap</a></li>
+    
+    <li><a href="/tags/network.html">network</a></li>
+    
+    <li><a href="/tags/nfs.html">nfs</a></li>
+    
+    <li><a href="/tags/omg.html">omg</a></li>
+    
+    <li><a href="/tags/opencl.html">opencl</a></li>
+    
+    <li><a href="/tags/openframeworks.html">openframeworks</a></li>
+    
+    <li><a href="/tags/openGL.html">openGL</a></li>
+    
+    <li><a href="/tags/opengl.html">opengl</a></li>
+    
+    <li><a href="/tags/openldap.html">openldap</a></li>
+    
+    <li><a href="/tags/openssl.html">openssl</a></li>
+    
+    <li><a href="/tags/osx.html">osx</a></li>
+    
+    <li><a href="/tags/pam.html">pam</a></li>
+    
+    <li><a href="/tags/parallelcomputing.html">parallelcomputing</a></li>
+    
+    <li><a href="/tags/passwords.html">passwords</a></li>
+    
+    <li><a href="/tags/patch.html">patch</a></li>
+    
+    <li><a href="/tags/permacomputing.html">permacomputing</a></li>
+    
+    <li><a href="/tags/php.html">php</a></li>
+    
+    <li><a href="/tags/pip.html">pip</a></li>
+    
+    <li><a href="/tags/postfix.html">postfix</a></li>
+    
+    <li><a href="/tags/programming.html">programming</a></li>
+    
+    <li><a href="/tags/projection.html">projection</a></li>
+    
+    <li><a href="/tags/prosody.html">prosody</a></li>
+    
+    <li><a href="/tags/protocol.html">protocol</a></li>
+    
+    <li><a href="/tags/pxe.html">pxe</a></li>
+    
+    <li><a href="/tags/python.html">python</a></li>
+    
+    <li><a href="/tags/qemu.html">qemu</a></li>
+    
+    <li><a href="/tags/qt.html">qt</a></li>
+    
+    <li><a href="/tags/R&D.html">R&D</a></li>
+    
+    <li><a href="/tags/radius.html">radius</a></li>
+    
+    <li><a href="/tags/ramdisk.html">ramdisk</a></li>
+    
+    <li><a href="/tags/rdesktop.html">rdesktop</a></li>
+    
+    <li><a href="/tags/rdp.html">rdp</a></li>
+    
+    <li><a href="/tags/redmine.html">redmine</a></li>
+    
+    <li><a href="/tags/regex.html">regex</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    <li><a href="/tags/remote.html">remote</a></li>
+    
+    <li><a href="/tags/research.html">research</a></li>
+    
+    <li><a href="/tags/resize.html">resize</a></li>
+    
+    <li><a href="/tags/root.html">root</a></li>
+    
+    <li><a href="/tags/rootstock.html">rootstock</a></li>
+    
+    <li><a href="/tags/rtmp.html">rtmp</a></li>
+    
+    <li><a href="/tags/setup.html">setup</a></li>
+    
+    <li><a href="/tags/smart communication.html">smart communication</a></li>
+    
+    <li><a href="/tags/ssl.html">ssl</a></li>
+    
+    <li><a href="/tags/streaming.html">streaming</a></li>
+    
+    <li><a href="/tags/svn.html">svn</a></li>
+    
+    <li><a href="/tags/syslog.html">syslog</a></li>
+    
+    <li><a href="/tags/template.html">template</a></li>
+    
+    <li><a href="/tags/threads.html">threads</a></li>
+    
+    <li><a href="/tags/ubuntu.html">ubuntu</a></li>
+    
+    <li><a href="/tags/unix.html">unix</a></li>
+    
+    <li><a href="/tags/ustream.html">ustream</a></li>
+    
+    <li><a href="/tags/uvc.html">uvc</a></li>
+    
+    <li><a href="/tags/video.html">video</a></li>
+    
+    <li><a href="/tags/virtualbox.html">virtualbox</a></li>
+    
+    <li><a href="/tags/vlc.html">vlc</a></li>
+    
+    <li><a href="/tags/vodafone.html">vodafone</a></li>
+    
+    <li><a href="/tags/web.html">web</a></li>
+    
+    <li><a href="/tags/webcam.html">webcam</a></li>
+    
+    <li><a href="/tags/webob.html">webob</a></li>
+    
+    <li><a href="/tags/werkzeug.html">werkzeug</a></li>
+    
+    <li><a href="/tags/wget.html">wget</a></li>
+    
+    <li><a href="/tags/wheezy.html">wheezy</a></li>
+    
+    <li><a href="/tags/windows.html">windows</a></li>
+    
+    <li><a href="/tags/wireless.html">wireless</a></li>
+    
+    <li><a href="/tags/workflow.html">workflow</a></li>
+    
+    <li><a href="/tags/wsgi.html">wsgi</a></li>
+    
+    <li><a href="/tags/xcode.html">xcode</a></li>
+    
+    <li><a href="/tags/zeromq.html">zeromq</a></li>
+    
+    <li><a href="/tags/zocp.html">zocp</a></li>
+    
+    </ul>
+</tags>
+
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
 </body>
 </html>

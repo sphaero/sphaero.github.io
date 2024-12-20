@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ffmpeg ustream broadcasting - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/rtmp.html">rtmp</a></li>
+    
+    <li><a href="/tags/streaming.html">streaming</a></li>
+    
+    <li><a href="/tags/ustream.html">ustream</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="ffmpeg-ustream-broadcasting">Ffmpeg ustream broadcasting</h1>
+<p>A simple setup to see how well streaming from ffmpeg to <a href="http://ustream.tv">ustream.tv</a> works.</p>
+<p><em>Tests are performed on a 32 bit Ubuntu Lucid machine:</em></p>
+<h1 id="_1"></h1>
+<p>First let's start clean but updated:</p>
+<div class="codehilite"><pre><span></span><code>sudo apt-get remove ffmpeg x264 libx264-dev
+sudo apt-get update
+sudo apt-get install build-essential git-core checkinstall yasm texi2html libfaac-dev libopencore-amrnb-dev libopencore-amrwb-dev libsdl1.2-dev libtheora-dev libvorbis-dev libx11-dev libxfixes-dev libxvidcore-dev zlib1g-dev nasm libssl-dev
+</code></pre></div>
+
+<p>Get and install libx264</p>
+<div class="codehilite"><pre><span></span><code>git clone git://git.videolan.org/x264
+cd x264
+./configure --enable-static
+make
+sudo checkinstall --pkgname=x264 --default --pkgversion=&quot;3:$(./version.sh | \
+    awk -F&#39;[&quot; ]&#39; &#39;/POINT/{print $4&quot;+git&quot;$5}&#39;)&quot; --backup=no --deldoc=yes
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>cd
+git clone git://review.webmproject.org/libvpx
+cd libvpx
+#asm is out dated :(
+./configure --disable-asm
+make
+sudo checkinstall --pkgname=libvpx --pkgversion=&quot;$(date +%Y%m%d%H%M)-git&quot; --backup=no     --default --deldoc=yes
+</code></pre></div>
+
+<p>Get and install rtmpdump</p>
+<div class="codehilite"><pre><span></span><code>cd
+svn co svn://svn.mplayerhq.hu/rtmpdump/trunk rtmpdump
+cd rtmpdump
+make
+sudo checkinstall --pkgname=rtmpdump --pkgversion=2.3 --backup=no --deldoc=yes
+</code></pre></div>
+
+<p>Get and install libfaac</p>
+<div class="codehilite"><pre><span></span><code><span class="n">wget</span><span class="w"> </span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">faac</span><span class="o">/</span><span class="n">faac</span><span class="o">-</span><span class="mf">1.28</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">bz2</span>
+</code></pre></div>
+
+<p>Get and install lame</p>
+<div class="codehilite"><pre><span></span><code><span class="n">cd</span>
+<span class="n">wget</span><span class="w"> </span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">lame</span><span class="o">/</span><span class="n">lame</span><span class="o">/</span><span class="mf">3.98</span><span class="o">.</span><span class="mi">4</span><span class="o">/</span><span class="n">lame</span><span class="o">-</span><span class="mf">3.98</span><span class="o">.</span><span class="mf">4.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">tar</span><span class="w"> </span><span class="n">xzvf</span><span class="w"> </span><span class="n">lame</span><span class="o">-</span><span class="mf">3.98</span><span class="o">.</span><span class="mf">4.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">cd</span><span class="w"> </span><span class="n">lame</span><span class="o">-</span><span class="mf">3.98</span><span class="o">.</span><span class="mi">4</span>
+<span class="o">./</span><span class="n">configure</span><span class="w"> </span><span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">nasm</span><span class="w"> </span><span class="o">--</span><span class="n">disable</span><span class="o">-</span><span class="n">shared</span>
+<span class="n">make</span>
+<span class="n">sudo</span><span class="w"> </span><span class="n">checkinstall</span><span class="w"> </span><span class="o">--</span><span class="n">pkgname</span><span class="o">=</span><span class="n">lame</span><span class="o">-</span><span class="n">ffmpeg</span><span class="w"> </span><span class="o">--</span><span class="n">pkgversion</span><span class="o">=</span><span class="s2">&quot;3.98.4&quot;</span><span class="w"> </span><span class="o">--</span><span class="n">backup</span><span class="o">=</span><span class="n">no</span><span class="w"> </span><span class="o">--</span><span class="n">default</span><span class="w">     </span><span class="o">--</span><span class="n">deldoc</span><span class="o">=</span><span class="n">yes</span>
+</code></pre></div>
+
+<p>Get and install ffmpeg</p>
+<div class="codehilite"><pre><span></span><code>cd
+git clone git://git.videolan.org/ffmpeg
+cd ffmpeg
+./configure --enable-gpl --enable-version3 --enable-nonfree --enable-postproc --enable-libfaac --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libxvid --enable-x11grab --enable-libvpx --enable-libmp3lame --enable-librtmp
+make
+sudo checkinstall --pkgname=ffmpeg --pkgversion=&quot;5:$(./version.sh)&quot; --backup=no     --deldoc=yes --default
+</code></pre></div>
+
+<h1 id="putting-it-all-together">Putting it all together</h1>
+<p>Ffmpeg support for Ustream is not supported. You'll need to go to your dashboard page in Ustream - Manage my channel - Advanced settings. You can download the Flash Media Encoder XML file. Inside this file you'll find the RTMP url and stream. From this you can create the command for ffmpeg. In order to stream without the webportal you can remove 'offair' from the RTMP stream. For example streaming a webcam with sound:</p>
+<div class="codehilite"><pre><span></span><code>ffmpeg -v 5 -r 20 -s 320x240 -f video4linux2 -i /dev/video0 -f alsa -ac 2 -i pulse -acodec libmp3lame -ab 128k -ar 22050 -threads 0 -f flv $RTMPURL/$RTMPURL flashver=FMLE/3.0\20(compatible;\20FMSc/1.0)
+</code></pre></div>
+
+<p>Here's my channel, it'll probably be offline most of the time, though</p>
+<html>
+<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="480" height="296" id="utv395242"><param name="flashvars" value="autoplay=false&amp;brand=embed&amp;cid=8991369&amp;v3=1"/><param name="allowfullscreen" value="true"/><param name="allowscriptaccess" value="always"/><param name="movie" value="http:*www.ustream.tv/flash/viewer.swf"/><embed flashvars="autoplay=false&amp;brand=embed&amp;cid=8991369&amp;v3=1" width="480" height="296" allowfullscreen="true" allowscriptaccess="always" id="utv395242" name="utv_n_356749" src="http:*www.ustream.tv/flash/viewer.swf" type="application/x-shockwave-flash" /></object><br /><a href="http://www.ustream.tv/" style="padding: 2px 0px 4px; width: 400px; background: #ffffff; display: block; color: #000000; font-weight: normal; font-size: 10px; text-decoration: underline; text-align: center;" target="_blank">Streaming live video by Ustream</a>
+</html>
+
+<h2 id="notes">Notes</h2>
+<p>It works instantly in my setup to stream to Ustream.tv. However it quits after around 1700 frames. I don't know why but putting the command in a while loop works around the issue.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">while</span><span class="w"> </span><span class="nv">true</span><span class="c1">; do ffmpeg -v 5 -r 20 -s 320x240 -f video4linux2 -i /dev/video0 -f alsa -ac 2 -i pulse -acodec libmp3lame -ab 128k -ar 22050 -threads 0 -f flv $RTMPURL/$RTMPURL flashver=FMLE/3.0\20(compatible;\20FMSc/1.0); done</span>
+</code></pre></div>
+
+<h2 id="references">References</h2>
+<ul>
+<li>http://ubuntuforums.org/showpost.php?p=9868359&amp;postcount=1289</li>
+<li>http://blog.kyri0s.org/post/1406637341/free-live-video-streaming-with-http-live-streaming</li>
+<li>http://helpcenter.ustream.tv/content/broadcasting-higher-quality</li>
+</ul>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

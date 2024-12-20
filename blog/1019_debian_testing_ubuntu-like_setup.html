@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debian testing ubuntu-like setup - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/ubuntu.html">ubuntu</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="debian-testing-ubuntu-like-setup">Debian testing ubuntu-like setup</h1>
+<p>Ubuntu is getting a bit on my nerves. Time to test Debian testing!</p>
+<h2 id="_1"></h2>
+<p>I've installed a clean setup of Debian testing. Nothing installed! After installation I login as root and do:</p>
+<div class="codehilite"><pre><span></span><code>apt-get install task-xfce-desktop
+</code></pre></div>
+
+<p>Next I install some extras to get arround the missing non-free stuff!</p>
+<p><strong>These scripts might override some stuf of yours! So be warned.</strong>
+You can paste the code snippets directly in your terminal <strong>as root!</strong></p>
+<p>Enable non-free and contrib:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">cat</span><span class="w"> </span><span class="err">&gt;</span><span class="w"> </span><span class="err">/etc/apt/sources.list</span><span class="w"> </span><span class="err">&lt;&lt;</span><span class="w"> </span><span class="err">&quot;EOF&quot;</span>
+<span class="k">deb</span><span class="w"> </span><span class="s">http://ftp.nl.debian.org/debian/</span><span class="w"> </span><span class="kp">wheezy</span><span class="w"> </span><span class="kp">main</span><span class="w"> </span><span class="kp">contrib</span><span class="w"> </span><span class="kp">non-free</span>
+<span class="k">deb-src</span><span class="w"> </span><span class="s">http://ftp.nl.debian.org/debian/</span><span class="w"> </span><span class="kp">wheezy</span><span class="w"> </span><span class="kp">main</span><span class="w"> </span><span class="kp">contrib</span><span class="w"> </span><span class="kp">non-free</span>
+
+<span class="k">deb</span><span class="w"> </span><span class="s">http://security.debian.org/</span><span class="w"> </span><span class="kp">wheezy/updates</span><span class="w"> </span><span class="kp">main</span><span class="w"> </span><span class="kp">contrib</span><span class="w"> </span><span class="kp">non-free</span>
+<span class="k">deb-src</span><span class="w"> </span><span class="s">http://security.debian.org/</span><span class="w"> </span><span class="kp">wheezy/updates</span><span class="w"> </span><span class="kp">main</span><span class="w"> </span><span class="kp">contrib</span><span class="w"> </span><span class="kp">non-free</span>
+<span class="err">EOF</span>
+<span class="err">apt-get</span><span class="w"> </span><span class="err">update</span>
+</code></pre></div>
+
+<p>Get sudo support like ubuntu:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">apt</span><span class="o">-</span><span class="nv">get</span><span class="w"> </span><span class="nv">install</span><span class="w"> </span><span class="nv">gksu</span><span class="w"> </span><span class="nv">sudo</span>
+#<span class="nv">add</span><span class="w"> </span><span class="nv">your</span><span class="w"> </span><span class="nv">account</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">sudo</span><span class="w"> </span><span class="nv">group</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">some</span><span class="w"> </span><span class="nv">others</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="nv">we</span><span class="err">&#39;re at it</span>
+<span class="err">usermod -a -G adm,sudo,staff,games,users,crontab,dialout,cdrom,floppy,audio,video,plugdev,users z25</span>
+</code></pre></div>
+
+<p>Add Debian Multimedia:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">cat</span><span class="w"> </span><span class="err">&gt;&gt;</span><span class="w"> </span><span class="err">/etc/apt/sources.list</span><span class="w"> </span><span class="err">&lt;&lt;</span><span class="w"> </span><span class="err">&quot;EOF&quot;</span>
+<span class="c"># Debian Multimedia Packages - http://deb-multimedia.org/</span>
+<span class="c"># DMM mirror list http://deb-multimedia.org/debian-m</span>
+<span class="c"># Note new updated repo line and keyring</span>
+<span class="c"># Secure apt: apt-get install deb-multimedia-keyring</span>
+<span class="c"># Debian Testing</span>
+<span class="k">deb</span><span class="w"> </span><span class="s">http://www.deb-multimedia.org</span><span class="w"> </span><span class="kp">testing</span><span class="w"> </span><span class="kp">main</span><span class="w"> </span><span class="kp">non-free</span>
+<span class="err">EOF</span>
+<span class="err">apt-get</span><span class="w"> </span><span class="err">update</span>
+<span class="err">apt-get</span><span class="w"> </span><span class="err">install</span><span class="w"> </span><span class="err">deb-multimedia-keyring</span>
+<span class="c">#Accept to install without verification</span>
+<span class="err">apt-get</span><span class="w"> </span><span class="err">update</span>
+</code></pre></div>
+
+<p>After Debian multimedia install codecs and shit</p>
+<div class="codehilite"><pre><span></span><code>apt-get install gstreamer0.10-plugins-really-bad gstreamer0.10-plugins-ugly gstreamer0.10-plugins-bad mplayer vlc ttf-mscorefonts-installer w64codecs firmware-linux-nonfree flashplugin-nonfree
+</code></pre></div>
+
+<p>That should get you started!</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

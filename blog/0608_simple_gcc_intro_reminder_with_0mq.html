@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple gcc intro reminder with 0mq - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/gcc.html">gcc</a></li>
+    
+    <li><a href="/tags/compiling.html">compiling</a></li>
+    
+    <li><a href="/tags/c.html">c</a></li>
+    
+    <li><a href="/tags/c++.html">c++</a></li>
+    
+    <li><a href="/tags/zeromq.html">zeromq</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="simple-gcc-introreminder-with-0mq">Simple gcc intro/reminder with 0mq</h1>
+<p>Just as a quick reminder and test for a very minimal setup with gcc and the <a href="http://www.zeromq.org">0mq</a> library. This just compiles a static version of 0mq and runs one of the examples.</p>
+<p>I've downloaded the 2.2.0 version... Unpack it and go into the directory. Read the INSTALL and README so you know :-|</p>
+<p>*You'll need the dependencies like uuid-dev... so install them [^1]</p>
+<p>[^1]: apt-get install uuid-dev*</p>
+<p>Run the following to configure and compile</p>
+<div class="codehilite"><pre><span></span><code>./configure --enable-static --disable-shared
+make
+</code></pre></div>
+
+<p>Fix any errors. Usually that means installing dependencies.... Once you've succesfully compiled you don't need to run 'make install'. That only copies files to your system. You can find the static lib in 'src/.libs/libzmq.a'. That's the candy you need.</p>
+<p>A .a file is just an archive of all the .o files. Run the following to prove that</p>
+<div class="codehilite"><pre><span></span><code>$<span class="w"> </span>ar<span class="w"> </span>t<span class="w"> </span>src/.libs/libzmq.a
+libzmq_la-clock.o
+libzmq_la-command.o
+libzmq_la-ctx.o
+libzmq_la-connect_session.o
+libzmq_la-decoder.o
+libzmq_la-device.o
+libzmq_la-devpoll.o
+libzmq_la-dist.o
+libzmq_la-encoder.o
+libzmq_la-epoll.o
+libzmq_la-err.o
+libzmq_la-fq.o
+libzmq_la-io_object.o
+libzmq_la-io_thread.o
+libzmq_la-ip.o
+libzmq_la-kqueue.o
+libzmq_la-lb.o
+libzmq_la-mailbox.o
+libzmq_la-named_session.o
+libzmq_la-object.o
+libzmq_la-options.o
+libzmq_la-own.o
+libzmq_la-pair.o
+libzmq_la-pgm_receiver.o
+libzmq_la-pgm_sender.o
+libzmq_la-pgm_socket.o
+libzmq_la-pipe.o
+libzmq_la-poll.o
+libzmq_la-poller_base.o
+libzmq_la-pull.o
+libzmq_la-push.o
+libzmq_la-reaper.o
+libzmq_la-pub.o
+libzmq_la-rep.o
+libzmq_la-req.o
+libzmq_la-select.o
+libzmq_la-session.o
+libzmq_la-signaler.o
+libzmq_la-socket_base.o
+libzmq_la-sub.o
+libzmq_la-swap.o
+libzmq_la-tcp_connecter.o
+libzmq_la-tcp_listener.o
+libzmq_la-tcp_socket.o
+libzmq_la-thread.o
+libzmq_la-transient_session.o
+libzmq_la-trie.o
+libzmq_la-uuid.o
+libzmq_la-xpub.o
+libzmq_la-xrep.o
+libzmq_la-xreq.o
+libzmq_la-xsub.o
+libzmq_la-zmq.o
+libzmq_la-zmq_connecter.o
+libzmq_la-zmq_engine.o
+libzmq_la-zmq_init.o
+libzmq_la-zmq_listener.o
+</code></pre></div>
+
+<p>So now create a test.c file containing the following example from the 0mq site:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">//</span>
+<span class="c1">// Hello World server</span>
+<span class="o">*</span><span class="w"> </span><span class="n">Binds</span><span class="w"> </span><span class="n">REP</span><span class="w"> </span><span class="n">socket</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">tcp</span><span class="o">:**:</span><span class="mi">5555</span>
+<span class="c1">// Expects &quot;Hello&quot; from client, replies with &quot;World&quot;</span>
+<span class="c1">//</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;zmq.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zmq_init</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// Socket to talk to clients</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">responder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zmq_socket</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">ZMQ_REP</span><span class="p">);</span>
+<span class="w">  </span><span class="n">zmq_bind</span><span class="w"> </span><span class="p">(</span><span class="n">responder</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tcp://*:5555&quot;</span><span class="p">);</span>
+
+<span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Wait for next request from client</span>
+<span class="w">    </span><span class="n">zmq_msg_t</span><span class="w"> </span><span class="n">request</span><span class="p">;</span>
+<span class="w">    </span><span class="n">zmq_msg_init</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">request</span><span class="p">);</span>
+<span class="w">    </span><span class="n">zmq_recv</span><span class="w"> </span><span class="p">(</span><span class="n">responder</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">printf</span><span class="w"> </span><span class="p">(</span><span class="s">&quot;Received Hello</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">zmq_msg_close</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">request</span><span class="p">);</span>
+
+<span class="c1">// Do some &#39;work&#39;</span>
+<span class="w">    </span><span class="n">sleep</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1">// Send reply back to client</span>
+<span class="w">    </span><span class="n">zmq_msg_t</span><span class="w"> </span><span class="n">reply</span><span class="p">;</span>
+<span class="w">    </span><span class="n">zmq_msg_init_size</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+<span class="w">    </span><span class="n">memcpy</span><span class="w"> </span><span class="p">(</span><span class="n">zmq_msg_data</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">reply</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;World&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">);</span>
+<span class="w">    </span><span class="n">zmq_send</span><span class="w"> </span><span class="p">(</span><span class="n">responder</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">zmq_msg_close</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">reply</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// We never get here but if we did, this would be how we end</span>
+<span class="w">  </span><span class="n">zmq_close</span><span class="w"> </span><span class="p">(</span><span class="n">responder</span><span class="p">);</span>
+<span class="w">  </span><span class="n">zmq_term</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Let's compile and not link it yet. Compiling means we make .o file, a translation of the C code to machine code.</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">gcc</span><span class="w"> </span><span class="o">-</span><span class="nv">c</span><span class="w"> </span><span class="nv">test</span>.<span class="nv">c</span><span class="w"> </span><span class="o">-</span><span class="nv">I</span><span class="w"> </span><span class="k">include</span><span class="o">/</span>
+</code></pre></div>
+
+<ul>
+<li><strong>-c</strong> means compile not link</li>
+<li><strong>-I</strong> specifies the directory where 'zmq.h' can be found</li>
+</ul>
+<p>Now we need to link all of our machine code files so we have our executable. Since 0mq uses c++ we need to use g++ instead of gcc.</p>
+<div class="codehilite"><pre><span></span><code>g++ -o test test.o src/.libs/libzmq.a -lpthread -luuid -lrt
+</code></pre></div>
+
+<ul>
+<li><strong>-o</strong> means set the output file</li>
+<li><strong>test.o src/.libs/libzmq.a</strong> means link those two files</li>
+<li><strong>-lpthread -luuid -lrt</strong> means link also library pthread, uuid and rt since they are needed</li>
+</ul>
+<p>This will provide you with the 'test' exectable. Run it and see that it listens on port 5555.</p>
+<div class="codehilite"><pre><span></span><code>./test &amp;
+netstat -anp | grep 5555
+(Not all processes could be identified, non-owned process info
+ will not be shown, you would have to be root to see it all.)
+tcp        0      0 0.0.0.0:5555            0.0.0.0:*               LISTEN      14750/test      
+</code></pre></div>
+
+<p>That's it.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

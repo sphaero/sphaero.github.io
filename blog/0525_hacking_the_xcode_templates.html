@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacking the xcode templates - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/osx.html">osx</a></li>
+    
+    <li><a href="/tags/xcode.html">xcode</a></li>
+    
+    <li><a href="/tags/openframeworks.html">openframeworks</a></li>
+    
+    <li><a href="/tags/template.html">template</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="hacking-the-xcode-templates">Hacking the Xcode templates</h1>
+<p>I never work with OSX but my colleagues do. So sometimes I need to help them out. This time we wanted to create an Xcode template for <a href="http://openframeworks.cc">OpenFrameworks</a> with the application project outside of the openFrameworks root. As this templating thing in Xcode is quite undocumented this is kind of a reminder...</p>
+<p>Some example templates are shipped with OF. We found the ones in the GIT repository weren't good. We fixed them by adding the Cairo header paths.</p>
+<p>The thing is we want to keep OF in a seperate repository while working on applications. This way we can manage a central OF repository and the applications can just use that central repository. Much easier in a team workflow! However as Apple users are used to GUI's LOL they need a way to set the path to their OF root easily.</p>
+<p>I hacked the template project.pbxproj to use a custom variable (or macro if you prefer). However the macros are encoded in a different encoding inside the utf encoded file. This is a bit tricky. I ended up using find and replace with an hexeditor in order te set the variable.</p>
+<p>I use the OF_ROOT variable to replace all "../../.." entries. Like this snippet from the .pbxproj file:</p>
+<div class="codehilite"><pre><span></span><code><span class="w">                </span><span class="nx">GCC_WARN_UNUSED_VARIABLE</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">NO</span><span class="p">;</span>
+<span class="w">                </span><span class="nx">HEADER_SEARCH_PATHS</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span>
+<span class="w">                    </span><span class="s">&quot;«OF_ROOT»/libs/openFrameworks/**&quot;</span><span class="p">,</span>
+<span class="w">                    </span><span class="err">«</span><span class="nx">OF_ROOT</span><span class="err">»</span><span class="o">/</span><span class="nx">libs</span><span class="o">/</span><span class="nx">freetype</span><span class="o">/</span><span class="nx">include</span><span class="o">/</span><span class="p">,</span>
+<span class="w">                    </span><span class="err">«</span><span class="nx">OF_ROOT</span><span class="err">»</span><span class="o">/</span><span class="nx">libs</span><span class="o">/</span><span class="nx">freetype</span><span class="o">/</span><span class="nx">include</span><span class="o">/</span><span class="nx">freetype2</span><span class="p">,</span>
+<span class="w">                    </span><span class="err">«</span><span class="nx">OF_ROOT</span><span class="err">»</span><span class="o">/</span><span class="nx">libs</span><span class="o">/</span><span class="nx">poco</span><span class="o">/</span><span class="nx">include</span><span class="p">,</span>
+<span class="w">                    </span><span class="err">«</span><span class="nx">OF_ROOT</span><span class="err">»</span><span class="o">/</span><span class="nx">libs</span><span class="o">/</span><span class="nx">glew</span><span class="o">/</span><span class="nx">include</span><span class="p">,</span>
+<span class="w">                    </span><span class="err">«</span><span class="nx">OF_ROOT</span><span class="err">»</span><span class="o">/</span><span class="nx">libs</span><span class="o">/</span><span class="nx">tess2</span><span class="o">/</span><span class="nx">include</span><span class="p">,</span>
+<span class="w">                </span><span class="p">);</span>
+<span class="w">                </span><span class="nx">OTHER_CPLUSPLUSFLAGS</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">(</span>
+<span class="w">                    </span><span class="s">&quot;-D**MACOSX_CORE**&quot;</span><span class="p">,</span>
+</code></pre></div>
+
+<p>In a terminal on OSX you can set this variable with a this command:</p>
+<div class="codehilite"><pre><span></span><code>defaults write com.apple.Xcode PBXCustomTemplateMacroDefinitions &#39;{ &quot;OF_ROOT&quot; = &quot;../openFrameworks&quot;;}&#39;
+</code></pre></div>
+
+<p>You can read these vars with this command.</p>
+<div class="codehilite"><pre><span></span><code>defaults read com.apple.Xcode PBXCustomTemplateMacroDefinitions
+</code></pre></div>
+
+<p>Hey this is very similar to the old STEP environment .... ;-)</p>
+<p>I've found <a href="http://www.mailinglistarchive.com/xcode-users@lists.apple.com/msg05189.html">this</a> old thread very usefull. It says this:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">Somebody</span><span class="w"> </span><span class="nv">pointed</span><span class="w"> </span><span class="nv">you</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">method</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">modify</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Xcode</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">templates</span>,<span class="w"> </span><span class="nv">but</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">inadequate</span><span class="w"> </span><span class="nv">introduction</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">delicate</span><span class="w"> </span><span class="nv">proposition</span>.
+
+<span class="nv">An</span><span class="w"> </span><span class="nv">Xcode</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">template</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">specially</span><span class="w"> </span><span class="nv">modified</span><span class="w"> </span><span class="nv">Xcode</span><span class="w"> </span><span class="nv">project</span>.<span class="w"> </span><span class="nv">It</span><span class="w"> </span><span class="nv">has</span><span class="w"> </span><span class="nv">an</span><span class="w"> </span><span class="nv">additional</span><span class="w"> </span><span class="nv">plist</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">contains</span><span class="w"> </span><span class="nv">lists</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">files</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">should</span><span class="w"> </span><span class="nv">get</span><span class="w"> </span><span class="nv">renamed</span><span class="w"> </span><span class="nv">when</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">created</span><span class="w"> </span><span class="nv">from</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">template</span>,<span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">files</span><span class="w"> </span><span class="nv">whose</span><span class="w"> </span><span class="nv">contents</span><span class="w"> </span><span class="nv">need</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">macro</span><span class="o">-</span><span class="nv">expanded</span><span class="w"> </span><span class="nv">when</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">created</span><span class="w"> </span><span class="nv">from</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">template</span>
+
+<span class="nv">Basically</span>,<span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">way</span><span class="w"> </span><span class="nv">Xcode</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">template</span><span class="w"> </span><span class="nv">instantiation</span><span class="w"> </span><span class="nv">works</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">as</span><span class="w"> </span><span class="nv">follows</span>:
+
+<span class="mi">1</span><span class="ss">)</span><span class="w"> </span><span class="nv">Xcode</span><span class="w"> </span><span class="nv">reads</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">TemplateInfo</span>.<span class="nv">plist</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">template</span><span class="w"> </span><span class="nv">bundle</span><span class="s1">&#39;s .xcodeproject wrapper. 2) All files that aren&#39;</span><span class="nv">t</span><span class="w"> </span><span class="nv">listed</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">FilesToRename</span><span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="nv">FilesToMacroExpand</span><span class="w"> </span><span class="nv">arrays</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">plist</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">copied</span><span class="w"> </span><span class="nv">unaltered</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">designated</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">directory</span>.<span class="w"> </span><span class="mi">3</span><span class="ss">)</span><span class="w"> </span><span class="nv">All</span><span class="w"> </span><span class="nv">files</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">FilesToRename</span><span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">copied</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">designated</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">directory</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">renamed</span><span class="w"> </span><span class="nv">accordingly</span>.<span class="w"> </span><span class="nv">Each</span><span class="w"> </span><span class="nv">item</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">pair</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="ss">(</span><span class="nv">original</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">name</span><span class="ss">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">(</span><span class="nv">replacement</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">name</span><span class="ss">)</span>.<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">replacement</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="nv">usually</span><span class="w"> </span><span class="nv">has</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">macro</span><span class="w"> </span><span class="nv">like</span><span class="w"> </span>«<span class="nv">PROJECTNAME</span>»,<span class="w"> </span><span class="nv">which</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">replaced</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">project</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="nv">given</span><span class="w"> </span><span class="nv">by</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">user</span>.<span class="w"> </span><span class="mi">4</span><span class="ss">)</span><span class="w"> </span><span class="nv">All</span><span class="w"> </span><span class="nv">files</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">FilesToMacroExpand</span><span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="nv">run</span><span class="w"> </span><span class="nv">through</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">grep</span><span class="o">-</span><span class="nv">like</span><span class="w"> </span><span class="nv">process</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">replaces</span><span class="w"> </span><span class="nv">macros</span><span class="w"> </span><span class="nv">enclosed</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span>«<span class="w"> </span>»<span class="w"> </span><span class="nv">characters</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">expanded</span><span class="w"> </span><span class="nv">equivalents</span>.<span class="w"> </span><span class="nv">Below</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">candidate</span><span class="w"> </span><span class="nv">macros</span>.<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">ASIDENTIFIER</span><span class="w"> </span><span class="nv">macros</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">munged</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">start</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">alpha</span><span class="w"> </span><span class="nv">characters</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">not</span><span class="w"> </span><span class="k">include</span><span class="w"> </span><span class="nv">spaces</span>.<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">ASXML</span><span class="w"> </span><span class="nv">versions</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">escaped</span><span class="w"> </span><span class="nv">as</span><span class="w"> </span><span class="nv">XML</span>,<span class="w"> </span><span class="nv">so</span><span class="w"> </span><span class="nv">they</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">used</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">plist</span><span class="w"> </span><span class="nv">file</span>,<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">example</span>.<span class="w"> </span><span class="nv">The</span><span class="w"> </span><span class="nv">UUID</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">unique</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">each</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">expanded</span>,<span class="w"> </span><span class="nv">so</span><span class="w"> </span><span class="nv">you</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">uniquify</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="nv">names</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nv">needed</span>.
+
+<span class="nv">DATE</span>
+<span class="w"> </span><span class="nv">TIME</span>
+<span class="w"> </span><span class="nv">USERNAME</span>
+<span class="w"> </span><span class="nv">FULLUSERNAME</span>
+<span class="w"> </span><span class="nv">ORGANIZATIONNAME</span>
+<span class="w"> </span><span class="nv">YEAR</span>
+<span class="w"> </span><span class="nv">UUID</span>
+<span class="w"> </span><span class="nv">UUIDASIDENTIFIER</span>
+<span class="w"> </span><span class="nv">FILENAME</span>
+<span class="w"> </span><span class="nv">FILEBASENAME</span>
+<span class="w"> </span><span class="nv">FILEBASENAMEASIDENTIFIER</span>
+<span class="w"> </span><span class="nv">FILEBASENAMEASXML</span>
+<span class="w"> </span><span class="nv">FILEEXTENSION</span>
+<span class="w"> </span><span class="nv">PROJECTNAME</span>
+<span class="w"> </span><span class="nv">PROJECTNAMEASIDENTIFIER</span>
+<span class="w"> </span><span class="nv">PROJECTNAMEASXML</span>
+<span class="w"> </span><span class="nv">PRODUCTNAME</span>
+<span class="w"> </span><span class="nv">PRODUCTNAMEASIDENTIFIER</span>
+<span class="w"> </span><span class="nv">PRODUCTNAMEASXML</span>
+<span class="w"> </span><span class="nv">TARGETNAME</span>
+<span class="w"> </span><span class="nv">TARGETNAMEASIDENTIFIER</span>
+<span class="w"> </span><span class="nv">TARGETNAMEASXML</span>
+
+<span class="nv">Here</span><span class="s1">&#39;s the really important part. The project files are encoded as UTF-8, but the macro delimiter« and » are encoded in MacRoman. This is guaranteed to confuse you and most text editors. This is done to eliminate the possibility that real content in the project files or sources will be mistaken for template macros. Allowing your text editor (Xcode or TextMate) to set the file encoding to UTF-8 will cause the macro expansion to fail, and the templates will create corrupted products that don&#39;</span><span class="nv">t</span><span class="w"> </span><span class="nv">work</span>.
+
+<span class="nv">Better</span>,<span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">complete</span><span class="w"> </span><span class="nv">instructions</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">found</span><span class="w"> </span><span class="nv">at</span>
+
+<span class="nv">http</span>:<span class="o">//</span><span class="nv">briksoftware</span>.<span class="nv">com</span><span class="o">/</span><span class="nv">blog</span><span class="o">/</span>?<span class="nv">p</span><span class="o">=</span><span class="mi">28</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

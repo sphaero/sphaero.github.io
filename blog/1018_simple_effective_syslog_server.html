@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple effective syslog server - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/syslog.html">syslog</a></li>
+    
+    <li><a href="/tags/remote.html">remote</a></li>
+    
+    <li><a href="/tags/logging.html">logging</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="simple-effective-syslog-server">Simple effective syslog server</h1>
+<p>While I used to install <a href="http://code.google.com/p/php-syslog-ng/">php-syslog-ng</a> (now called Logzilla) I now just use the most simple setup for a syslog server. It looks nice to have a gui but logging everything to mysql is a huge bottleneck for performance. So I rebuild a syslog server which simply logs everything to files. A gui is nice but not nearly as powerful as the command line.</p>
+<h1 id="_1"></h1>
+<p>This is install was done on Debian Lenny but should work on any distribution which distributes syslog-ng.</p>
+<div class="codehilite"><pre><span></span><code>apt-get install syslog-ng apache2
+</code></pre></div>
+
+<p>edit /etc/syslog-ng/syslog-ng.conf. What needs to be added is logging through udp and logging to per host files. This is done by the following entries in the config:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">#Amongst others these are important options</span>
+<span class="n">options</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="o">...</span>
+<span class="w">  </span><span class="n">create_dirs</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+<span class="w">  </span><span class="n">dir_perm</span><span class="p">(</span><span class="mi">0755</span><span class="p">);</span>
+<span class="w">  </span><span class="o">...</span>
+<span class="p">}</span>
+<span class="c1">#All message received through the network</span>
+<span class="n">source</span><span class="w"> </span><span class="n">s_remote</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">udp</span><span class="p">();</span>
+<span class="p">};</span>
+<span class="c1">#every host gets it&#39;s own file per day.</span>
+<span class="c1">#I give the www-data group permission so the webserver can access the files</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_host</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/www/$HOST/$MONTH-$DAY.log&quot;</span>
+<span class="w">  </span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;www-data&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">template</span><span class="p">(</span><span class="s2">&quot;$YEAR-$MONTH-$DAY $PROGRAM $FACILITY $LEVEL $PRIORITY $MSG</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+<span class="c1">#log source to destination</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">source</span><span class="p">(</span><span class="n">s_remote_all</span><span class="p">);</span>
+<span class="w">  </span><span class="n">destination</span><span class="p">(</span><span class="n">df_host</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+
+<p>My complete syslog-ng.conf can be found at the bottom of this page:</p>
+<p>Although I advice everybody to just learn the command line I cannot get around the lazy admin who just wants to click through things. So to give them some options I just serve all the log files through Apache. Since I log everything to /var/www/ it works out of the box. (on Debian) You only need to remove the index.html</p>
+<div class="codehilite"><pre><span></span><code><span class="n">rm</span><span class="w"> </span><span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>
+</code></pre></div>
+
+<p>However security is a concern with a log archive. I just enable ldap authentication so only authenticated/authorized users can access the files. This is accomplished by changing the default site file in apache.</p>
+<p>in /etc/apache2/sites-available/default add and customise for your setup:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/var/www</span><span class="nt">/&gt;</span>
+<span class="w">       </span>Options<span class="w"> </span>+FollowSymLinks
+<span class="w">       </span>AuthType<span class="w"> </span>Basic
+<span class="w">       </span>AuthBasicProvider<span class="w"> </span>ldap
+<span class="w">       </span>AuthName<span class="w"> </span>&quot;Paspoort<span class="w"> </span>Login&quot;
+<span class="w">       </span>AuthLDAPURL<span class="w"> </span>ldaps://ldap.your.org:636/ou=users,o=org?cn
+<span class="w">       </span>AuthLDAPBindDN<span class="w"> </span>cn=admin,o=org
+<span class="w">       </span>AuthLDAPBindPassword<span class="w"> </span>&quot;secret&quot;
+<span class="w">       </span>Require<span class="w"> </span>valid-user
+<span class="w">       </span>AllowOverride<span class="w"> </span>None
+<span class="w">       </span>order<span class="w"> </span>deny,allow
+<span class="w">       </span>deny<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">       </span>allow<span class="w"> </span>from<span class="w"> </span>127.0.0.1
+<span class="w">       </span>satisfy<span class="w"> </span>any
+<span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
+</code></pre></div>
+
+<p><strong>Please note</strong> this is not a secure setup since the authentication is plaintext. If you want this to be most secure you'll need to https!</p>
+<h2 id="complete-syslog-ngconf">Complete syslog-ng.conf</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">#</span>
+<span class="c1"># Configuration file for syslog-ng under Debian</span>
+<span class="c1">#</span>
+<span class="c1"># attempts at reproducing default syslog behavior</span>
+
+<span class="c1"># the standard syslog levels are (in descending order of priority):</span>
+<span class="c1"># emerg alert crit err warning notice info debug</span>
+<span class="c1"># the aliases &quot;error&quot;, &quot;panic&quot;, and &quot;warn&quot; are deprecated</span>
+<span class="c1"># the &quot;none&quot; priority found in the original syslogd configuration is</span>
+<span class="c1"># only used in internal messages created by syslogd</span>
+
+<span class="c1">######</span>
+<span class="c1"># options</span>
+
+<span class="n">options</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1"># disable the chained hostname format in logs</span>
+<span class="w">        </span><span class="c1"># (default is enabled)</span>
+<span class="w">        </span><span class="n">chain_hostnames</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="c1"># the time to wait before a died connection is re-established</span>
+<span class="w">        </span><span class="c1"># (default is 60)</span>
+<span class="w">        </span><span class="n">time_reopen</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+
+<span class="c1"># the time to wait before an idle destination file is closed</span>
+<span class="w">        </span><span class="c1"># (default is 60)</span>
+<span class="w">        </span><span class="n">time_reap</span><span class="p">(</span><span class="mi">360</span><span class="p">);</span>
+
+<span class="c1"># the number of lines buffered before written to file</span>
+<span class="w">        </span><span class="c1"># you might want to increase this if your disk isn&#39;t catching with</span>
+<span class="w">        </span><span class="c1"># all the log messages you get or if you want less disk activity</span>
+<span class="w">        </span><span class="c1"># (say on a laptop)</span>
+<span class="w">        </span><span class="c1"># (default is 0)</span>
+<span class="w">        </span><span class="n">sync</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="c1"># the number of lines fitting in the output queue</span>
+<span class="w">        </span><span class="n">log_fifo_size</span><span class="p">(</span><span class="mi">16384</span><span class="p">);</span>
+
+<span class="c1"># enable or disable directory creation for destination files</span>
+<span class="w">        </span><span class="n">create_dirs</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+
+<span class="c1"># default owner, group, and permissions for log files</span>
+<span class="w">        </span><span class="c1"># (defaults are 0, 0, 0600)</span>
+<span class="w">        </span><span class="c1">#owner(root);</span>
+<span class="w">        </span><span class="n">group</span><span class="p">(</span><span class="n">adm</span><span class="p">);</span>
+<span class="w">        </span><span class="n">perm</span><span class="p">(</span><span class="mi">0640</span><span class="p">);</span>
+
+<span class="c1"># default owner, group, and permissions for created directories</span>
+<span class="w">        </span><span class="c1"># (defaults are 0, 0, 0700)</span>
+<span class="w">        </span><span class="c1">#dir_owner(root);</span>
+<span class="w">        </span><span class="c1">#dir_group(root);</span>
+<span class="w">        </span><span class="n">dir_perm</span><span class="p">(</span><span class="mi">0755</span><span class="p">);</span>
+
+<span class="c1"># enable or disable DNS usage</span>
+<span class="w">        </span><span class="c1"># syslog-ng blocks on DNS queries, so enabling DNS may lead to</span>
+<span class="w">        </span><span class="c1"># a Denial of Service attack</span>
+<span class="w">        </span><span class="c1"># (default is yes)</span>
+<span class="w">        </span><span class="n">use_dns</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+<span class="w">        </span><span class="n">dns_cache</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+<span class="w">        </span><span class="n">use_fqdn</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+<span class="w">        </span><span class="n">keep_hostname</span><span class="p">(</span><span class="n">yes</span><span class="p">);</span>
+<span class="w">        </span><span class="n">long_hostnames</span><span class="p">(</span><span class="n">off</span><span class="p">);</span>
+
+<span class="c1"># maximum length of message in bytes</span>
+<span class="w">        </span><span class="c1"># this is only limited by the program listening on the /dev/log Unix</span>
+<span class="w">        </span><span class="c1"># socket, glibc can handle arbitrary length log messages, but -- for</span>
+<span class="w">        </span><span class="c1"># example -- syslogd accepts only 1024 bytes</span>
+<span class="w">        </span><span class="c1"># (default is 2048)</span>
+<span class="w">        </span><span class="c1">#log_msg_size(2048);</span>
+
+<span class="c1">#Disable statistic log messages.</span>
+<span class="w">    </span><span class="n">stats</span><span class="p">(</span><span class="mi">43200</span><span class="p">);</span>
+
+<span class="c1"># Some program send log messages through a private implementation.</span>
+<span class="w">    </span><span class="c1"># and sometimes that implementation is bad. If this happen syslog-ng</span>
+<span class="w">    </span><span class="c1"># may recognise the program name as hostname. Whit this option</span>
+<span class="w">    </span><span class="c1"># we tell the syslog-ng that if a hostname match this regexp than that</span>
+<span class="w">    </span><span class="c1"># is not a real hostname.</span>
+<span class="w">    </span><span class="n">bad_hostname</span><span class="p">(</span><span class="s2">&quot;^gconfd$&quot;</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">######</span>
+<span class="c1"># sources</span>
+
+<span class="c1"># all known message sources</span>
+<span class="n">source</span><span class="w"> </span><span class="n">s_all</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1"># message generated by Syslog-NG</span>
+<span class="w">        </span><span class="n">internal</span><span class="p">();</span>
+<span class="w">        </span><span class="c1"># standard Linux log source (this is the default place for the syslog()</span>
+<span class="w">        </span><span class="c1"># function to send logs to)</span>
+<span class="w">        </span><span class="n">unix</span><span class="o">-</span><span class="n">stream</span><span class="p">(</span><span class="s2">&quot;/dev/log&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="c1"># messages from the kernel</span>
+<span class="w">        </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/proc/kmsg&quot;</span><span class="w"> </span><span class="n">log_prefix</span><span class="p">(</span><span class="s2">&quot;kernel: &quot;</span><span class="p">));</span>
+<span class="w">        </span><span class="c1"># use the following line if you want to receive remote UDP logging messages</span>
+<span class="w">        </span><span class="c1"># (this is equivalent to the &quot;-r&quot; syslogd flag)</span>
+<span class="c1">#        # udp();</span>
+<span class="p">};</span>
+
+<span class="c1">######</span>
+<span class="c1"># destinations</span>
+
+<span class="c1"># some standard log files</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_auth</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/auth.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_syslog</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/syslog&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_cron</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/cron.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_daemon</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/daemon.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_kern</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/kern.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_lpr</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/lpr.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_mail</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/mail.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_user</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/user.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_uucp</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/uucp.log&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># these files are meant for the mail system log files</span>
+<span class="c1"># and provide re-usable destinations for {mail,cron,...}.info,</span>
+<span class="c1"># {mail,cron,...}.notice, etc.</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_facility_dot_info</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/$FACILITY.info&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_facility_dot_notice</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/$FACILITY.notice&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_facility_dot_warn</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/$FACILITY.warn&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_facility_dot_err</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/$FACILITY.err&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_facility_dot_crit</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/$FACILITY.crit&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># these files are meant for the news system, and are kept separated</span>
+<span class="c1"># because they should be owned by &quot;news&quot; instead of &quot;root&quot;</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_news_dot_notice</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/news/news.notice&quot;</span><span class="w"> </span><span class="n">owner</span><span class="p">(</span><span class="s2">&quot;news&quot;</span><span class="p">));</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_news_dot_err</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/news/news.err&quot;</span><span class="w"> </span><span class="n">owner</span><span class="p">(</span><span class="s2">&quot;news&quot;</span><span class="p">));</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_news_dot_crit</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/news/news.crit&quot;</span><span class="w"> </span><span class="n">owner</span><span class="p">(</span><span class="s2">&quot;news&quot;</span><span class="p">));</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># some more classical and useful files found in standard syslog configurations</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_debug</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/debug&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">df_messages</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/log/messages&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># pipes</span>
+<span class="c1"># a console to view log messages under X</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">dp_xconsole</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">pipe</span><span class="p">(</span><span class="s2">&quot;/dev/xconsole&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># consoles</span>
+<span class="c1"># this will send messages to everyone logged in</span>
+<span class="n">destination</span><span class="w"> </span><span class="n">du_all</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">usertty</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1">######</span>
+<span class="c1"># filters</span>
+
+<span class="c1"># all messages from the auth and authpriv facilities</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_auth</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span><span class="w"> </span><span class="n">authpriv</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># all messages except from the auth and authpriv facilities</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_syslog</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span><span class="w"> </span><span class="n">authpriv</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># respectively: messages from the cron, daemon, kern, lpr, mail, news, user,</span>
+<span class="c1"># and uucp facilities</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_cron</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">cron</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_daemon</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">daemon</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_kern</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">kern</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_lpr</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">lpr</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_mail</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">mail</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_news</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">news</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_user</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">user</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_uucp</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">uucp</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># some filters to select messages of priority greater or equal to info, warn,</span>
+<span class="c1"># and err</span>
+<span class="c1"># (equivalents of syslogd&#39;s *.info, *.warn, and *.err)</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_at_least_info</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">info</span><span class="o">..</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_at_least_notice</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">notice</span><span class="o">..</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_at_least_warn</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">warn</span><span class="o">..</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_at_least_err</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">err</span><span class="o">..</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_at_least_crit</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">crit</span><span class="o">..</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># all messages of priority debug not coming from the auth, authpriv, news, and</span>
+<span class="c1"># mail facilities</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_debug</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">debug</span><span class="p">)</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span><span class="w"> </span><span class="n">authpriv</span><span class="p">,</span><span class="w"> </span><span class="n">news</span><span class="p">,</span><span class="w"> </span><span class="n">mail</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># all messages of info, notice, or warn priority not coming form the auth,</span>
+<span class="c1"># authpriv, cron, daemon, mail, and news facilities</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_messages</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">level</span><span class="p">(</span><span class="n">info</span><span class="p">,</span><span class="n">notice</span><span class="p">,</span><span class="n">warn</span><span class="p">)</span>
+<span class="w">            </span><span class="ow">and</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">facility</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span><span class="n">authpriv</span><span class="p">,</span><span class="n">cron</span><span class="p">,</span><span class="n">daemon</span><span class="p">,</span><span class="n">mail</span><span class="p">,</span><span class="n">news</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># messages with priority emerg</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_emerg</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">emerg</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="c1"># complex filter for messages usually sent to the xconsole</span>
+<span class="n">filter</span><span class="w"> </span><span class="n">f_xconsole</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">facility</span><span class="p">(</span><span class="n">daemon</span><span class="p">,</span><span class="n">mail</span><span class="p">)</span>
+<span class="w">        </span><span class="ow">or</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">debug</span><span class="p">,</span><span class="n">info</span><span class="p">,</span><span class="n">notice</span><span class="p">,</span><span class="n">warn</span><span class="p">)</span>
+<span class="w">        </span><span class="ow">or</span><span class="w"> </span><span class="p">(</span><span class="n">facility</span><span class="p">(</span><span class="n">news</span><span class="p">)</span>
+<span class="w">                </span><span class="ow">and</span><span class="w"> </span><span class="n">level</span><span class="p">(</span><span class="n">crit</span><span class="p">,</span><span class="n">err</span><span class="p">,</span><span class="n">notice</span><span class="p">));</span>
+<span class="p">};</span>
+
+<span class="c1">######</span>
+<span class="c1"># logs</span>
+<span class="c1"># order matters if you use &quot;flags(final);&quot; to mark the end of processing in a</span>
+<span class="c1"># &quot;log&quot; statement</span>
+
+<span class="c1"># these rules provide the same behavior as the commented original syslogd rules</span>
+
+<span class="c1"># auth,authpriv.*                 /var/log/auth.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_auth</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_auth</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># *.*;auth,authpriv.none          -/var/log/syslog</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_syslog</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_syslog</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># this is commented out in the default syslog.conf</span>
+<span class="c1"># cron.*                         /var/log/cron.log</span>
+<span class="c1">#log {</span>
+<span class="c1">#        source(s_all);</span>
+<span class="c1">#        filter(f_cron);</span>
+<span class="c1">#        destination(df_cron);</span>
+<span class="c1">#};</span>
+
+<span class="c1"># daemon.*                        -/var/log/daemon.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_daemon</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_daemon</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># kern.*                          -/var/log/kern.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_kern</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_kern</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># lpr.*                           -/var/log/lpr.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_lpr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_lpr</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># mail.*                          -/var/log/mail.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_mail</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_mail</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># user.*                          -/var/log/user.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_user</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_user</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># uucp.*                          /var/log/uucp.log</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_uucp</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_uucp</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># mail.info                       -/var/log/mail.info</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_mail</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_info</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_facility_dot_info</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># mail.warn                       -/var/log/mail.warn</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_mail</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_warn</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_facility_dot_warn</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># mail.err                        /var/log/mail.err</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_mail</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_err</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_facility_dot_err</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># news.crit                       /var/log/news/news.crit</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_news</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_crit</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_news_dot_crit</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># news.err                        /var/log/news/news.err</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_news</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_err</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_news_dot_err</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># news.notice                     /var/log/news/news.notice</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_news</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_at_least_notice</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_news_dot_notice</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># *.=debug;\</span>
+<span class="c1">#         auth,authpriv.none;\</span>
+<span class="c1">#         news.none;mail.none     -/var/log/debug</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_debug</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_debug</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># *.=info;*.=notice;*.=warn;\</span>
+<span class="c1">#         auth,authpriv.none;\</span>
+<span class="c1">#         cron,daemon.none;\</span>
+<span class="c1">#         mail,news.none          -/var/log/messages</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_messages</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">df_messages</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># *.emerg                         *</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_emerg</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">du_all</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1"># daemon.*;mail.*;\</span>
+<span class="c1">#         news.crit;news.err;news.notice;\</span>
+<span class="c1">#         *.=debug;*.=info;\</span>
+<span class="c1">#         *.=notice;*.=warn       |/dev/xconsole</span>
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">source</span><span class="p">(</span><span class="n">s_all</span><span class="p">);</span>
+<span class="w">        </span><span class="n">filter</span><span class="p">(</span><span class="n">f_xconsole</span><span class="p">);</span>
+<span class="w">        </span><span class="n">destination</span><span class="p">(</span><span class="n">dp_xconsole</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">#Extra entries for remote syslogging</span>
+<span class="n">source</span><span class="w"> </span><span class="n">s_remote</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">udp</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="n">destination</span><span class="w"> </span><span class="n">df_host</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">file</span><span class="p">(</span><span class="s2">&quot;/var/www/$HOST/$MONTH-$DAY.log&quot;</span>
+<span class="w">  </span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;www-data&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">template</span><span class="p">(</span><span class="s2">&quot;$YEAR-$MONTH-$DAY $PROGRAM $FACILITY $LEVEL $PRIORITY $MSG</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">  </span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nb">log</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">source</span><span class="p">(</span><span class="n">s_remote_all</span><span class="p">);</span>
+<span class="w">  </span><span class="n">destination</span><span class="p">(</span><span class="n">df_host</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

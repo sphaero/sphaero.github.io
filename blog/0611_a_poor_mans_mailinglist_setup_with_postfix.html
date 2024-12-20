@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A poor mans mailinglist setup with postfix - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/postfix.html">postfix</a></li>
+    
+    <li><a href="/tags/regex.html">regex</a></li>
+    
+    <li><a href="/tags/email.html">email</a></li>
+    
+    <li><a href="/tags/mta.html">mta</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="a-poor-mans-mailinglist-setup-with-postfix">A poor mans mailinglist setup with postfix</h1>
+<p>We use the <a href="http://www.postfix.org">postfix MTA</a> for our email needs. We also use our user groups for email. So if you are a member of a group you will receive mail for that group. However replies from a group mail are sent to the sender of the mail and not back to the group. This setup explains how to work around that and so create 'a poor mans' mailinglist setup.</p>
+<h1 id="_1"></h1>
+<p>If you have postfix installed you might want to read about the <a href="http://www.postfix.org/header_checks.5.html">header_checks (5)</a>. Header_checks does exactly what is says, it checks headers and gives you some options for acting upon a check. So this functionality is simply used to check a certain 'to:' header. If it is matched to a regular expression a PREPEND action is set to prepend a Reply-To: header. It's as easy as that.</p>
+<p>So in your postfix config dir (/etc/postfix) create a file with this example content:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">/^</span><span class="k">To</span><span class="err">:</span><span class="p">.</span><span class="o">*</span><span class="p">(</span><span class="n">groupmail</span><span class="nv">@example</span><span class="err">\</span><span class="p">.</span><span class="n">org</span><span class="p">)</span><span class="o">/</span><span class="w"> </span><span class="n">PREPEND</span><span class="w"> </span><span class="n">Reply</span><span class="o">-</span><span class="k">To</span><span class="err">:</span><span class="w"> </span><span class="n">groupmail</span><span class="nv">@example</span><span class="p">.</span><span class="n">org</span>
+<span class="o">/^</span><span class="k">To</span><span class="err">:</span><span class="p">.</span><span class="o">*</span><span class="p">(</span><span class="n">grp_</span><span class="p">.</span><span class="o">*</span><span class="nv">@example</span><span class="err">\</span><span class="p">.</span><span class="n">org</span><span class="p">)</span><span class="o">/</span><span class="w"> </span><span class="n">PREPEND</span><span class="w"> </span><span class="n">Reply</span><span class="o">-</span><span class="k">To</span><span class="err">:</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span>
+</code></pre></div>
+
+<p>the first line is a simple static example. It matches for groupmail@example.org and add the Reply-To: header with the same address. The second line is more interesting. It matches a regular expression and uses the matched part to set the Reply-To header. So an email to grp_test@example.org will get a Reply-To: grp_test@example.org header.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

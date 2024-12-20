@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick fix for rdesktop and desktop switching on linux - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/rdesktop.html">rdesktop</a></li>
+    
+    <li><a href="/tags/patch.html">patch</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/windows.html">windows</a></li>
+    
+    <li><a href="/tags/rdp.html">rdp</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="quick-fix-for-rdesktop-and-desktop-switching-on-linux">Quick fix for rdesktop and desktop switching on linux</h1>
+<p>If you're a bit like me and forced into using Windows for certain applications you're probably using RDP in some way. I usually put my RDP client (rdesktop) on a specific desktop and switch desktops using CTRL-ALT-LEFT and CTRL-ALT-RIGHT. You've probably noticed that it doesn't work unless you use '-K keep window manager key bindings' option. But if you do that you can't use ALT-TAB in Windows. Being really bothered about that I have a very simple patch for that. I'd like to treat CTRL-ALT-LEFT and RIGHT as special keys in rdesktop just like CTRL-ALT-TAB.</p>
+<h1 id="_1"></h1>
+<p>This patch is very poor but it can be enhanced easily. The thing with rdesktop is, is it uses XGrabKeyboard which captures all keyboard events and not let them through to the WM. So if rdesktop finds a special key I just added code to pass the event on to the root window. So in this code every special key is send to the WM. This might be a bit too much. But I'm test driving it right now and already very happy.</p>
+<p>Here's the patch for xwin.c:2343: (See below for a full diff patch of xwin.c and xkeymap.c)</p>
+<div class="codehilite"><pre><span></span><code><span class="w">            </span><span class="nt">case</span><span class="w"> </span><span class="nt">KeyPress</span><span class="o">:</span>
+<span class="w">                </span><span class="nt">g_last_gesturetime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">time</span><span class="o">;</span>
+<span class="w">                </span><span class="nt">if</span><span class="w"> </span><span class="o">(</span><span class="nt">g_IC</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nt">NULL</span><span class="o">)</span>
+<span class="w">                    </span><span class="c">/* Multi_key compatible version */</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="err">XmbLookupString(g_IC,</span>
+<span class="w">                            </span><span class="err">&amp;xevent.xkey,</span><span class="w"> </span><span class="err">str,</span><span class="w"> </span><span class="err">sizeof(str),</span><span class="w"> </span><span class="err">&amp;keysym,</span>
+<span class="w">                            </span><span class="err">&amp;status)</span><span class="p">;</span>
+<span class="w">                    </span><span class="err">if</span><span class="w"> </span><span class="err">(!((status#####</span><span class="w"> </span><span class="err">XLookupKeySym)</span><span class="w"> </span><span class="err">||</span><span class="w"> </span><span class="err">(status</span>
+
+<span class="err">XLookupBoth)))</span>
+<span class="w">                    </span><span class="err">{</span>
+<span class="w">                        </span><span class="err">error(&quot;XmbLookupString</span><span class="w"> </span><span class="err">failed</span><span class="w"> </span><span class="err">with</span><span class="w"> </span><span class="err">status</span><span class="w"> </span><span class="err">0x%x\n&quot;,</span>
+<span class="w">                              </span><span class="err">status)</span><span class="p">;</span>
+<span class="w">                        </span><span class="err">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="err">}</span>
+<span class="w">                </span><span class="nt">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c">/* Plain old XLookupString */</span>
+<span class="w">                    </span><span class="n">DEBUG_KBD</span><span class="cp">[</span><span class="p">^</span><span class="mi">1</span><span class="cp">]</span>
+
+<span class="cp">[</span><span class="p">^</span><span class="mi">1</span><span class="cp">]</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;\nNo input context, using XLookupString\n&quot;</span><span class="p">;</span>
+<span class="w">                    </span><span class="err">XLookupString((XKeyEvent</span><span class="w"> </span><span class="err">*)</span><span class="w"> </span><span class="err">&amp;</span><span class="w"> </span><span class="err">xevent,</span>
+<span class="w">                              </span><span class="err">str,</span><span class="w"> </span><span class="err">sizeof(str),</span><span class="w"> </span><span class="err">&amp;keysym,</span><span class="w"> </span><span class="err">NULL)</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="nt">DEBUG_KBD</span><span class="o">((</span><span class="s2">&quot;KeyPress for keysym (0x%lx, %s)\n&quot;</span><span class="o">,</span><span class="w"> </span><span class="nt">keysym</span><span class="o">,</span>
+<span class="w">                       </span><span class="nt">get_ksname</span><span class="o">(</span><span class="nt">keysym</span><span class="o">)));</span>
+
+<span class="nt">set_keypress_keysym</span><span class="o">(</span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">keycode</span><span class="o">,</span><span class="w"> </span><span class="nt">keysym</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">ev_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">time</span><span class="o">(</span><span class="nt">NULL</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">if</span><span class="w"> </span><span class="o">(</span><span class="nt">handle_special_keys</span><span class="o">(</span><span class="nt">keysym</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">state</span><span class="o">,</span><span class="w"> </span><span class="nt">ev_time</span><span class="o">,</span><span class="w"> </span><span class="nt">True</span><span class="o">))</span>
+<span class="w">                                </span><span class="o">//</span><span class="nt">patch</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">send</span><span class="w"> </span><span class="nt">special</span><span class="w"> </span><span class="nt">keys</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">WM</span><span class="w"> </span><span class="nt">as</span><span class="w"> </span><span class="nt">well</span>
+<span class="w">                                </span><span class="p">{</span>
+<span class="w">                                        </span><span class="err">XSendEvent(g_display,</span><span class="w"> </span><span class="err">DefaultRootWindow(g_display),</span><span class="w"> </span><span class="err">False,</span>
+<span class="w">                                            </span><span class="err">SubstructureNotifyMask</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="err">SubstructureRedirectMask,</span><span class="w"> </span><span class="err">&amp;xevent)</span><span class="p">;</span>
+<span class="w">                                        </span><span class="err">break</span><span class="p">;</span>
+<span class="w">                                </span><span class="p">}</span>
+<span class="w">                                </span><span class="o">//</span><span class="nt">END</span><span class="w"> </span><span class="nt">patch</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">send</span><span class="w"> </span><span class="nt">special</span><span class="w"> </span><span class="nt">keys</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">WM</span><span class="w"> </span><span class="nt">as</span><span class="w"> </span><span class="nt">well</span>
+
+<span class="nt">xkeymap_send_keys</span><span class="o">(</span><span class="nt">keysym</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">keycode</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">state</span><span class="o">,</span>
+<span class="w">                          </span><span class="nt">ev_time</span><span class="o">,</span><span class="w"> </span><span class="nt">True</span><span class="o">,</span><span class="w"> </span><span class="nt">0</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">break</span><span class="o">;</span>
+
+<span class="nt">case</span><span class="w"> </span><span class="nt">KeyRelease</span><span class="o">:</span>
+<span class="w">                </span><span class="nt">g_last_gesturetime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">time</span><span class="o">;</span>
+<span class="w">                </span><span class="nt">XLookupString</span><span class="o">((</span><span class="nt">XKeyEvent</span><span class="w"> </span><span class="o">*)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nt">xevent</span><span class="o">,</span><span class="w"> </span><span class="nt">str</span><span class="o">,</span>
+<span class="w">                          </span><span class="nt">sizeof</span><span class="o">(</span><span class="nt">str</span><span class="o">),</span><span class="w"> </span><span class="o">&amp;</span><span class="nt">keysym</span><span class="o">,</span><span class="w"> </span><span class="nt">NULL</span><span class="o">);</span>
+
+<span class="nt">DEBUG_KBD</span><span class="o">((</span><span class="s2">&quot;\nKeyRelease for keysym (0x%lx, %s)\n&quot;</span><span class="o">,</span><span class="w"> </span><span class="nt">keysym</span><span class="o">,</span>
+<span class="w">                       </span><span class="nt">get_ksname</span><span class="o">(</span><span class="nt">keysym</span><span class="o">)));</span>
+
+<span class="nt">keysym</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">reset_keypress_keysym</span><span class="o">(</span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">keycode</span><span class="o">,</span><span class="w"> </span><span class="nt">keysym</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">ev_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">time</span><span class="o">(</span><span class="nt">NULL</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">if</span><span class="w"> </span><span class="o">(</span><span class="nt">handle_special_keys</span><span class="o">(</span><span class="nt">keysym</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">state</span><span class="o">,</span><span class="w"> </span><span class="nt">ev_time</span><span class="o">,</span><span class="w"> </span><span class="nt">False</span><span class="o">))</span>
+<span class="w">                                </span><span class="o">//</span><span class="nt">patch</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">send</span><span class="w"> </span><span class="nt">special</span><span class="w"> </span><span class="nt">keys</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">WM</span><span class="w"> </span><span class="nt">as</span><span class="w"> </span><span class="nt">well</span>
+<span class="w">                                </span><span class="p">{</span>
+<span class="w">                                        </span><span class="err">XSendEvent(g_display,</span><span class="w"> </span><span class="err">DefaultRootWindow(g_display),</span><span class="w"> </span><span class="err">False,</span>
+<span class="w">                                            </span><span class="err">SubstructureNotifyMask</span><span class="w"> </span><span class="err">|</span><span class="w"> </span><span class="err">SubstructureRedirectMask,</span><span class="w"> </span><span class="err">&amp;xevent)</span><span class="p">;</span>
+<span class="w">                                        </span><span class="err">break</span><span class="p">;</span>
+<span class="w">                                </span><span class="p">}</span>
+<span class="w">                                </span><span class="o">//</span><span class="nt">END</span><span class="w"> </span><span class="nt">patch</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">send</span><span class="w"> </span><span class="nt">special</span><span class="w"> </span><span class="nt">keys</span><span class="w"> </span><span class="nt">to</span><span class="w"> </span><span class="nt">WM</span><span class="w"> </span><span class="nt">as</span><span class="w"> </span><span class="nt">well</span>
+
+<span class="nt">xkeymap_send_keys</span><span class="o">(</span><span class="nt">keysym</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">keycode</span><span class="o">,</span><span class="w"> </span><span class="nt">xevent</span><span class="p">.</span><span class="nc">xkey</span><span class="p">.</span><span class="nc">state</span><span class="o">,</span>
+<span class="w">                          </span><span class="nt">ev_time</span><span class="o">,</span><span class="w"> </span><span class="nt">False</span><span class="o">,</span><span class="w"> </span><span class="nt">0</span><span class="o">);</span>
+<span class="w">                </span><span class="nt">break</span><span class="o">;</span>
+</code></pre></div>
+
+<p>diff:</p>
+<div class="codehilite"><pre><span></span><code><span class="gh">Index: xwin.c</span>
+############### ===========================
+
+1.-- xwin.c (revision 1696)
+<span class="gi">+++ xwin.c  (working copy)</span>
+<span class="gu">@@ -2369,7 +2369,13 @@</span>
+<span class="w"> </span>               set_keypress_keysym(xevent.xkey.keycode, keysym);
+<span class="w"> </span>               ev_time = time(NULL);
+<span class="w"> </span>               if (handle_special_keys(keysym, xevent.xkey.state, ev_time, True))
+2.                  break;
+<span class="gi">+               //patch to send special keys to WM as well</span>
+<span class="gi">+                                {</span>
+<span class="gi">+                                        XSendEvent(g_display, DefaultRootWindow(g_display), False,</span>
+<span class="gi">+                                            SubstructureNotifyMask | SubstructureRedirectMask, &amp;xevent);</span>
+<span class="gi">+                                        break;</span>
+<span class="gi">+                                }</span>
+<span class="gi">+                                //END patch to send special keys to WM as well</span>
+
+xkeymap_send_keys(keysym, xevent.xkey.keycode, xevent.xkey.state,
+<span class="w"> </span>                         ev_time, True, 0);
+<span class="gu">@@ -2386,7 +2392,13 @@</span>
+<span class="w"> </span>               keysym = reset_keypress_keysym(xevent.xkey.keycode, keysym);
+<span class="w"> </span>               ev_time = time(NULL);
+<span class="w"> </span>               if (handle_special_keys(keysym, xevent.xkey.state, ev_time, False))
+3.                  break;
+<span class="gi">+               //patch to send special keys to WM as well</span>
+<span class="gi">+                                {</span>
+<span class="gi">+                                        XSendEvent(g_display, DefaultRootWindow(g_display), False,</span>
+<span class="gi">+                                            SubstructureNotifyMask | SubstructureRedirectMask, &amp;xevent);</span>
+<span class="gi">+                                        break;</span>
+<span class="gi">+                                }</span>
+<span class="gi">+                                //END patch to send special keys to WM as well</span>
+
+xkeymap_send_keys(keysym, xevent.xkey.keycode, xevent.xkey.state,
+<span class="w"> </span>                         ev_time, False, 0);
+<span class="gh">Index: xkeymap.c</span>
+############### ===========================
+
+4.-- xkeymap.c  (revision 1696)
+<span class="gi">+++ xkeymap.c   (working copy)</span>
+<span class="gu">@@ -622,11 +622,22 @@</span>
+<span class="w"> </span>           /* Inhibit */
+<span class="w"> </span>           return True;
+<span class="w"> </span>           break;
+5.      case XK_Overlay1_Enable:
+6.          /* Toggle SeamlessRDP */
+7.          if (pressed)
+8.              ui_seamless_toggle();
+<span class="gi">+       case XK_Left:</span>
+<span class="gi">+           if [^1]</span>
+
+[^1]: get_key_state(state, XK_Alt_L) || get_key_state(state, XK_Alt_R
+<span class="gi">+               &amp;&amp; (get_key_state(state, XK_Control_L)</span>
+<span class="gi">+               || get_key_state(state, XK_Control_R)))</span>
+<span class="gi">+           {</span>
+<span class="gi">+               return True;</span>
+<span class="gi">+           }</span>
+<span class="w"> </span>           break;
+<span class="gi">+       case XK_Right:</span>
+<span class="gi">+           if [^1]</span>
+
+[^1]: get_key_state(state, XK_Alt_L) || get_key_state(state, XK_Alt_R
+<span class="gi">+               &amp;&amp; (get_key_state(state, XK_Control_L)</span>
+<span class="gi">+               || get_key_state(state, XK_Control_R)))</span>
+<span class="gi">+           {</span>
+<span class="gi">+               return True;</span>
+<span class="gi">+           }</span>
+<span class="gi">+           break;</span>
+
+}
+<span class="w"> </span>   return False;
+</code></pre></div>
+
+<p>Bugs:
+* arrow keys don't work no more in the rdp session</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

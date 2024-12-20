@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime atmospheric scattering rotation fix - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/blender.html">blender</a></li>
+    
+    <li><a href="/tags/bge.html">bge</a></li>
+    
+    <li><a href="/tags/python.html">python</a></li>
+    
+    <li><a href="/tags/glsl.html">glsl</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="realtime-atmospheric-scattering-rotation-fix">Realtime Atmospheric Scattering rotation fix</h1>
+<p>Diving into GLSL shaders to create effects supporting visuals I stumbled upon <a href="http://sponeil.net/">Sean O'neil's</a> work only to find out Martins Upitis already implemented it in Blender's Game Engine.</p>
+<html><iframe width="560" height="315" src="http://www.youtube.com/embed/3dxDVzby_XU" frameborder="0" allowfullscreen></iframe>
+</html>
+
+<p>Implementing this in my one work I noticed it had one shortcoming. The planet needs to be at the origin and can't rotate. So here's a quick fix around this</p>
+<h1 id="_1"></h1>
+<p>Blender's Game Engine works with Python. Most code is however done in GLSL. We don't need to change the GLSL code fortunately. The trouble with the code is that it generates pixels in the textures. The textures are in a fixed UV space. If you rotate the object the UV coords rotate along. So to overcome this we need to correct for rotations being done. So the planet rotates but we want the effects to be done like if the planet object is standing still. The solution to that is to correct the positions of the camera and the sun for the rotation of the camera before we feed them to the shaders.</p>
+<div class="codehilite"><pre><span></span><code><span class="err">#</span><span class="n">normally</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">feed</span><span class="w"> </span><span class="n">these</span><span class="w"> </span><span class="n">positions</span><span class="w"> </span><span class="n">directly</span>
+<span class="n">objpos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="o">.</span><span class="n">position</span>
+<span class="n">camerapos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">camera</span><span class="o">.</span><span class="n">position</span>
+<span class="n">lightpos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lamp</span><span class="o">.</span><span class="n">position</span>
+</code></pre></div>
+
+<p>But now we do some extra calculation</p>
+<div class="codehilite"><pre><span></span><code><span class="n">objpos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="o">.</span><span class="n">position</span>
+<span class="err">#</span><span class="w"> </span><span class="n">get</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">planet</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">orientation</span>
+<span class="n">objrot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="o">.</span><span class="n">worldOrientation</span><span class="o">.</span><span class="n">to_quaternion</span><span class="p">()</span>
+<span class="err">#</span><span class="w"> </span><span class="n">reverse</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">orientation</span>
+<span class="n">objrotinv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">objrot</span><span class="o">.</span><span class="n">conjugated</span><span class="p">()</span>
+<span class="err">#</span><span class="w"> </span><span class="n">get</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">copy</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">sun</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">position</span>
+<span class="n">lightpos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lamp</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="err">#</span><span class="w"> </span><span class="n">correct</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">inverse</span><span class="w"> </span><span class="n">rotation</span>
+<span class="n">lightpos</span><span class="o">.</span><span class="k">rotate</span><span class="p">(</span><span class="n">objrotinv</span><span class="p">)</span>
+<span class="err">#</span><span class="w"> </span><span class="n">get</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">copy</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="nb">camera</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">position</span>
+<span class="n">camerapos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">camera</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="err">#</span><span class="w"> </span><span class="n">correct</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">inverse</span><span class="w"> </span><span class="n">rotation</span>
+<span class="n">camerapos</span><span class="o">.</span><span class="k">rotate</span><span class="p">(</span><span class="n">objrotinv</span><span class="p">)</span>
+</code></pre></div>
+
+<p>That's it. The shader now supports a rotating planet</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

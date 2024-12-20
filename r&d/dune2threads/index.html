@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multithreaded race conditions explained using Dune II
+ - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+
+<div class="date">~2013</div>
+
+<content>
+	<h2>Introduction</h2>
+
+	<p>Multithreading is the method for computer programs to utilize all processors in a multi processor system. Nowadays it&#8217;s hard to find a system which only consists of a single core. The increase of processor speeds have come to a halt and the remedies around this are multiple processors. In the article &#8216;The Problem with Threads &#8216; [1] by Edward A. Lee of the University of California at Berkeley it is argued that the ongoing trend towards parallelism is a too big steps from the sequential paradigm of programming computers. “Although threads seem to be a small step from sequential computation, in fact, they represent a huge step. They discard the most essential and appealing properties of sequential computation: understandability, predictability, and determinism. :understanding of threads is essential.”</p>
+
+	<p>Since Lee is saying we need to understand in order to control we should first understand the problem. Nobody will understand a solution if not knowing what the problem is. I propose to explain the problem of multithreading by using a game. This game will be based on Dune II. For this proposal I assume the reader is familiar with the game Dune II [2]</p>
+
+	<h2>Sequential computing</h2>
+
+	<p>The most used and understood paradigm is sequential computing. The game would start with a single harvester, a refinery and a spice field. The harvester collects the spice and delivers it at the refinery.</p>
+
+	<p><img alt="" src="img1.jpg" style="width:356;" /></p>
+
+	<p>In this metaphor the harvester is the thread, the refinery the output and the spice field is the memory segment assigned to the harvester. The harvester is instructed to collect spice until it is full and deliver it to the refinery. The start of the game illustrates sequential computing.</p>
+
+	<h2>Multithreading</h2>
+
+	<p>Now imagine if we had a second harvester. </p>
+
+	<p><img alt="" src="img/img2.jpg" style="width:356;" /></p>
+
+	<p>We would be collecting spice with twice the speed. In a physical world situation we would not imagine the two harvesters wanting to collect spice on the same spot. The drivers would see if the spot is occupied. However these harvesters are fully automated ones and thus are not equipped with eyes nor common sense.</p>
+
+	<p><img alt="" src="img3.jpg" style="width:356;" /></p>
+
+	<p>If the two harvesters would be assigned to the same spice field they could run into the situation that they crash into each other when harvesting the same spot. Since the spice, in our game, is highly explosive we would have no spice at all and lose both harvesters.</p>
+
+	<p>We need to build a protection system in order to prevent a situation like this. A very simple one would be to assign specific areas of the spice field to each harvester.</p>
+
+	<p><img alt="" src="img4.jpg" style="width:356;" /></p>
+
+	<p>This way the two harvesters would never be in each others way and both harvesters can operate autonomous. </p>
+
+	<p>There are many more methods in order to prevent the harvesters from crashing. For the illustration of this metaphor I will leave these for the reader to explore.</p>
+
+	<h2>Mutex</h2>
+
+	<p>Once a harvester is finished, it is programmed to deliver its spice cargo to the refinery. </p>
+
+	<p><img alt="" src="img5.png" style="width:356;" /></p>
+
+	<p>We can imagine a situation where two harvesters are both returning to the refinery. However only one can be in the refinery at a time.</p>
+
+	<p><img alt="" src="img6.png" style="width:356;" /></p>
+
+	<p>Since the harvesters are fully automated the second harvester would just drive into the refinery and crash into the harvester already there. Since the spice is highly explosive we would not only lose the harvesters but also the complete refinery. </p>
+
+	<p>In order to prevent this disastrous situation we would need some locking mechanism which will prevent the second harvester from driving into the refinery. The harvesters would need to be equipped with some method to request if the refinery is available. We are going to equip the refinery with a mutex lock. The harvesters will request availability of this mutex. If the mutex is available the harvester will have access to the mutex and needs to lock the mutex so others can&#8217;t access it. This way the harvesters will only enter the refinery if it could lock the refinery. If not it needs to wait before it can. </p>
+
+	<p>We now have a safe way of operating multiple harvesters but our unstoppable urge to get more spice has made us order more harvesters. They are doing their job fine but we can now notice something else happening:</p>
+
+	<p><img alt="" src="img7.png" style="width:356;" /></p>
+
+	<p>We have 3 harvesters waiting to enter the refinery. Of course this is not efficient since these harvesters are doing nothing while waiting. Our demand for spice forces us to make this more efficient. </p>
+
+	<p>It&#8217;s obvious we need another refinery. Which will bring more methods to the harvesters for finding entrance to a refinery. The harvesters are becoming more expensive to operate because of all these methods. We&#8217;ll introduce the semaphore concept in this game in order do determine refinery availability. Continuing with the game we will also introduce the &#8216;Carryall&#8217;. This airplane will  replace the methods of the mutex lock on the refinery and will organize which harvester will go to which refinery. It would also be possible to introduce pipes and sockets to transfer the spice around. Introducing these concepts in order to illustrate multithreading methods used in modern implementations like Erlang will introduce new assets into the game which are not in the original game. </p>
+
+	<h2>Conclusion</h2>
+
+	<p>The article by Edward A. Lee argues that parallelism is too complicated for programmers to understand. In my research into understanding this I first ran into trying to understand the problem. By using a single context for illustrating the problems a more fundamental understanding of what&#8217;s happening and how it&#8217;s circumvented is more accessible. The Dune II metaphor I propose would be a single context to explain the problems and illustrate methods and solutions in an accessible way. </p>
+
+	<h2>References:</h2>
+
+	<ol>
+		<li>Edward A. Lee, The Problem with Threads, <span class="caps">EECS</span> Department, University of California, Berkeley, 2006, Jan, <span class="caps">UCB</span>/EECS-2006-1, <span class="caps">IEEE</span> Computer 39(5):33-42, May 2006</li>
+		<li>http://en.wikipedia.org/wiki/Dune_II</li>
+	</ol>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

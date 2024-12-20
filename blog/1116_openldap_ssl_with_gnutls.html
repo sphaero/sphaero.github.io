@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Openldap ssl with gnutls - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ldap.html">ldap</a></li>
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/ssl.html">ssl</a></li>
+    
+    <li><a href="/tags/gnutls.html">gnutls</a></li>
+    
+    <li><a href="/tags/openssl.html">openssl</a></li>
+    
+    <li><a href="/tags/openldap.html">openldap</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="openldap-ssl-with-gnutls">OpenLDAP SSL with GnuTLS</h1>
+<p>Today I finally found some time to tighten security on an internal LDAP setup only to find my usual procedure doesn't work. Apparently OpenLDAP has GnuTLS support since 2.4 and ofcourse Debian uses this. So here's a quick guide for setting up LDAPS with GnuTLS.</p>
+<h1 id="_1"></h1>
+<p>First I setup a private key and certificate request for the ldap service with openssl.</p>
+<div class="codehilite"><pre><span></span><code>openssl req -out ldap.server.net.csr -new -newkey rsa:2048 -nodes -keyout server.key
+</code></pre></div>
+
+<p>This csr is served to the Certificate Autority which in turn returns a certificate.</p>
+<p>To get some GnuTLS insight I install the gnutls-bin package. This allows me to find out which cipher suites are available.</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">gnutls</span><span class="o">-</span><span class="nx">cli</span><span class="w"> </span><span class="o">-</span><span class="nx">l</span>
+<span class="nx">Cipher</span><span class="w"> </span><span class="nx">suites</span><span class="p">:</span>
+<span class="nx">TLS_ANON_DH_ARCFOUR_MD5</span><span class="w">                             </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x18</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_ANON_DH_3DES_EDE_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1b</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_ANON_DH_AES_128_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x34</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_ANON_DH_AES_256_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x3a</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_ANON_DH_CAMELLIA_128_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x46</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_ANON_DH_CAMELLIA_256_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x89</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_PSK_SHA_ARCFOUR_SHA1</span><span class="w">                            </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8a</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_PSK_SHA_3DES_EDE_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8b</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_PSK_SHA_AES_128_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8c</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_PSK_SHA_AES_256_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8d</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_PSK_SHA_ARCFOUR_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8e</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_PSK_SHA_3DES_EDE_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8f</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_PSK_SHA_AES_128_CBC_SHA1</span><span class="w">                    </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x90</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_PSK_SHA_AES_256_CBC_SHA1</span><span class="w">                    </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x91</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_3DES_EDE_CBC_SHA1</span><span class="w">                       </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1a</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_AES_128_CBC_SHA1</span><span class="w">                        </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1d</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_AES_256_CBC_SHA1</span><span class="w">                        </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x20</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_DSS_3DES_EDE_CBC_SHA1</span><span class="w">                   </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1c</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_RSA_3DES_EDE_CBC_SHA1</span><span class="w">                   </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1b</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_DSS_AES_128_CBC_SHA1</span><span class="w">                    </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1f</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_RSA_AES_128_CBC_SHA1</span><span class="w">                    </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x1e</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_DSS_AES_256_CBC_SHA1</span><span class="w">                    </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x22</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_SRP_SHA_RSA_AES_256_CBC_SHA1</span><span class="w">                    </span><span class="mh">0xc0</span><span class="p">,</span><span class="w"> </span><span class="mh">0x21</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_ARCFOUR_SHA1</span><span class="w">                            </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x66</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_3DES_EDE_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x13</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_AES_128_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x32</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_AES_256_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x38</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_CAMELLIA_128_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x44</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_DSS_CAMELLIA_256_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x87</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_RSA_3DES_EDE_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x16</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_RSA_AES_128_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x33</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_RSA_AES_256_CBC_SHA1</span><span class="w">                        </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x39</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_RSA_CAMELLIA_128_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x45</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_DHE_RSA_CAMELLIA_256_CBC_SHA1</span><span class="w">                   </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x88</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_NULL_MD5</span><span class="w">                                    </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x01</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_EXPORT_ARCFOUR_40_MD5</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x03</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_ARCFOUR_SHA1</span><span class="w">                                </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x05</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_ARCFOUR_MD5</span><span class="w">                                 </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x04</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_3DES_EDE_CBC_SHA1</span><span class="w">                           </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0a</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_AES_128_CBC_SHA1</span><span class="w">                            </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x2f</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_AES_256_CBC_SHA1</span><span class="w">                            </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x35</span><span class="w">  </span><span class="nx">SSL3</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_CAMELLIA_128_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x41</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">TLS_RSA_CAMELLIA_256_CBC_SHA1</span><span class="w">                       </span><span class="mh">0x00</span><span class="p">,</span><span class="w"> </span><span class="mh">0x84</span><span class="w">  </span><span class="nx">TLS1</span><span class="m m-Double">.0</span>
+<span class="nx">Certificate</span><span class="w"> </span><span class="nx">types</span><span class="p">:</span><span class="w"> </span><span class="nx">X</span><span class="m m-Double">.509</span><span class="p">,</span><span class="w"> </span><span class="nx">OPENPGP</span>
+<span class="nx">Protocols</span><span class="p">:</span><span class="w"> </span><span class="nx">SSL3</span><span class="m m-Double">.0</span><span class="p">,</span><span class="w"> </span><span class="nx">TLS1</span><span class="m m-Double">.0</span><span class="p">,</span><span class="w"> </span><span class="nx">TLS1</span><span class="m m-Double">.1</span><span class="p">,</span><span class="w"> </span><span class="nx">TLS1</span><span class="m m-Double">.2</span>
+<span class="nx">Ciphers</span><span class="p">:</span><span class="w"> </span><span class="nx">AES</span><span class="o">-</span><span class="mi">256</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="nx">AES</span><span class="o">-</span><span class="mi">128</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="nx">DES</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="nx">DES</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="nx">ARCFOUR</span><span class="o">-</span><span class="mi">128</span><span class="p">,</span><span class="w"> </span><span class="nx">ARCFOUR</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="nx">RC2</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="nx">CAMELLIA</span><span class="o">-</span><span class="mi">256</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="nx">CAMELLIA</span><span class="o">-</span><span class="mi">128</span><span class="o">-</span><span class="nx">CBC</span><span class="p">,</span><span class="w"> </span><span class="nx">NULL</span>
+<span class="nx">MACs</span><span class="p">:</span><span class="w"> </span><span class="nx">SHA1</span><span class="p">,</span><span class="w"> </span><span class="nx">MD5</span><span class="p">,</span><span class="w"> </span><span class="nx">SHA256</span><span class="p">,</span><span class="w"> </span><span class="nx">SHA384</span><span class="p">,</span><span class="w"> </span><span class="nx">SHA512</span><span class="p">,</span><span class="w"> </span><span class="nx">MD2</span><span class="p">,</span><span class="w"> </span><span class="nx">RIPEMD160</span><span class="p">,</span><span class="w"> </span><span class="nx">NULL</span>
+<span class="nx">Key</span><span class="w"> </span><span class="nx">exchange</span><span class="w"> </span><span class="nx">algorithms</span><span class="p">:</span><span class="w"> </span><span class="nx">ANON</span><span class="o">-</span><span class="nx">DH</span><span class="p">,</span><span class="w"> </span><span class="nx">RSA</span><span class="p">,</span><span class="w"> </span><span class="nx">RSA</span><span class="o">-</span><span class="nx">EXPORT</span><span class="p">,</span><span class="w"> </span><span class="nx">DHE</span><span class="o">-</span><span class="nx">RSA</span><span class="p">,</span><span class="w"> </span><span class="nx">DHE</span><span class="o">-</span><span class="nx">DSS</span><span class="p">,</span><span class="w"> </span><span class="nx">SRP</span><span class="o">-</span><span class="nx">DSS</span><span class="p">,</span><span class="w"> </span><span class="nx">SRP</span><span class="o">-</span><span class="nx">RSA</span><span class="p">,</span><span class="w"> </span><span class="nx">SRP</span><span class="p">,</span><span class="w"> </span><span class="nx">PSK</span><span class="p">,</span><span class="w"> </span><span class="nx">DHE</span><span class="o">-</span><span class="nx">PSK</span>
+<span class="nx">Compression</span><span class="p">:</span><span class="w"> </span><span class="nx">DEFLATE</span><span class="p">,</span><span class="w"> </span><span class="nx">NULL</span>
+</code></pre></div>
+
+<p>To enable SSL in slapd you'll need to edit the slapd.conf file and add something like this. The TLSCipherSuite is one out of the list of the gnutls-cli -l command:</p>
+<div class="codehilite"><pre><span></span><code>TLSCipherSuite TLS_RSA_AES_256_CBC_SHA1
+TLSCACertificateFile /etc/ssl/certs/&lt;yourca.pem&gt;
+TLSCertificateFile /etc/ssl/ldap.server.net.crt
+TLSCertificateKeyFile /etc/ssl/private/server.key
+</code></pre></div>
+
+<p>I'm following the security setup which Debian provides so the openldap user cannot read the server.key file. I allow this by adding the openldap user to the ssl-cert group.</p>
+<p>Finally edit the /etc/default/slapd and change the following line to what you need:</p>
+<div class="codehilite"><pre><span></span><code>SLAPD_SERVICES=&quot;ldap:*0.0.0.0:389/ ldaps:*0.0.0.0:636&quot;
+</code></pre></div>
+
+<p>This should be sufficient to get ldaps support.</p>
+<p>Test it with:</p>
+<div class="codehilite"><pre><span></span><code>openssl s_client -connect 127.0.0.1:636 -showcerts
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

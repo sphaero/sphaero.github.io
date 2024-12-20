@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>online filesystem resize - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/fdisk.html">fdisk</a></li>
+    
+    <li><a href="/tags/filesystem.html">filesystem</a></li>
+    
+    <li><a href="/tags/ext3.html">ext3</a></li>
+    
+    <li><a href="/tags/resize.html">resize</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="online-filesystem-resize">Online filesystem resize</h1>
+<p>Sometimes you just can't get your hands on a physical machine. So today I had to resize a live filesystem. No rescue CD's or whatever. It is possible :).</p>
+<h1 id="_1"></h1>
+<p>You'll need just the fdisk command and resize2fs.</p>
+<p>First just list your current partition table</p>
+<div class="codehilite"><pre><span></span><code>fdisk -l /dev/sda
+</code></pre></div>
+
+<p>Remember all those values in case you fuck up.</p>
+<p>Well just delete all partitions and recreate them while using the same partition numbers and filesystem id's! Otherwise you'll run into trouble at next reboot.</p>
+<p>Once you recreated the partition table. Just save it using 'w'. Fdisk will tell you it continues to use the old filesystem table until next reboot. Just reboot your machine. You might run into an error when it wants to mount the swap filesystem but ignore that.</p>
+<p>Once rebooted you can see the filesystem still has it's old size. Just resize it by issuing: (watch out for the right partition number!)</p>
+<div class="codehilite"><pre><span></span><code>resize2fs /dev/sda1
+</code></pre></div>
+
+<p>It will finish succesfully (I hope) and your filesystem will use it's new space.</p>
+<p>Just finish off by setting a swap signature on the swap space if needed.</p>
+<div class="codehilite"><pre><span></span><code>mkswap /dev/sda5
+</code></pre></div>
+
+<p>You have to know what you are doing, so it's your own risk!</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sticky bits - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/bash.html">bash</a></li>
+    
+    <li><a href="/tags/cmdline.html">cmdline</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="sticky-bits">Sticky Bits</h1>
+<p>Always forgetting certain not often used commands. So here's a reminder to set the sticky group bit on a directory so everything created is with same group ownership of the parent directory!</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">chmod</span><span class="w"> </span><span class="nx">g</span><span class="o">+</span><span class="nx">s</span><span class="w"> </span><span class="p">&lt;</span><span class="nx">dir</span><span class="p">&gt;</span>
+<span class="err">#</span><span class="k">or</span>
+<span class="nx">chmod</span><span class="w"> </span><span class="mi">2775</span><span class="w"> </span><span class="p">&lt;</span><span class="nx">dir</span><span class="p">&gt;</span>
+<span class="err">#</span><span class="k">or</span>
+<span class="nx">find</span><span class="w"> </span><span class="p">.</span><span class="w"> </span><span class="o">-</span><span class="k">type</span><span class="w"> </span><span class="nx">d</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nx">xargs</span><span class="w"> </span><span class="nx">chmod</span><span class="w"> </span><span class="mi">2775</span>
+<span class="err">#</span><span class="nx">ls</span><span class="w"> </span><span class="o">-</span><span class="nx">l</span><span class="w"> </span><span class="nx">will</span><span class="w"> </span><span class="nx">give</span>
+<span class="nx">drwxr</span><span class="o">-</span><span class="nx">sr</span><span class="o">-</span><span class="nx">x</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

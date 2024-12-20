@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction to python web programming - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/python.html">python</a></li>
+    
+    <li><a href="/tags/php.html">php</a></li>
+    
+    <li><a href="/tags/apache.html">apache</a></li>
+    
+    <li><a href="/tags/programming.html">programming</a></li>
+    
+    <li><a href="/tags/cgi.html">cgi</a></li>
+    
+    <li><a href="/tags/wsgi.html">wsgi</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="introduction-to-python-web-programming">Introduction to python web programming</h1>
+<p>It's time to say goodbye to PHP and replace it with Python? This article is a quick intro into two approaches of using python instead of PHP. Yes you can use python embedded in your HTML like with PHP however that approach is for kids and not covered here ;-).</p>
+<h1 id="_1"></h1>
+<p>I'm assuming you have a recent version (2.6&gt;) of Python installed. I'm only covering Apache as a production webserver. Most tests can just be done inside python anyway. I'm only covering UNIX platforms. So if you use Windows just read the python docs about Windows, shouldn't be too different. Especially in the second method of python web development there's a very positive side effect: <strong>You don't need a dedicated webserver!</strong> 8-)</p>
+<h1 id="approach-1-good-old-school-python-cgi">Approach 1: Good old school Python CGI</h1>
+<p>The most simple setup of using Python for webdevelopment is through <a href="http://nl.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a>.</p>
+<p>The most simple test.py application would look like this:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/plain&quot;</span><span class="p">)</span>   <span class="c1"># Plaintext is following</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>                           <span class="c1"># blank line, end of headers</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Which just prints out "Hello World".</p>
+<p>First let's try to run this on a webserver.</p>
+<p>I'm not going to cover a full apache setup. I've just got a simple apache setup using <a href="http://httpd.apache.org/docs/2.2/howto/public_html.html">userdirs</a> for users to use the webserver. I've edited the userdir module configuration as follows:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;IfModule</span><span class="w"> </span><span class="err">mod_userdir.c</span><span class="nt">&gt;</span>
+<span class="w">        </span>UserDir<span class="w"> </span>www
+<span class="w">        </span>UserDir<span class="w"> </span>disabled<span class="w"> </span>root
+
+<span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/home/*/www</span><span class="nt">&gt;</span>
+<span class="w">                </span>AllowOverride<span class="w"> </span>FileInfo<span class="w"> </span>AuthConfig<span class="w"> </span>Limit<span class="w"> </span>Indexes<span class="w"> </span>Options
+<span class="w">                </span>Options<span class="w"> </span>MultiViews<span class="w"> </span>-Indexes<span class="w"> </span>SymLinksIfOwnerMatch<span class="w"> </span>IncludesNoExec<span class="w"> </span>ExecCGI
+<span class="w">                </span><span class="nt">&lt;Limit</span><span class="w"> </span><span class="err">GET</span><span class="w"> </span><span class="err">POST</span><span class="w"> </span><span class="err">OPTIONS</span><span class="nt">&gt;</span>
+<span class="w">                        </span>Order<span class="w"> </span>allow,deny
+<span class="w">                        </span>Allow<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">                </span><span class="nt">&lt;/Limit&gt;</span>
+<span class="w">                </span><span class="nt">&lt;LimitExcept</span><span class="w"> </span><span class="err">GET</span><span class="w"> </span><span class="err">POST</span><span class="w"> </span><span class="err">OPTIONS</span><span class="nt">&gt;</span>
+<span class="w">                        </span>Order<span class="w"> </span>deny,allow
+<span class="w">                        </span>Deny<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">                </span><span class="nt">&lt;/LimitExcept&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/home/*/www/cgi-bin</span><span class="nt">&gt;</span>
+<span class="w">        </span>AddHandler<span class="w"> </span>cgi-script<span class="w"> </span>.py
+<span class="w">        </span>Options<span class="w"> </span>+ExecCGI
+<span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="nt">&lt;/IfModule&gt;</span>
+</code></pre></div>
+
+<p>So this makes sure we can execure python scripts inside the cgi-bin directory. There's probably a better setup but this works for me. For a production server I don't recommended this!</p>
+<p>So now you should be able browse to</p>
+<div class="codehilite"><pre><span></span><code>http://your.webserver.com/~username/cgi-bin/test.py
+</code></pre></div>
+
+<p>and it should display something familiar. If it's not working see your webserver logs for hints.</p>
+<h2 id="cgi-magic-with-python">CGI Magic with python</h2>
+<p>We just covered the most useless, but most created, application ever. So let's add two things to this.
+1. Error handling: we would like to see what's going wrong if... cgitb module
+2. Input handling: cgi module</p>
+<p>If I would create an error in our script like this:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/plain&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world&quot;</span><span class="p">)</span>
+<span class="n">bla</span>
+</code></pre></div>
+
+<p>We would only notice that in our server logs. This is usually not comfortable while developing. So let's add the CGI TraceBack module:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+
+<span class="c1"># enable debugging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cgitb</span>
+<span class="n">cgitb</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/plain&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">)</span>
+<span class="n">bla</span>
+</code></pre></div>
+
+<p>If you would point your browser to the test.py file now it will display lots of debug information. However it's formatted in HTML and the browser renders it as plaintext. Time to change the Content-Type.</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+
+<span class="c1"># enable debugging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cgitb</span>
+<span class="n">cgitb</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/html&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello World!&quot;</span><span class="p">)</span>
+<span class="n">bla</span>
+</code></pre></div>
+
+<p>You can also <a href="http://docs.python.org/library/cgitb.html#module-cgitb">change the format output</a> of the cgitb module. It’s very helpful to use this feature during development. The reports produced by cgitb provide information that can save you a lot of time in tracking down bugs. You can always remove the cgitb line later.</p>
+<h3 id="user-input">User input</h3>
+<p>The cgi module provides methods to handle input. Let's keep it simple. The following code renders an input form only if there is no input named 'name'.</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+
+<span class="c1"># enable debugging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cgitb</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cgi</span>
+<span class="n">cgitb</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/html&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">form</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cgi</span><span class="o">.</span><span class="n">FieldStorage</span><span class="p">()</span>
+<span class="k">if</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">form</span><span class="p">:</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please fill in your name:&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&lt;form action=&quot;test.py&quot; method=&quot;get&quot;&gt;&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Name &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&lt;input type=&quot;submit&quot; value=&quot;submit&quot; /&gt;&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&lt;/form&gt;&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&lt;p&gt;Hello&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">form</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+<span class="c1">#Just a simple output of all arguments passed</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&lt;h1&gt;arguments passed&lt;/h1&gt;&quot;</span><span class="p">)</span>
+<span class="k">for</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">form</span><span class="p">:</span>
+<span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="w"> </span><span class="n">form</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Well that covers the basic python cgi pipeline. The problem with CGI is that it needs to spawn a new python process for every request. In a simple setup this is no problem but when the server needs to process a lot of requests this can get problematic.</p>
+<p>So let's see a more modern approach  </p>
+<h1 id="approach-2-python-web-server-gateway-interface-wsgi">Approach 2: Python Web Server Gateway Interface (WSGI)</h1>
+<p>A standard has been developed to interface between python and the webserver. This standard is called <a href="http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface">WSGI</a>. I'd like to keep things simple so I'm not going in depth about this. I'm just showing how to get started doing things with it.</p>
+<p>It all simply comes down to a function being called with 2 arguments:
+* a dictionary of environment variables
+* a function to be called to send header data back to the webserver
+The function must return the body data which will be send back to the server as a iterable [^1]</p>
+<p>[^1]: So a list or dictionary, not a single string.</p>
+<p>Python has a wsig reference module implemented which comes with a basic server. This is very usefull for testing your code on your own workstation.</p>
+<p>So a simple hello world would look like this:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">make_server</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hello_world_app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span><span class="w"> </span><span class="n">start_response</span><span class="p">):</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;200 OK&#39;</span><span class="w"> </span><span class="c1"># HTTP Status</span>
+<span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="s1">&#39;Content-type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;text/plain&#39;</span><span class="p">)]</span><span class="w"> </span><span class="c1"># HTTP Headers</span>
+<span class="w">    </span><span class="n">start_response</span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">headers</span><span class="p">)</span>
+
+<span class="c1"># The returned object is going to be printed</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Hello World&quot;</span><span class="p">]</span>
+
+<span class="n">httpd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span><span class="w"> </span><span class="n">hello_world_app</span><span class="p">)</span>
+<span class="nb">print</span><span class="w"> </span><span class="s2">&quot;Serving on port 8000...&quot;</span>
+
+<span class="c1"># Serve until process is killed</span>
+<span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+</code></pre></div>
+
+<p>The great thing is you can just run this on your workstation and point your browser to
+<a href="http://localhost:8000">http://localhost:8000</a></p>
+<p>Now let's try to recreate our previous cgi app.</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/python</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">make_server</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cgi</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">parse_qs</span><span class="p">,</span><span class="w"> </span><span class="n">escape</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hello_user_app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span><span class="w"> </span><span class="n">start_response</span><span class="p">):</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;200 OK&#39;</span><span class="w"> </span><span class="c1"># HTTP Status</span>
+<span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="s1">&#39;Content-type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;text/html&#39;</span><span class="p">)]</span><span class="w"> </span><span class="c1"># HTTP Headers</span>
+<span class="w">    </span><span class="n">start_response</span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">form</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">])</span>
+<span class="w">    </span><span class="n">html</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">form</span><span class="p">:</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;Please fill in your name:&quot;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;form action=&quot;wsig.py&quot; method=&quot;get&quot;&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;Name &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;input type=&quot;submit&quot; value=&quot;submit&quot; /&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;/form&gt;&#39;</span>
+<span class="w">    </span><span class="k">else</span><span class="p">:</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;Hello &quot;</span>
+<span class="w">        </span><span class="c1"># Always escape user input to avoid script injection</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">escape</span><span class="p">(</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># The returned object is going to be printed</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="n">html</span><span class="p">]</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">**</span><span class="n">name</span><span class="o">**</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;**main**&#39;</span><span class="p">:</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">make_server</span>
+<span class="w">    </span><span class="n">httpd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span><span class="w"> </span><span class="n">hello_user_app</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="w"> </span><span class="s2">&quot;Serving on port 8000...&quot;</span>
+
+<span class="c1"># Serve until process is killed</span>
+<span class="w">    </span><span class="c1">#httpd.serve_forever()</span>
+<span class="w">    </span><span class="c1"># Alternative: serve once and exit</span>
+<span class="w">    </span><span class="c1">#httpd.handle_request()</span>
+</code></pre></div>
+
+<h2 id="onto-a-production-server">Onto a production server</h2>
+<p>To get the WSGI approach working in Apache you need to install the Apache wsgi module (mod_wsgi). In Debian/Ubuntu you just issue:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">sudo</span><span class="w"> </span><span class="n">apt</span><span class="o">-</span><span class="n">get</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">libapache2</span><span class="o">-</span><span class="n">mod</span><span class="o">-</span><span class="n">wsgi</span>
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">apache2</span><span class="w"> </span><span class="n">reload</span>
+</code></pre></div>
+
+<p>//
+Ofcourse because of security you'll need to do some configuration telling the webserver where and what python scripts can be executed. The configuration I'm proposing is <strong>by no means secure</strong> and not recommended for production use. Read the <a href="http://code.google.com/p/modwsgi/">mod-wsgi documentation</a> about a secure setup.
+//</p>
+<p>I'm going to configure a dedicated directory in the users home dir for the wsgi scripts. So I need to edit the Apache userdir module like we did before with CGI:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;IfModule</span><span class="w"> </span><span class="err">mod_userdir.c</span><span class="nt">&gt;</span>
+<span class="w">        </span>UserDir<span class="w"> </span>www
+<span class="w">        </span>UserDir<span class="w"> </span>disabled<span class="w"> </span>root
+
+<span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/home/*/www</span><span class="nt">&gt;</span>
+<span class="w">                </span>AllowOverride<span class="w"> </span>FileInfo<span class="w"> </span>AuthConfig<span class="w"> </span>Limit<span class="w"> </span>Indexes<span class="w"> </span>Options
+<span class="w">                </span>Options<span class="w"> </span>MultiViews<span class="w"> </span>-Indexes<span class="w"> </span>SymLinksIfOwnerMatch<span class="w"> </span>IncludesNoExec<span class="w"> </span>ExecCGI
+<span class="w">                </span><span class="nt">&lt;Limit</span><span class="w"> </span><span class="err">GET</span><span class="w"> </span><span class="err">POST</span><span class="w"> </span><span class="err">OPTIONS</span><span class="nt">&gt;</span>
+<span class="w">                        </span>Order<span class="w"> </span>allow,deny
+<span class="w">                        </span>Allow<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">                </span><span class="nt">&lt;/Limit&gt;</span>
+<span class="w">                </span><span class="nt">&lt;LimitExcept</span><span class="w"> </span><span class="err">GET</span><span class="w"> </span><span class="err">POST</span><span class="w"> </span><span class="err">OPTIONS</span><span class="nt">&gt;</span>
+<span class="w">                        </span>Order<span class="w"> </span>deny,allow
+<span class="w">                        </span>Deny<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">                </span><span class="nt">&lt;/LimitExcept&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/home/*/www/cgi-bin</span><span class="nt">&gt;</span>
+<span class="w">        </span>AddHandler<span class="w"> </span>cgi-script<span class="w"> </span>.py
+<span class="w">        </span>Options<span class="w"> </span>+ExecCGI
+<span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/home/*/www/wsgi-bin</span><span class="nt">&gt;</span>
+<span class="w">        </span>Options<span class="w"> </span>ExecCGI
+<span class="w">        </span>AllowOverride<span class="w"> </span>FileInfo
+<span class="w">        </span>AddHandler<span class="w"> </span>wsgi-script<span class="w"> </span>.wsgi
+<span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="nt">&lt;/IfModule&gt;</span>
+</code></pre></div>
+
+<p>As you can see I'm adding a handler with a specific file extension (.wsgi). Since WSGI is handled different from normal python scripts I don't want to use the .py extension. This is a bit more secure but also forces you to adapt to WSGI.</p>
+<p>Now to run your application on the production server we need to configure one more thing. Apache's mod_wsgi directly calls the 'application' function. In our example we named our function 'hello_user_app'. So if we would copy our script to the production server it wouldn't do a thing. The webserver will error with:</p>
+<div class="codehilite"><pre><span></span><code>...test.wsgi&#39; does not contain WSGI application &#39;application&#39;...
+</code></pre></div>
+
+<p>You could rename your function to 'application' however I would recommended add a function 'application' which calls your function. This function can be made more intelligent to call different functions depending on input. So the final script would look like this (Note the file extension .wsgi!):</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/python</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cgi</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">parse_qs</span><span class="p">,</span><span class="w"> </span><span class="n">escape</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">hello_user_app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span><span class="w"> </span><span class="n">start_response</span><span class="p">):</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;200 OK&#39;</span><span class="w"> </span><span class="c1"># HTTP Status</span>
+<span class="w">    </span><span class="n">headers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="s1">&#39;Content-type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;text/html&#39;</span><span class="p">)]</span><span class="w"> </span><span class="c1"># HTTP Headers</span>
+<span class="w">    </span><span class="n">start_response</span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">form</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">parse_qs</span><span class="p">(</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;QUERY_STRING&#39;</span><span class="p">])</span>
+<span class="w">    </span><span class="n">html</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">form</span><span class="p">:</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;Please fill in your name:&quot;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;form action=&quot;wsig.py&quot; method=&quot;get&quot;&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;Name &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;input type=&quot;submit&quot; value=&quot;submit&quot; /&gt;&#39;</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">&#39;&lt;/form&gt;&#39;</span>
+<span class="w">    </span><span class="k">else</span><span class="p">:</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;&lt;p&gt;Hello &quot;</span>
+<span class="w">        </span><span class="c1"># Always escape user input to avoid script injection</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">escape</span><span class="p">(</span><span class="n">form</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1">#Just a simple output of all arguments passed</span>
+<span class="w">    </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;&lt;h1&gt;Arguments passed&lt;/h1&gt;&quot;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">form</span><span class="p">:</span>
+<span class="w">        </span><span class="n">html</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> : </span><span class="si">%s</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">%</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="w"> </span><span class="n">form</span><span class="p">[</span><span class="n">item</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># The returned object is going to be printed</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="n">html</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">application</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span><span class="w"> </span><span class="n">start_response</span><span class="p">):</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">hello_user_app</span><span class="p">(</span><span class="n">environ</span><span class="p">,</span><span class="w"> </span><span class="n">start_response</span><span class="p">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">**</span><span class="n">name</span><span class="o">**</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;**main**&#39;</span><span class="p">:</span>
+<span class="w">    </span><span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span><span class="w"> </span><span class="n">make_server</span>
+<span class="w">    </span><span class="n">httpd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span><span class="w"> </span><span class="n">hello_user_app</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="w"> </span><span class="s2">&quot;Serving on port 8000...&quot;</span>
+
+<span class="c1"># Serve until process is killed</span>
+<span class="w">    </span><span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+<span class="w">    </span><span class="c1"># Serve once</span>
+<span class="w">    </span><span class="c1">#httpd.handle_request()</span>
+</code></pre></div>
+
+<p><em>Note: Because of the</em></p>
+<div class="codehilite"><pre><span></span><code>if **name** == &#39;**main**&#39;:
+</code></pre></div>
+
+<p>//line no http server will be started by python. That piece of code will only be run if it is run directly by the python interpreter. This is not the case when run through the WSGI module.
+//</p>
+<p>This covers the basic of python web programming. I'll start a new post about webframeworks following this post to make life even easier.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

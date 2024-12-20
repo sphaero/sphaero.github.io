@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install ubuntu from grub without any iso - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ubuntu.html">ubuntu</a></li>
+    
+    <li><a href="/tags/installer.html">installer</a></li>
+    
+    <li><a href="/tags/grub.html">grub</a></li>
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="install-ubuntu-from-grub-without-any-iso">Install ubuntu from grub without any iso</h1>
+<p>So the new LTS from Ubuntu has been released. Time to upgrade my laptop as well. But I'm lazy bastard and I don't feel like downloading an iso nor do I have a CD player. So this is an easy hint to start the Ubuntu/Debian net installer from grub.</p>
+<h1 id="_1"></h1>
+<p>First download the netboot.tar.gz file from:</p>
+<ul>
+<li>64bit: http://nl.archive.ubuntu.com/ubuntu/dists/precise/main/installer-amd64/current/images/netboot/netboot.tar.gz</li>
+<li>32bit: http://nl.archive.ubuntu.com/ubuntu/dists/precise/main/installer-i386/current/images/netboot/netboot.tar.gz
+Switch to the root user and extract the archive:</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>sudo su
+cd
+tar -xzf /tmp/netboot.tar.gz
+</code></pre></div>
+
+<p>Now edit /etc/grub.d/40_custom and add the following:</p>
+<div class="codehilite"><pre><span></span><code>menuentry &quot;precise&quot; {
+        set root=&#39;(hd0,1)&#39;
+        linux /root/ubuntu-installer/amd64/linux
+        initrd /root/ubuntu-installer/amd64/initrd.gz
+}
+</code></pre></div>
+
+<p>set root='(hd0,1)' must point to the right partition where the installer is located on. Watch for that!</p>
+<p>Allright, update grub and reboot:</p>
+<div class="codehilite"><pre><span></span><code>sudo update-grub
+sudo reboot
+</code></pre></div>
+
+<p>Now select precise from the menu and the installer will start. If you do not see a menu, hold down the shift key while grub starts! Note that this is a text mode installer, a graphical installer is for sizzies anyway :-P</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

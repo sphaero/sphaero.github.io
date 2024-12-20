@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtools StereoFrustum Building Block
+ - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+
+<div class="date">~2004</div>
+
+<content>
+<h1 id="virtools-stereo-frustum-bb">Virtools Stereo Frustum BB</h1>
+<p>This plugin will enable you to calculate a correct projection frustum for usuage in stereographics projection. It calculates an off-axis projection frustum from the Eyedistance and Focal distance in 3D. The plugin has been created for use in a passive stereoscopic setup. It's been created for a research about historical stereophotographics and stereographics for use in theatre performances. This research was initiated by <a href="http://www.lange-poten.nl">Stichting Lange Poten</a>. The plugin was written by <a href="http://www.k-n-p.org">Knip 'n Plak</a> coder Wreck and myself.
+<img alt="KnP Logo" src="/_rd_/stereofrustum_bb/knp.PNG" /></p>
+<p>Most of the techniques are based on documents from <a href="http://www.paulbourke.net">Paul Bourke</a>.</p>
+<p>Note that <a href="https://en.wikipedia.org/wiki/Virtools">Virtools</a> doesn't exist anymore.
+This page is just kept for historic purposes.</p>
+<h2 id="downloads">Downloads</h2>
+<ul>
+<li><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.02b.zip">StereoFrustum version 1.02b</a></li>
+<li><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.01b.zip">StereoFrustum version 1.01b</a></li>
+<li>
+<p><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.0b.zip">StereoFrustum version 1.0b</a></p>
+</li>
+<li>
+<p><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.02b.src.zip">StereoFrustum version 1.02b source code</a></p>
+</li>
+<li><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.01b.src.zip">StereoFrustum version 1.01b source code</a></li>
+<li><a href="/_rd_/stereofrustum_bb/stereofrustum-v1.0b.src.zip">StereoFrustum version 1.0b source code</a></li>
+</ul>
+<p>Thanks to Gilles Pinault who provided us with a Virtools Dev 2.5 version.</p>
+<ul>
+<li><a href="/_rd_/stereofrustum_bb/stereofrustum25.zip">StereoFrustum25.zip</a></li>
+</ul>
+<h2 id="installation-notes">Installation Notes</h2>
+<p>Just copy the DLL into your 'Building Blocks' directory. When you start Virtools you will find FrustumBB in section Cameras/FX:</p>
+<p><img alt="Virtools Screenshot" src="/_rd_/stereofrustum_bb/img/frustumbb.gif" /></p>
+<p>This is the StereoFrustum Building Block in which you can set the following settings:</p>
+<ul>
+<li>LeftEyePosition(boolean): should the left(true) or right(false) posistion be calculated</li>
+<li>Eyedistance: The distance from 1 eye to the eyecenter. When using value 0 a workable distance will be calculated.</li>
+<li>Focal: The distance from the camera to the focal point.</li>
+</ul>
+<p>The Building Block outputs the eyedistance. This might be useful for parenting the camera to the eyecenter.</p>
+<h2 id="license-copyrights">License &amp; copyrights</h2>
+<p>This plugin is copyright 2004 sphaero.org/KnP/Lange Poten. All rights reserved. The plugin has been released under the Gnu Lesser Public License for others to enjoy.</p>
+<p>We would like to know if people are using this plugin for any purpose. If you make modifications or additions to this plugin you are obliged to provide the source to us to include it into future releases of the plugin.</p>
+<p>Problems or questions please contact us by email</p>
+<h2 id="changelog">Changelog</h2>
+<div class="codehilite"><pre><span></span><code># v1.02b 16-01-04
+- fix incorrect eyedistance usuage
+
+# v1.01b - 13-01-04
+- fix incorrect correction after editing BB
+
+# v1.0b - 09-01-04
+- release date!
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

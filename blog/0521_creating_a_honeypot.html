@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creating a honeypot - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/dnsmasq.html">dnsmasq</a></li>
+    
+    <li><a href="/tags/apache.html">apache</a></li>
+    
+    <li><a href="/tags/honeypot.html">honeypot</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="creating-a-honeypot">Creating a honeypot</h1>
+<p>This is a simple guide to setting up a honeypot. A honeypot is a device that captures all traffic. It's usuable for example when you need to quarantaine people on a network or if you have a network without internet and you need to redirect users to a specific website no matter which site they try to visit.</p>
+<h1 id="_1"></h1>
+<p>This guide is based on a clean minimal Debian installation.</p>
+<p>First we'll install the necessary software packages.</p>
+<div class="codehilite"><pre><span></span><code>apt-get install apache2 php5 dokuwiki dnsmasq
+</code></pre></div>
+
+<p>Select <strong>apache2</strong> if Dokuwiki install asks for it. Accept all other default answers.</p>
+<h2 id="apache-configuration">Apache configuration</h2>
+<p>We'll create a virtualhost for the site we want users to be directed to. This site runs a dokuwiki installation as an example:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="err">*:80</span><span class="nt">&gt;</span>
+<span class="w">  </span>ServerAdmin<span class="w"> </span>postmaster@exmaple.org
+<span class="w">  </span>ServerName<span class="w"> </span>honeypot.example.org
+<span class="w">  </span>DocumentRoot<span class="w"> </span>/usr/share/dokuwiki
+<span class="nt">&lt;/VirtualHost&gt;</span>
+</code></pre></div>
+
+<p>Next we'll create a catchall site. This configuration will attempt to redirect all requests to our honeypot site:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="err">*:80</span><span class="nt">&gt;</span>
+<span class="w">  </span>ServerAdmin<span class="w"> </span>postmaster@exmaple.org
+<span class="w">  </span>DocumentRoot<span class="w"> </span>/var/www/
+<span class="w">  </span>RewriteEngine<span class="w"> </span>on
+<span class="w">  </span>RewriteRule<span class="w">   </span>(.*)<span class="w">    </span>http://honeypot.example.org<span class="w"> </span>[R,L]
+<span class="w">  </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="nt">/&gt;</span>
+<span class="w">    </span>Options<span class="w"> </span>FollowSymLinks
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">  </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/var/www</span><span class="nt">/&gt;</span>
+<span class="w">    </span>Options<span class="w"> </span>Indexes<span class="w"> </span>FollowSymLinks<span class="w"> </span>MultiViews
+<span class="w">    </span>AllowOverride<span class="w"> </span>None
+<span class="w">    </span>Order<span class="w"> </span>allow,deny
+<span class="w">    </span>allow<span class="w"> </span>from<span class="w"> </span>all
+<span class="w">  </span><span class="nt">&lt;/Directory&gt;</span>
+<span class="w">  </span>ErrorLog<span class="w"> </span>/var/log/apache2/error.log
+<span class="w">  </span>LogLevel<span class="w"> </span>warn
+<span class="w">  </span>CustomLog<span class="w"> </span>/var/log/apache2/access.log<span class="w"> </span>combined
+<span class="w">  </span>ServerSignature<span class="w"> </span>Off
+<span class="nt">&lt;/VirtualHost&gt;</span>
+</code></pre></div>
+
+<p>now let's enable these sites, the needed modules and disable the default site:</p>
+<div class="codehilite"><pre><span></span><code>a2enmod rewrite
+a2ensite honeypot catchall
+a2dissite default
+/etc/init.d/apache2 restart
+</code></pre></div>
+
+<h2 id="dnsmasq-configuration">DNSMasq configuration</h2>
+<p>This honeypot also serves as a DHCP and DNS server. We'll use Dnsmasq to do this and also to do a catchall on DNS requests.</p>
+<p>Backup the default configuration and create a new file containing a clean config.</p>
+<div class="codehilite"><pre><span></span><code>mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="nx">address</span><span class="p">=</span><span class="o">/</span><span class="err">#</span><span class="o">/</span><span class="p">[</span><span class="nx">ipaddress</span><span class="o">-</span><span class="nx">of</span><span class="w"> </span><span class="nx">this</span><span class="o">-</span><span class="nx">server</span><span class="p">]</span>
+<span class="nx">domain</span><span class="p">=</span><span class="nx">honeypot</span><span class="p">.</span><span class="nx">example</span><span class="p">.</span><span class="nx">org</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">authoritative</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">lease</span><span class="o">-</span><span class="nx">max</span><span class="p">=</span><span class="mi">512</span>
+<span class="err">#</span><span class="nx">example</span><span class="w"> </span><span class="nx">networks</span><span class="w"> </span><span class="m m-Double">10.1.138.0</span><span class="o">/</span><span class="mi">23</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="m m-Double">10.2.138.0</span><span class="o">/</span><span class="mi">23</span>
+<span class="err">#</span><span class="nx">DHCP</span><span class="w"> </span><span class="nx">range</span><span class="w"> </span><span class="m m-Double">10.1.139.1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m m-Double">10.1.139.254</span><span class="w"> </span><span class="nx">netmask</span><span class="w"> </span><span class="m m-Double">255.255.254.0</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">range</span><span class="p">=</span><span class="nx">net1</span><span class="p">,</span><span class="m m-Double">10.1.139.1</span><span class="p">,</span><span class="m m-Double">10.1.139.254</span><span class="p">,</span><span class="m m-Double">255.255.254.0</span><span class="p">,</span><span class="mi">1</span><span class="nx">h</span>
+<span class="err">#</span><span class="nx">router</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="m m-Double">10.1.138.0</span><span class="o">/</span><span class="mi">23</span><span class="w"> </span><span class="nx">network</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">option</span><span class="p">=</span><span class="nx">net1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="m m-Double">10.1.138.1</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">range</span><span class="p">=</span><span class="nx">net2</span><span class="p">,</span><span class="m m-Double">10.2.139.1</span><span class="p">,</span><span class="m m-Double">10.2.139.254</span><span class="p">,</span><span class="m m-Double">255.255.254.0</span><span class="p">,</span><span class="mi">1</span><span class="nx">h</span>
+<span class="nx">dhcp</span><span class="o">-</span><span class="nx">option</span><span class="p">=</span><span class="nx">net2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="m m-Double">10.2.138.1</span>
+</code></pre></div>
+
+<p>The 'address=/#/' line is the most important. It is a wildcard for all dns request and it will reply with the ipaddress you fill in there. This ipaddress should the address of your honeypot server obviously.</p>
+<p>If you need more options see 'man dnsmasq'</p>
+<h2 id="dokuwiki-configuration">Dokuwiki configuration</h2>
+<p>Dokuwiki will work out of the box. However you need to remember you can only access it through the right domain name. Since the honeypot will redirect all requests to the url you have filled in in the apache configuration. This can be a bit puzzling if you didn't set it up right.</p>
+<p>Some versions of Debian ship dokuwiki which is only accessible from localhost. To fix this change /etc/apache2/conf.d/dokuwiki.conf to:</p>
+<div class="codehilite"><pre><span></span><code>Alias<span class="w"> </span>/dokuwiki<span class="w">         </span>/usr/share/dokuwiki
+<span class="nt">&lt;Directory</span><span class="w"> </span><span class="err">/usr/share/dokuwiki</span><span class="nt">/&gt;</span>
+<span class="w">        </span>Options<span class="w"> </span>+FollowSymLinks
+<span class="w">        </span>AllowOverride<span class="w"> </span>All
+<span class="w">        </span>order<span class="w"> </span>allow,deny
+<span class="w">        </span>allow<span class="w"> </span>from<span class="w"> </span>all
+<span class="nt">&lt;/Directory&gt;</span>
+</code></pre></div>
+
+<p>To add some configuration to dokuwiki use this as an example:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Honeypot Portal&#39;</span><span class="p">;</span>
+<span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;lang&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;en&#39;</span><span class="p">;</span>
+<span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;useacl&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;disableactions&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;backlink,recent,revisions,register,resendpwd,profile,check,subscribe,unsubscrribe,source,export_raw&#39;</span><span class="p">;</span>
+<span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;htmlok&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="o">$</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;updatecheck&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

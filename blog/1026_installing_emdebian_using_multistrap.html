@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installing emdebian using multistrap - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/emdebian.html">emdebian</a></li>
+    
+    <li><a href="/tags/multistrap.html">multistrap</a></li>
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/busybox.html">busybox</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="installing-emdebian-using-multistrap">Installing Emdebian using multistrap</h1>
+<p>Just a quick guide into installing Emdebian using multistrap. This currently based on Debian Squeeze. Wheezy is not supported yet.</p>
+<h1 id="_1"></h1>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install multistrap
+</code></pre></div>
+
+<p>Create a config file emdebian.conf</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[General]</span>
+<span class="na">arch</span><span class="o">=</span><span class="s">i386</span>
+<span class="na">directory</span><span class="o">=</span><span class="s">/tmp/multistrap/</span>
+<span class="na">cleanup</span><span class="o">=</span><span class="s">true</span>
+<span class="na">noauth</span><span class="o">=</span><span class="s">false</span>
+<span class="na">unpack</span><span class="o">=</span><span class="s">true</span>
+<span class="na">aptsources</span><span class="o">=</span><span class="s">Grip Updates</span>
+<span class="na">debootstrap</span><span class="o">=</span><span class="s">Grip</span>
+
+<span class="k">[Debian]</span>
+<span class="na">packages</span><span class="o">=</span>
+<span class="na">source</span><span class="o">=</span><span class="s">http://ftp.nl.debian.org/debian</span>
+<span class="na">keyring</span><span class="o">=</span><span class="s">debian-archive-keyring</span>
+<span class="na">suite</span><span class="o">=</span><span class="s">squeeze</span>
+
+<span class="k">[Grip]</span>
+<span class="na">packages</span><span class="o">=</span><span class="s">locales busybox</span>
+<span class="na">keyring</span><span class="o">=</span><span class="s">emdebian-archive-keyring</span>
+<span class="na">source</span><span class="o">=</span><span class="s">http://www.emdebian.org/grip</span>
+<span class="na">suite</span><span class="o">=</span><span class="s">squeeze</span>
+</code></pre></div>
+
+<p>execute:</p>
+<div class="codehilite"><pre><span></span><code>sudo multistrap -f emdebian.conf
+</code></pre></div>
+
+<p>You'll end up with the base install in /tmp/multistrap.</p>
+<p>Now you can chroot into that dir and configure the OS.</p>
+<div class="codehilite"><pre><span></span><code>sudo chroot /tmp/multistrap
+</code></pre></div>
+
+<p>Inside the chroot:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="n">DEBIAN_FRONTEND</span><span class="o">=</span><span class="n">noninteractive</span><span class="w"> </span><span class="n">DEBCONF_NONINTERACTIVE_SEEN</span><span class="o">=</span><span class="bp">true</span>
+<span class="k">export</span><span class="w"> </span><span class="n">LC_ALL</span><span class="o">=</span><span class="n">C</span><span class="w"> </span><span class="n">LANGUAGE</span><span class="o">=</span><span class="n">C</span><span class="w"> </span><span class="n">LANG</span><span class="o">=</span><span class="n">C</span>
+<span class="c1">#workaround a configure bug</span>
+<span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">man</span><span class="o">/</span><span class="n">man1</span>
+<span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">dpkg</span><span class="o">/</span><span class="n">info</span><span class="o">/</span><span class="n">dash</span><span class="o">.</span><span class="n">preinst</span><span class="w"> </span><span class="n">install</span>
+<span class="n">dpkg</span><span class="w"> </span><span class="o">--</span><span class="n">configure</span><span class="w"> </span><span class="o">-</span><span class="n">a</span>
+<span class="n">mount</span><span class="w"> </span><span class="n">proc</span><span class="w"> </span><span class="o">-</span><span class="n">t</span><span class="w"> </span><span class="n">proc</span><span class="w"> </span><span class="o">/</span><span class="n">proc</span>
+<span class="n">dpkg</span><span class="w"> </span><span class="o">--</span><span class="n">configure</span><span class="w"> </span><span class="o">-</span><span class="n">a</span>
+</code></pre></div>
+
+<p>Some fixes, do this outside the chroot since you won't have a text editor.
+* Fix root login in /tmp/multistrap/etc/passwd</p>
+<div class="codehilite"><pre><span></span><code>root::0:0:root:/root:/bin/bash
+</code></pre></div>
+
+<ul>
+<li>Minimal /etc/fstab</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>echo &quot;proc /proc proc defaults 0 0&quot; &gt; /tmp/multistrap/etc/fstab
+</code></pre></div>
+
+<ul>
+<li>Add busybox ifconfig</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>ln -s /tmp/multistrap/bin/busybox /sbin/ifconfig
+</code></pre></div>
+
+<p>You can add most essential commands with busybox like that :)</p>
+<p>Look at <a href="blog:2012:0115_creating_a_harddrive_image_from_a_directory">this doc</a> on how to make this into a harddrive image.</p>
+<p>You can test boot your rootfs using qemu:</p>
+<div class="codehilite"><pre><span></span><code>sudo qemu-system-x86_64 -kernel /boot/vmlinuz-3.2.0-32-generic -initrd /boot/initrd.img-3.2.0-32-generic -hda /tmp/disk.img -net nic -net user -m 265 -append &quot;root=/dev/sda rw devtmpfs&quot;
+</code></pre></div>
+
+<p><em>root permission is needed to read the kernel from your machine</em></p>
+<p>Since you won't have any DHCP support you can give yourself an ip adress with the following details:
+* gateway: 10.0.2.2
+* dns: 10.0.2.3
+* netmask: 255.255.255.0
+You'll have to give yourself access to the route command (Busybox!)</p>
+<h1 id="references">References</h1>
+<ul>
+<li>http://www.landley.net/writing/</li>
+</ul>
+<p>FIXME
+* pure initramfs instead of harddisk image
+* install a kernel explanation
+* rip init scripts from /usr/share/initramfs-tools/, skip rootfs search since its not needed
+* search some simple union or overlay fs</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

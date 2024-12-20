@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debian s initial root filesystem - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/debian.html">debian</a></li>
+    
+    <li><a href="/tags/initramfs.html">initramfs</a></li>
+    
+    <li><a href="/tags/init.html">init</a></li>
+    
+    <li><a href="/tags/root.html">root</a></li>
+    
+    <li><a href="/tags/filesystem.html">filesystem</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="debians-initial-root-filesystem">Debian's initial root filesystem</h1>
+<p>Debian's initial root filesystem (initrd) is a minimal environment basically responsible for finding your root filesystem on some device in your computer. In this article I'm unwinding what it's composed of and how it is generated so I can use the same mechanisms to place a complete Debian (Emdebian) environment in the initial filesystem removing the need to find the root filesystem device.</p>
+<h1 id="_1"></h1>
+<h2 id="how-is-it-generated-mkinitramfs">How is it generated? mkinitramfs</h2>
+<p>This is done using the mkinitramfs(8) tool. This is a simple bash script doing some file copies and creating a cpio archive. In line 167 the DESTDIR var is set which is the directory where a file system will be generated:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">DESTDIR</span><span class="s s-Atom">=</span><span class="s2">&quot;$(mktemp -d ${TMPDIR:-/var/tmp}/mkinitramfs_XXXXXX)&quot;</span> <span class="p">||</span> <span class="s s-Atom">exit</span> <span class="mi">1</span>
+</code></pre></div>
+
+<p>In line 196 all the need dirs are created:</p>
+<div class="codehilite"><pre><span></span><code>for<span class="w"> </span>d<span class="w"> </span>in<span class="w"> </span>bin<span class="w"> </span>conf/conf.d<span class="w"> </span>etc<span class="w"> </span>lib/modules<span class="w"> </span>run<span class="w"> </span>sbin<span class="w"> </span>scripts<span class="w"> </span><span class="cp">${</span><span class="n">MODULESDIR</span><span class="cp">}</span>;<span class="w"> </span>do
+<span class="w">    </span>mkdir<span class="w"> </span>-p<span class="w"> </span>&quot;<span class="cp">${</span><span class="n">DESTDIR</span><span class="cp">}</span>/<span class="cp">${</span><span class="n">d</span><span class="cp">}</span>&quot;
+done
+</code></pre></div>
+
+<p>After that some essential stuff is done for kernel modules. I'm skipping over it for now.</p>
+<p>At line 239 the most important script (init) is copied to the filesystem</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># First file executed by linux-2.6</span>
+<span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">init</span><span class="w"> </span><span class="o">$</span><span class="p">{</span><span class="n">DESTDIR</span><span class="p">}</span><span class="o">/</span><span class="n">init</span>
+</code></pre></div>
+
+<p>After that some optional scripts are copied:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># add existant boot scripts</span>
+<span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">$</span><span class="p">(</span><span class="n">cd</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">.</span><span class="w"> </span>\
+<span class="mf">1.</span><span class="n">regextype</span><span class="w"> </span><span class="n">posix</span><span class="o">-</span><span class="n">extended</span><span class="w"> </span><span class="o">-</span><span class="n">regex</span><span class="w"> </span><span class="s1">&#39;.*/[[:alnum:]\._-]+$&#39;</span><span class="w"> </span><span class="o">-</span><span class="n">type</span><span class="w"> </span><span class="n">f</span><span class="p">);</span><span class="w"> </span><span class="n">do</span>
+<span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span>\
+<span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)&quot;</span>
+<span class="w">    </span><span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;/usr/share/initramfs-tools/scripts/${b}&quot;</span><span class="w"> </span>\
+<span class="w">        </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)/&quot;</span>
+<span class="n">done</span>
+<span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">$</span><span class="p">(</span><span class="n">cd</span><span class="w"> </span><span class="s2">&quot;${CONFDIR}/scripts&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">.</span><span class="w"> </span>\
+<span class="mf">2.</span><span class="n">regextype</span><span class="w"> </span><span class="n">posix</span><span class="o">-</span><span class="n">extended</span><span class="w"> </span><span class="o">-</span><span class="n">regex</span><span class="w"> </span><span class="s1">&#39;.*/[[:alnum:]\._-]+$&#39;</span><span class="w"> </span><span class="o">-</span><span class="n">type</span><span class="w"> </span><span class="n">f</span><span class="p">);</span><span class="w"> </span><span class="n">do</span>
+<span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span>\
+<span class="o">|</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)&quot;</span>
+<span class="w">    </span><span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;${CONFDIR}/scripts/${b}&quot;</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/scripts/$(dirname &quot;</span><span class="o">$</span><span class="p">{</span><span class="n">b</span><span class="p">}</span><span class="s2">&quot;)/&quot;</span>
+<span class="n">done</span>
+
+<span class="n">echo</span><span class="w"> </span><span class="s2">&quot;DPKG_ARCH=${DPKG_ARCH}&quot;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">$</span><span class="p">{</span><span class="n">DESTDIR</span><span class="p">}</span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">arch</span><span class="o">.</span><span class="n">conf</span>
+<span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;${CONFDIR}/initramfs.conf&quot;</span><span class="w"> </span><span class="o">$</span><span class="p">{</span><span class="n">DESTDIR</span><span class="p">}</span><span class="o">/</span><span class="n">conf</span>
+<span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">$</span><span class="p">{</span><span class="n">EXTRA_CONF</span><span class="p">};</span><span class="w"> </span><span class="n">do</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="s2">&quot;${CONFDIR}/conf.d/${i}&quot;</span><span class="w"> </span><span class="p">];</span><span class="w"> </span><span class="n">then</span>
+<span class="w">        </span><span class="n">copy_exec</span><span class="w"> </span><span class="s2">&quot;${CONFDIR}/conf.d/${i}&quot;</span><span class="w"> </span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">conf</span><span class="o">.</span><span class="n">d</span>
+<span class="w">    </span><span class="k">elif</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="s2">&quot;/usr/share/initramfs-tools/conf.d/${i}&quot;</span><span class="w"> </span><span class="p">];</span><span class="w"> </span><span class="n">then</span>
+<span class="w">        </span><span class="n">copy_exec</span><span class="w"> </span><span class="s2">&quot;/usr/share/initramfs-tools/conf.d/${i}&quot;</span><span class="w"> </span><span class="o">/</span><span class="n">conf</span><span class="o">/</span><span class="n">conf</span><span class="o">.</span><span class="n">d</span>
+<span class="w">    </span><span class="n">fi</span>
+<span class="n">done</span>
+</code></pre></div>
+
+<p>Have a look in /usr/share/initramfs-tools/scripts/ on your machine to see whats there.</p>
+<p>At line 277 the script copies some binaries from your system to the filesystem including config files:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># module-init-tools</span>
+<span class="n">copy_exec</span><span class="w"> </span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">modprobe</span><span class="w"> </span><span class="o">/</span><span class="n">sbin</span>
+<span class="n">copy_exec</span><span class="w"> </span><span class="o">/</span><span class="n">sbin</span><span class="o">/</span><span class="n">rmmod</span><span class="w"> </span><span class="o">/</span><span class="n">sbin</span>
+<span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/etc/modprobe.d&quot;</span>
+<span class="n">cp</span><span class="w"> </span><span class="o">-</span><span class="n">a</span><span class="w"> </span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">modprobe</span><span class="o">.</span><span class="n">d</span><span class="o">/*</span><span class="w"> </span><span class="s2">&quot;${DESTDIR}/etc/modprobe.d/&quot;</span>
+</code></pre></div>
+
+<p>I don't why this is done since busybox can provide these as well but it's probably for a good reason.</p>
+<p>Line 288 is interesting as well since extra scripts are run here. On my ubuntu system these are:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">ntfs_3g</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">kbd</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">brltty</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">thermal</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">console_setup</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">dmsetup</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">framebuffer</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">fuse</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">busybox</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">klibc</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">mountall</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">fixrtc</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">udev</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">compcache</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">initramfs</span><span class="o">-</span><span class="n">tools</span><span class="o">/</span><span class="n">hooks</span><span class="o">/</span><span class="n">plymouth</span>
+</code></pre></div>
+
+<p>These scripts prepare certain aspects in the filesystem.</p>
+<p>The rest of the lines do some workarounds and are self-explainatory.</p>
+<h3 id="first-thoughts">First thoughts</h3>
+<p>Since I'm looking to create an easy way to get the whole filesystem into RAM I'm not so happy that quite a few files are actually copied from the machine to the filesystem. This makes sense for the initial filesystem for your machine but preparing a filesystem for a different machine is optentially dangerous that way. I cannot rely on the host's setup creating the filesystem.</p>
+<h2 id="when-its-run-init">When it's run: init</h2>
+<p>When the kernel is ready for it, it executes /init. This can be any executable. In Debian's setup it's a script doing the following things:</p>
+<p>It starts creating the first needed dirs and mounting /proc and others:</p>
+<div class="codehilite"><pre><span></span><code><span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">m</span><span class="w"> </span><span class="mi">0755</span><span class="w"> </span><span class="o">/</span><span class="n">dev</span>
+<span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="o">/</span><span class="n">root</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">m</span><span class="w"> </span><span class="mi">0700</span><span class="w"> </span><span class="o">/</span><span class="n">root</span>
+<span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="o">/</span><span class="n">sys</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">/</span><span class="n">sys</span>
+<span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="o">/</span><span class="n">proc</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">/</span><span class="n">proc</span>
+<span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">mkdir</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span>
+<span class="n">mkdir</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="k">var</span><span class="o">/</span><span class="n">lock</span>
+<span class="n">mount</span><span class="w"> </span><span class="o">-</span><span class="n">t</span><span class="w"> </span><span class="n">sysfs</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="n">nodev</span><span class="p">,</span><span class="n">noexec</span><span class="p">,</span><span class="n">nosuid</span><span class="w"> </span><span class="n">sysfs</span><span class="w"> </span><span class="o">/</span><span class="n">sys</span>
+<span class="n">mount</span><span class="w"> </span><span class="o">-</span><span class="n">t</span><span class="w"> </span><span class="n">proc</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="n">nodev</span><span class="p">,</span><span class="n">noexec</span><span class="p">,</span><span class="n">nosuid</span><span class="w"> </span><span class="n">proc</span><span class="w"> </span><span class="o">/</span><span class="n">proc</span>
+</code></pre></div>
+
+<p>It prepares some stuff for /dev and continues to prepare a lot of vars which will be used later on.</p>
+<p>Then it reads the commandlines used to boot the kernel and sets them to right vars:</p>
+<div class="codehilite"><pre><span></span><code>#<span class="w"> </span>Parse<span class="w"> </span>command<span class="w"> </span>line<span class="w"> </span>options
+for<span class="w"> </span>x<span class="w"> </span>in<span class="w"> </span>$(cat<span class="w"> </span>/proc/cmdline);<span class="w"> </span>do
+<span class="w">    </span>case<span class="w"> </span><span class="nv">$x</span><span class="w"> </span>in
+<span class="w">    </span>init=*)
+<span class="w">        </span>init=<span class="cp">${</span><span class="n">x</span><span class="c1">#init=</span><span class="cp">}</span>
+<span class="w">        </span>;;
+#etc....
+</code></pre></div>
+
+<p>Now we come to the part where the extra scripts are run:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">maybe_break</span><span class="w"> </span><span class="n">top</span>
+
+<span class="c1"># Don&#39;t do log messages here to avoid confusing graphical boots</span>
+<span class="n">run_scripts</span><span class="w"> </span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">init</span><span class="o">-</span><span class="n">top</span>
+
+<span class="n">maybe_break</span><span class="w"> </span><span class="n">modules</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_begin_msg</span><span class="w"> </span><span class="s2">&quot;Loading essential drivers&quot;</span>
+<span class="n">load_modules</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_end_msg</span>
+
+<span class="p">[</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="s2">&quot;${netconsole}&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">modprobe</span><span class="w"> </span><span class="n">netconsole</span><span class="w"> </span><span class="n">netconsole</span><span class="o">=</span><span class="s2">&quot;${netconsole}&quot;</span>
+
+<span class="n">maybe_break</span><span class="w"> </span><span class="n">premount</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_begin_msg</span><span class="w"> </span><span class="s2">&quot;Running /scripts/init-premount&quot;</span>
+<span class="n">run_scripts</span><span class="w"> </span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">init</span><span class="o">-</span><span class="n">premount</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_end_msg</span>
+
+<span class="n">maybe_break</span><span class="w"> </span><span class="n">mount</span>
+<span class="n">log_begin_msg</span><span class="w"> </span><span class="s2">&quot;Mounting root file system&quot;</span>
+<span class="o">.</span><span class="w"> </span><span class="o">/</span><span class="n">scripts</span><span class="o">/$</span><span class="p">{</span><span class="n">BOOT</span><span class="p">}</span>
+<span class="n">parse_numeric</span><span class="w"> </span><span class="o">$</span><span class="p">{</span><span class="n">ROOT</span><span class="p">}</span>
+<span class="n">maybe_break</span><span class="w"> </span><span class="n">mountroot</span>
+<span class="n">mountroot</span>
+<span class="n">log_end_msg</span>
+
+<span class="n">maybe_break</span><span class="w"> </span><span class="n">bottom</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_begin_msg</span><span class="w"> </span><span class="s2">&quot;Running /scripts/init-bottom&quot;</span>
+<span class="n">run_scripts</span><span class="w"> </span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">init</span><span class="o">-</span><span class="n">bottom</span>
+<span class="p">[</span><span class="w"> </span><span class="s2">&quot;$quiet&quot;</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">log_end_msg</span>
+</code></pre></div>
+
+<p>The maybe_break functions are there for debugging. You can set the break parameter when you boot the kernel. Not important now but perhaps later. ;)</p>
+<p>Explore the scripts that will be run. They are essential for setting up the operating system.</p>
+<p>The last bits of the script are a bit magical. If you read it right you'll notice the script will never end! This is normal. In the end the script tries to switch from root filesystem in ram to the one on disk or if it can't run 'run-init':</p>
+<div class="codehilite"><pre><span></span><code><span class="cp"># Chain to real filesystem</span>
+<span class="k">if</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">-</span><span class="n">v</span><span class="w"> </span><span class="n">switch_root</span><span class="w"> </span><span class="o">&gt;/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">then</span>
+<span class="w">    </span><span class="n">exec</span><span class="w"> </span><span class="n">switch_root</span><span class="w"> </span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="w"> </span><span class="n">$</span><span class="p">{</span><span class="n">init</span><span class="p">}</span><span class="w"> </span><span class="s">&quot;$@&quot;</span><span class="w"> </span><span class="o">&lt;</span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">console</span><span class="w"> </span><span class="o">&gt;</span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">console</span>
+<span class="n">elif</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">-</span><span class="n">v</span><span class="w"> </span><span class="n">run</span><span class="o">-</span><span class="n">init</span><span class="w"> </span><span class="o">&gt;/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">then</span>
+<span class="w">    </span><span class="n">exec</span><span class="w"> </span><span class="n">run</span><span class="o">-</span><span class="n">init</span><span class="w"> </span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="w"> </span><span class="n">$</span><span class="p">{</span><span class="n">init</span><span class="p">}</span><span class="w"> </span><span class="s">&quot;$@&quot;</span><span class="w"> </span><span class="o">&lt;</span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">console</span><span class="w"> </span><span class="o">&gt;</span><span class="n">$</span><span class="p">{</span><span class="n">rootmnt</span><span class="p">}</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">console</span>
+<span class="n">fi</span>
+</code></pre></div>
+
+<p>From there your executable ${init} on disk will take over. The init var can be set on the kernel commandline. By default it is set to '/sbin/init' (see line 48).</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

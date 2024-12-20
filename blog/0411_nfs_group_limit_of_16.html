@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFS group limit of 16 - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/nfs.html">nfs</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/groups.html">groups</a></li>
+    
+    <li><a href="/tags/reminder.html">reminder</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="nfs-group-limit-of-16">NFS group limit of 16</h1>
+<p>Just as an important reminder for myself. Apparently NFS has a limit of 16 groups you can be a member of. I was just investigating why I couldn't write to certain files no more only to discover this nasty limitation.</p>
+<h1 id="_1"></h1>
+<p>Luckily there's a new option which can work around that:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="n">g</span><span class="w">  </span><span class="ow">or</span><span class="w">  </span><span class="o">--</span><span class="n">manage</span><span class="o">-</span><span class="n">gids</span>
+<span class="w">              </span><span class="n">Accept</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">kernel</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">numbers</span><span class="w"> </span><span class="nb">int</span><span class="n">o</span><span class="w">  </span><span class="kr">list</span><span class="n">s</span><span class="w"> </span><span class="n">of</span><span class="w">  </span><span class="n">group</span><span class="w">  </span><span class="n">numbers</span>
+<span class="w">              </span><span class="kr">for</span><span class="w">  </span><span class="n">use</span><span class="w">  </span><span class="n">in</span><span class="w"> </span><span class="n">access</span><span class="w"> </span><span class="kr">cont</span><span class="n">rol</span><span class="mf">.</span><span class="w">  </span><span class="n">An</span><span class="w"> </span><span class="n">NFS</span><span class="w"> </span><span class="n">request</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">normally</span><span class="w"> </span><span class="p">(</span><span class="n">except</span><span class="w"> </span><span class="n">when</span><span class="w"> </span><span class="n">using</span><span class="w"> </span><span class="n">Kerberos</span><span class="w"> </span><span class="ow">or</span>
+<span class="w">              </span><span class="n">other</span><span class="w"> </span><span class="n">cryptographic</span><span class="w"> </span><span class="n">authentication</span><span class="p">)</span><span class="w"> </span><span class="kr">cont</span><span class="n">ains</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">user</span><span class="o">-</span><span class="n">id</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="kr">list</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">group</span><span class="o">-</span><span class="n">ids</span><span class="mf">.</span><span class="w">  </span><span class="n">Due</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="n">a</span>
+<span class="w">              </span><span class="n">limitation</span><span class="w">  </span><span class="n">in</span><span class="w">  </span><span class="n">the</span><span class="w"> </span><span class="n">NFS</span><span class="w"> </span><span class="n">protocol</span><span class="p">,</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="n">most</span><span class="w"> </span><span class="mf">16</span><span class="w"> </span><span class="n">groups</span><span class="w"> </span><span class="n">ids</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="kr">list</span><span class="n">ed</span><span class="mf">.</span><span class="w">  </span><span class="kr">If</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="o">-</span><span class="n">g</span>
+<span class="w">              </span><span class="n">flag</span><span class="p">,</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="kr">list</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">ids</span><span class="w"> </span><span class="n">received</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">replaced</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">a</span><span class="w">  </span><span class="kr">list</span><span class="w">  </span><span class="n">of</span>
+<span class="w">              </span><span class="n">group</span><span class="w">  </span><span class="n">ids</span><span class="w">  </span><span class="n">determined</span><span class="w">  </span><span class="n">by</span><span class="w">  </span><span class="n">an</span><span class="w">  </span><span class="n">appropriate</span><span class="w"> </span><span class="n">lookup</span><span class="w"> </span><span class="kr">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">server</span><span class="mf">.</span><span class="w"> </span><span class="ow">Not</span><span class="n">e</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="err">’</span><span class="n">primary</span><span class="err">’</span>
+<span class="w">              </span><span class="n">group</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">affected</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="kr">new</span><span class="n">group</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="kr">on</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">client</span><span class="w">  </span><span class="n">will</span><span class="w">  </span><span class="n">still</span><span class="w">  </span><span class="n">be</span><span class="w">  </span><span class="n">effective</span><span class="mf">.</span>
+<span class="w">              </span><span class="n">This</span><span class="w"> </span><span class="n">function</span><span class="w"> </span><span class="n">requires</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">Linux</span><span class="w"> </span><span class="n">Kernel</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="n">least</span><span class="w"> </span><span class="mf">2.6.21.</span>
+</code></pre></div>
+
+<p>So setting this option in /etc/default/nfs-kernel-server</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Linux</span><span class="w"> </span><span class="n">shiva</span><span class="w"> </span><span class="mf">2.6</span><span class="o">.</span><span class="mi">26</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">amd64</span><span class="w"> </span><span class="c1">#1 SMP Wed Sep 21 03:36:44 UTC 2011 x86_64</span>
+
+<span class="n">The</span><span class="w"> </span><span class="n">programs</span><span class="w"> </span><span class="n">included</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">Debian</span><span class="w"> </span><span class="n">GNU</span><span class="o">/</span><span class="n">Linux</span><span class="w"> </span><span class="n">system</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">free</span><span class="w"> </span><span class="n">software</span><span class="p">;</span>
+<span class="n">the</span><span class="w"> </span><span class="n">exact</span><span class="w"> </span><span class="n">distribution</span><span class="w"> </span><span class="n">terms</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">each</span><span class="w"> </span><span class="n">program</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">described</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">the</span>
+<span class="n">individual</span><span class="w"> </span><span class="n">files</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">doc</span><span class="o">/*/</span><span class="n">copyright</span><span class="o">.</span>
+
+<span class="n">Debian</span><span class="w"> </span><span class="n">GNU</span><span class="o">/</span><span class="n">Linux</span><span class="w"> </span><span class="n">comes</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">ABSOLUTELY</span><span class="w"> </span><span class="n">NO</span><span class="w"> </span><span class="n">WARRANTY</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">extent</span>
+<span class="n">permitted</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">applicable</span><span class="w"> </span><span class="n">law</span><span class="o">.</span>
+<span class="n">Last</span><span class="w"> </span><span class="n">login</span><span class="p">:</span><span class="w"> </span><span class="n">Wed</span><span class="w"> </span><span class="n">Apr</span><span class="w"> </span><span class="mi">11</span><span class="w"> </span><span class="mi">16</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">13</span><span class="w"> </span><span class="mi">2012</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">smtp</span><span class="o">.</span><span class="n">z25</span><span class="o">.</span><span class="n">org</span>
+<span class="n">arnaud</span><span class="err">@</span><span class="n">shiva</span><span class="p">:</span><span class="o">~$</span><span class="w"> </span><span class="n">man</span><span class="w"> </span><span class="n">rpc</span><span class="o">.</span><span class="n">mountd</span>
+<span class="n">arnaud</span><span class="err">@</span><span class="n">shiva</span><span class="p">:</span><span class="o">~$</span><span class="w"> </span><span class="n">cat</span><span class="w"> </span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">default</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">kernel</span><span class="o">-</span><span class="n">server</span>
+<span class="c1"># Number of servers to start up</span>
+<span class="n">RPCNFSDCOUNT</span><span class="o">=</span><span class="mi">8</span>
+
+<span class="c1"># Runtime priority of server (see nice(1))</span>
+<span class="n">RPCNFSDPRIORITY</span><span class="o">=</span><span class="mi">0</span>
+
+<span class="c1"># Options for rpc.mountd.</span>
+<span class="c1"># If you have a port-based firewall, you might want to set up</span>
+<span class="c1"># a fixed port here using the --port option. For more information,</span>
+<span class="c1"># see rpc.mountd(8) or http://wiki.debian.org/?SecuringNFS</span>
+<span class="n">RPCMOUNTDOPTS</span><span class="o">=--</span><span class="n">manage</span><span class="o">-</span><span class="n">gids</span>
+
+<span class="c1"># Do you want to start the svcgssd daemon? It is only required for Kerberos</span>
+<span class="c1"># exports. Valid alternatives are &quot;yes&quot; and &quot;no&quot;; the default is &quot;no&quot;.</span>
+<span class="n">NEED_SVCGSSD</span><span class="o">=</span>
+
+<span class="c1"># Options for rpc.svcgssd.</span>
+<span class="n">RPCSVCGSSDOPTS</span><span class="o">=</span>
+</code></pre></div>
+
+<p>resolves my problem :-)</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

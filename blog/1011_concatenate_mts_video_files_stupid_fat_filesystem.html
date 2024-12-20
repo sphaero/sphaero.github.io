@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concatenate mts video files stupid fat filesystem - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/mts.html">mts</a></li>
+    
+    <li><a href="/tags/video.html">video</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="concatenate-mts-video-files-stupid-fat-filesystem">Concatenate MTS video files, stupid FAT filesystem</h1>
+<p>The ancient FAT filesystem is still used by many manufacturers but with increasing pixel resolutions the files tend to grow bigger and bigger. However FAT(32) is limited to 4GB files. So video recordings are split over multiple files. When you need to edit your recoded footage these seperate files are pain in the ... Best would be to undo the splitting. There is no hard sience involved in splitting the files, I figured, so to undo it would be even more simple. And so it is!</p>
+<p>To concatenate the seperate <a href="http:*en.wikipedia.org/wiki/AVCHD">MTS</a> files you simply use 'cat' to join them back together. No special tools needed! This doensn't work on Windows though. *(I think you can use copy /b however).//</p>
+<div class="codehilite"><pre><span></span><code>cat 00001.MTS 00002.MTS 00003.MTS &gt; footage.mts
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

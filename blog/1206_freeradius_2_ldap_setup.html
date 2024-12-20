@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freeradius 2 ldap setup - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ldap.html">ldap</a></li>
+    
+    <li><a href="/tags/radius.html">radius</a></li>
+    
+    <li><a href="/tags/freeradius.html">freeradius</a></li>
+    
+    <li><a href="/tags/eap.html">eap</a></li>
+    
+    <li><a href="/tags/mercurial.html">mercurial</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="freeradius-2-ldap-setup">freeradius 2 ldap setup</h1>
+<p>This is a little recipe for configuring freeradius 2 with a ldap backend and some other tricks. Mostly usable for EAP setups.
+Since I'm trying this out on an old Debian Lenny server I'm using the backports version 2.1.10. So this is based on the fresh install of that version.</p>
+<h1 id="_1"></h1>
+<p>What I usually do is add some version control to the configuration using mercurial. Just issue the following commands in the /etc/freeradius directory to initialise a repository:</p>
+<div class="codehilite"><pre><span></span><code>hg init .
+hg add *
+hg commit
+</code></pre></div>
+
+<p>Now for every change you do commit it so you can always undo your changes.</p>
+<h2 id="default-setup">Default setup</h2>
+<p>The default setup suits most needs. Don't edit it too much. For a quick test uncomment the following line in /etc/freeradius/users</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">steve</span><span class="w">   </span><span class="nv">Cleartext</span><span class="o">-</span><span class="nv">Password</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s">&quot;testing&quot;</span>
+</code></pre></div>
+
+<p>Now start the radius server:</p>
+<div class="codehilite"><pre><span></span><code>/etc/init.d/freeradius restart
+</code></pre></div>
+
+<p>We can now do a test to see if we can authenticate:</p>
+<div class="codehilite"><pre><span></span><code>radtest steve testing 127.0.0.1 0 testing123
+Sending Access-Request of id 141 to 127.0.0.1 port 1812
+    User-Name = &quot;steve&quot;
+    User-Password = &quot;testing&quot;
+    NAS-IP-Address = 127.0.1.1
+    NAS-Port = 0
+rad_recv: Access-Accept packet from host 127.0.0.1 port 1812, id=141, length=20
+</code></pre></div>
+
+<p>This should work for you as well. If doesn't you have done something wrong and there is no need to continue until you have a successfull Access-Accept! Retrace your steps and search the archives to find what's wrong!</p>
+<p>Before we continue comment the steve line we just uncommented. We don't want to forget this, right!</p>
+<h2 id="modules">Modules</h2>
+<p>Freeradius uses modules to do all it's magic. First we'll define a ldap module for use with our ldap backend. In /etc/freeradius/modules/ldap you'll find the base for the ldap module. You can edit this file to your needs however I choose to create a custom module based on the ldap module. I just copy the ldap module and edit it to your needs.</p>
+<div class="codehilite"><pre><span></span><code>cp ldap my-ldap
+nano my-ldap
+</code></pre></div>
+
+<p>Change the first line of the config like the following:</p>
+<div class="codehilite"><pre><span></span><code>ldap my-ldap {
+</code></pre></div>
+
+<p>This way the module will be a named ldap module! The rest of the config is up to your needs.</p>
+<p>Some remarks about the configuration:
+* when using ldaps pay attention to the require_cert option
+* I don't have radius attributes in my ldap server. I just use it for authentication/autorization. This can be accomplished by using the access_attr option which I set to "cn". So if you exists as a user and can authenicate you are authorized for access.
+* Pay attention to the "set_auth_type" option. It can make the difference between doing an ldap bind authentication or a password compare.</p>
+<h2 id="default-server">Default Server</h2>
+<p>To use this new ldap module we will edit the default server in /etc/freeradius/sites-available/default. This is a big file with many options. I'm pasting the bare default config below just to have an overview of how the modules tie together:</p>
+<div class="codehilite"><pre><span></span><code>authorize {
+    preprocess
+    chap
+    mschap
+    digest
+    suffix
+    eap {
+        ok = return
+    }
+    files
+    expiration
+    logintime
+    pap
+}
+authenticate {
+    Auth-Type PAP {
+        pap
+    }
+    Auth-Type CHAP {
+        chap
+    }
+    Auth-Type MS-CHAP {
+        mschap
+    }
+    digest
+    unix
+    eap
+}
+preacct {
+    preprocess
+    acct_unique
+    suffix
+    files
+}
+
+accounting {
+    detail
+    unix
+    radutmp
+    exec
+    attr_filter.accounting_response
+}
+session {
+    radutmp
+}
+
+post-auth {
+    exec
+    Post-Auth-Type REJECT {
+        attr_filter.access_reject
+    }
+}
+
+pre-proxy {
+}
+
+post-proxy {
+    eap
+}
+</code></pre></div>
+
+<p>We want to do authentication and autorization through our ldap. So we need to add the my-ldap module to corresponding section.  </p>
+<p>Add the my-ldap module to the authorize section just before expiration. You'll notice some commented LDAP references there. Without comments the authorize section will look like this:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">authorize</span><span class="w"> </span>{
+<span class="w">    </span><span class="nv">preprocess</span>
+<span class="w">    </span><span class="nv">chap</span>
+<span class="w">    </span><span class="nv">mschap</span>
+<span class="w">    </span><span class="nv">digest</span>
+<span class="w">    </span><span class="nv">suffix</span>
+<span class="w">    </span><span class="nv">eap</span><span class="w"> </span>{
+<span class="w">        </span><span class="nv">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">return</span>
+<span class="w">    </span>}
+<span class="w">    </span><span class="nv">files</span>
+<span class="w">    </span><span class="nv">my</span><span class="o">-</span><span class="nv">ldap</span>
+<span class="w">    </span><span class="nv">expiration</span>
+<span class="w">    </span><span class="nv">logintime</span>
+<span class="w">    </span><span class="nv">pap</span>
+}
+</code></pre></div>
+
+<p>Start the server in server in debug and do another radtest this time with a user in the ldap directory.</p>
+<div class="codehilite"><pre><span></span><code><span class="s s-Atom">freeradius</span> <span class="o">-</span><span class="nv">X</span> <span class="s s-Atom">&amp;</span>
+<span class="p">(</span><span class="s s-Atom">lots</span> <span class="s s-Atom">of</span> <span class="s s-Atom">output</span><span class="p">)</span>
+<span class="p">....</span>
+<span class="s s-Atom">radtest</span> <span class="s s-Atom">test</span> <span class="s s-Atom">testing</span> <span class="mf">127.0.0.1</span> <span class="mi">0</span> <span class="s s-Atom">testing123</span>
+
+<span class="nv">Sending</span> <span class="nv">Access</span><span class="o">-</span><span class="nv">Request</span> <span class="s s-Atom">of</span> <span class="s s-Atom">id</span> <span class="mi">90</span> <span class="s s-Atom">to</span> <span class="mf">127.0.0.1</span> <span class="s s-Atom">port</span> <span class="mi">1812</span>
+    <span class="nv">User</span><span class="o">-</span><span class="nv">Name</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+    <span class="nv">User</span><span class="o">-</span><span class="nv">Password</span> <span class="o">=</span> <span class="s2">&quot;testing&quot;</span>
+    <span class="nv">NAS</span><span class="o">-</span><span class="nv">IP</span><span class="o">-</span><span class="nv">Address</span> <span class="o">=</span> <span class="mf">127.0.1.1</span>
+    <span class="nv">NAS</span><span class="o">-</span><span class="nv">Port</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="s s-Atom">rad_recv</span><span class="o">:</span> <span class="nv">Access</span><span class="o">-</span><span class="nv">Request</span> <span class="s s-Atom">packet</span> <span class="s s-Atom">from</span> <span class="s s-Atom">host</span> <span class="mf">127.0.0.1</span> <span class="s s-Atom">port</span> <span class="mi">59404</span><span class="p">,</span> <span class="s s-Atom">id</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="s s-Atom">length</span><span class="o">=</span><span class="mi">55</span>
+    <span class="nv">User</span><span class="o">-</span><span class="nv">Name</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+    <span class="nv">User</span><span class="o">-</span><span class="nv">Password</span> <span class="o">=</span> <span class="s2">&quot;testing&quot;</span>
+    <span class="nv">NAS</span><span class="o">-</span><span class="nv">IP</span><span class="o">-</span><span class="nv">Address</span> <span class="o">=</span> <span class="mf">127.0.1.1</span>
+    <span class="nv">NAS</span><span class="o">-</span><span class="nv">Port</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="s s-Atom">#</span> <span class="nv">Executing</span> <span class="s s-Atom">section</span> <span class="s s-Atom">authorize</span> <span class="s s-Atom">from</span> <span class="s s-Atom">file</span> <span class="o">/</span><span class="s s-Atom">etc</span><span class="o">/</span><span class="s s-Atom">freeradius</span><span class="o">/</span><span class="s s-Atom">sites</span><span class="o">-</span><span class="s s-Atom">enabled</span><span class="o">/</span><span class="s s-Atom">default</span>
+<span class="s s-Atom">+-</span> <span class="s s-Atom">entering</span> <span class="s s-Atom">group</span> <span class="s s-Atom">authorize</span> <span class="p">{...}</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">preprocess</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">ok</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">chap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">mschap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">digest</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="p">[</span><span class="s s-Atom">suffix</span><span class="p">]</span> <span class="nv">No</span> <span class="s s-Atom">&#39;@&#39;</span> <span class="s s-Atom">in</span> <span class="nv">User</span><span class="o">-</span><span class="nv">Name</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s s-Atom">looking</span> <span class="s s-Atom">up</span> <span class="s s-Atom">realm</span> <span class="nv">NULL</span>
+<span class="p">[</span><span class="s s-Atom">suffix</span><span class="p">]</span> <span class="nv">No</span> <span class="s s-Atom">such</span> <span class="s s-Atom">realm</span> <span class="s2">&quot;NULL&quot;</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">suffix</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="p">[</span><span class="s s-Atom">eap</span><span class="p">]</span> <span class="nv">No</span> <span class="nv">EAP</span><span class="o">-</span><span class="nv">Message</span><span class="p">,</span> <span class="o">not</span> <span class="s s-Atom">doing</span> <span class="nv">EAP</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">eap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">files</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">performing</span> <span class="nb">user</span> <span class="s s-Atom">authorization</span> <span class="s s-Atom">for</span> <span class="s s-Atom">test</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span>   <span class="s s-Atom">expand</span><span class="p">:</span> <span class="c1">%{Stripped-User-Name} -&gt;</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span>   <span class="p">...</span> <span class="s s-Atom">expanding</span> <span class="s s-Atom">second</span> <span class="s s-Atom">conditional</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span>   <span class="s s-Atom">expand</span><span class="p">:</span> <span class="c1">%{User-Name} -&gt; test</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span>   <span class="s s-Atom">expand</span><span class="p">:</span> <span class="p">(</span><span class="s s-Atom">cn=</span><span class="c1">%{%{Stripped-User-Name}:-%{User-Name}}) -&gt; (cn=test)</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span>   <span class="s s-Atom">expand</span><span class="p">:</span> <span class="s s-Atom">ou</span><span class="o">=</span><span class="nb">user</span><span class="s s-Atom">s</span><span class="p">,</span><span class="s s-Atom">o</span><span class="o">=</span><span class="s s-Atom">test</span> <span class="s s-Atom">-&gt;</span> <span class="s s-Atom">ou</span><span class="o">=</span><span class="nb">user</span><span class="s s-Atom">s</span><span class="p">,</span><span class="s s-Atom">o</span><span class="o">=</span><span class="s s-Atom">test</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">ldap_get_conn</span><span class="o">:</span> <span class="nv">Checking</span> <span class="nv">Id</span><span class="o">:</span> <span class="mi">0</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">ldap_get_conn</span><span class="o">:</span> <span class="nv">Got</span> <span class="nv">Id</span><span class="o">:</span> <span class="mi">0</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">attempting</span> <span class="nv">LDAP</span> <span class="s s-Atom">reconnection</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="p">(</span><span class="s s-Atom">re</span><span class="p">)</span><span class="s s-Atom">connect</span> <span class="s s-Atom">to</span> <span class="s s-Atom">ldaps</span><span class="p">:</span><span class="o">//</span><span class="s s-Atom">ldap</span><span class="p">.</span><span class="s s-Atom">test</span><span class="p">.</span><span class="s s-Atom">lan</span><span class="p">,</span> <span class="s s-Atom">authentication</span> <span class="mi">0</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">bind</span> <span class="s s-Atom">as</span> <span class="s s-Atom">cn</span><span class="o">=</span><span class="s s-Atom">admin</span><span class="o">-</span><span class="s s-Atom">test</span><span class="p">,</span><span class="s s-Atom">o</span><span class="o">=</span><span class="s s-Atom">test</span><span class="o">/</span><span class="s s-Atom">testpass</span> <span class="s s-Atom">to</span> <span class="s s-Atom">ldaps</span><span class="p">:</span><span class="o">//</span><span class="s s-Atom">ldap</span><span class="p">.</span><span class="s s-Atom">test</span><span class="p">.</span><span class="s s-Atom">lan</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">waiting</span> <span class="s s-Atom">for</span> <span class="s s-Atom">bind</span> <span class="s s-Atom">result</span> <span class="p">...</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="nv">Bind</span> <span class="s s-Atom">was</span> <span class="s s-Atom">successful</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">performing</span> <span class="s s-Atom">search</span> <span class="s s-Atom">in</span> <span class="s s-Atom">ou</span><span class="o">=</span><span class="nb">user</span><span class="s s-Atom">s</span><span class="p">,</span><span class="s s-Atom">o</span><span class="o">=</span><span class="s s-Atom">test</span><span class="p">,</span> <span class="s s-Atom">with</span> <span class="nf">filter</span> <span class="p">(</span><span class="s s-Atom">cn</span><span class="o">=</span><span class="s s-Atom">test</span><span class="p">)</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">checking</span> <span class="s s-Atom">if</span> <span class="s s-Atom">remote</span> <span class="s s-Atom">access</span> <span class="s s-Atom">for</span> <span class="s s-Atom">test</span> <span class="o">is</span> <span class="s s-Atom">allowed</span> <span class="s s-Atom">by</span> <span class="s s-Atom">cn</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="nv">Added</span> <span class="s s-Atom">the</span> <span class="s s-Atom">eDirectory</span> <span class="s s-Atom">password</span> <span class="s s-Atom">testing</span> <span class="s s-Atom">in</span> <span class="s s-Atom">check</span> <span class="s s-Atom">items</span> <span class="s s-Atom">as</span> <span class="nv">Cleartext</span><span class="o">-</span><span class="nv">Password</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="nv">No</span> <span class="s s-Atom">default</span> <span class="nv">NMAS</span> <span class="s s-Atom">login</span> <span class="s s-Atom">sequence</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">looking</span> <span class="s s-Atom">for</span> <span class="s s-Atom">check</span> <span class="s s-Atom">items</span> <span class="s s-Atom">in</span> <span class="s s-Atom">directory</span><span class="p">...</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">looking</span> <span class="s s-Atom">for</span> <span class="s s-Atom">reply</span> <span class="s s-Atom">items</span> <span class="s s-Atom">in</span> <span class="s s-Atom">directory</span><span class="p">...</span>
+<span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="nb">user</span> <span class="s s-Atom">test</span> <span class="s s-Atom">authorized</span> <span class="s s-Atom">to</span> <span class="s s-Atom">use</span> <span class="s s-Atom">remote</span> <span class="s s-Atom">access</span>
+  <span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">ldap_release_conn</span><span class="o">:</span> <span class="nv">Release</span> <span class="nv">Id</span><span class="o">:</span> <span class="mi">0</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">my</span><span class="o">-</span><span class="s s-Atom">ldap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">ok</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">expiration</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">logintime</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">pap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">updated</span>
+<span class="nv">Found</span> <span class="nv">Auth</span><span class="o">-</span><span class="nv">Type</span> <span class="o">=</span> <span class="nv">PAP</span>
+<span class="s s-Atom">#</span> <span class="nv">Executing</span> <span class="s s-Atom">group</span> <span class="s s-Atom">from</span> <span class="s s-Atom">file</span> <span class="o">/</span><span class="s s-Atom">etc</span><span class="o">/</span><span class="s s-Atom">freeradius</span><span class="o">/</span><span class="s s-Atom">sites</span><span class="o">-</span><span class="s s-Atom">enabled</span><span class="o">/</span><span class="s s-Atom">default</span>
+<span class="s s-Atom">+-</span> <span class="s s-Atom">entering</span> <span class="s s-Atom">group</span> <span class="nv">PAP</span> <span class="p">{...}</span>
+<span class="p">[</span><span class="s s-Atom">pap</span><span class="p">]</span> <span class="s s-Atom">login</span> <span class="s s-Atom">attempt</span> <span class="s s-Atom">with</span> <span class="s s-Atom">password</span> <span class="s2">&quot;testing&quot;</span>
+<span class="p">[</span><span class="s s-Atom">pap</span><span class="p">]</span> <span class="nv">Using</span> <span class="s s-Atom">clear</span> <span class="s s-Atom">text</span> <span class="s s-Atom">password</span> <span class="s2">&quot;testing&quot;</span>
+<span class="p">[</span><span class="s s-Atom">pap</span><span class="p">]</span> <span class="nv">User</span> <span class="s s-Atom">authenticated</span> <span class="s s-Atom">successfully</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">pap</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">ok</span>
+<span class="s s-Atom">#</span> <span class="nv">Executing</span> <span class="s s-Atom">section</span> <span class="s s-Atom">post</span><span class="o">-</span><span class="s s-Atom">auth</span> <span class="s s-Atom">from</span> <span class="s s-Atom">file</span> <span class="o">/</span><span class="s s-Atom">etc</span><span class="o">/</span><span class="s s-Atom">freeradius</span><span class="o">/</span><span class="s s-Atom">sites</span><span class="o">-</span><span class="s s-Atom">enabled</span><span class="o">/</span><span class="s s-Atom">default</span>
+<span class="s s-Atom">+-</span> <span class="s s-Atom">entering</span> <span class="s s-Atom">group</span> <span class="s s-Atom">post</span><span class="o">-</span><span class="s s-Atom">auth</span> <span class="p">{...}</span>
+<span class="s s-Atom">++</span><span class="p">[</span><span class="s s-Atom">exec</span><span class="p">]</span> <span class="s s-Atom">returns</span> <span class="s s-Atom">noop</span>
+<span class="nv">Sending</span> <span class="nv">Access</span><span class="o">-</span><span class="nv">Accept</span> <span class="s s-Atom">of</span> <span class="s s-Atom">id</span> <span class="mi">90</span> <span class="s s-Atom">to</span> <span class="mf">127.0.0.1</span> <span class="s s-Atom">port</span> <span class="mi">59404</span>
+<span class="nv">Finished</span> <span class="s s-Atom">request</span> <span class="mf">0.</span>
+<span class="nv">Going</span> <span class="s s-Atom">to</span> <span class="s s-Atom">the</span> <span class="s s-Atom">next</span> <span class="s s-Atom">request</span>
+<span class="nv">Waking</span> <span class="s s-Atom">up</span> <span class="s s-Atom">in</span> <span class="mf">4.9</span> <span class="s s-Atom">seconds</span><span class="p">.</span>
+<span class="s s-Atom">rad_recv</span><span class="o">:</span> <span class="nv">Access</span><span class="o">-</span><span class="nv">Accept</span> <span class="s s-Atom">packet</span> <span class="s s-Atom">from</span> <span class="s s-Atom">host</span> <span class="mf">127.0.0.1</span> <span class="s s-Atom">port</span> <span class="mi">1812</span><span class="p">,</span> <span class="s s-Atom">id</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="s s-Atom">length</span><span class="o">=</span><span class="mi">20</span>
+</code></pre></div>
+
+<h2 id="adding-clients">Adding clients</h2>
+<p>Edit /etc/freeradius/clients.conf and add your network or device hosts. In my case I just add the whole network:</p>
+<div class="codehilite"><pre><span></span><code>client 10.0.0.0/24 {
+    secret      = testing123-1
+    shortname   = primary-network
+}
+</code></pre></div>
+
+<p>If your run your radius server now it should be capable of authenticating your users.</p>
+<h2 id="adding-realms">Adding realms</h2>
+<p>I want to use realms to authenticate my users to different authentication backends this is accomplished in many ways. I do it by
+using proxy.conf and freeradius-fu to map realms to authentication backends. The proxy.conf config, as usual in freeradius, has many options. I'm just using a simple 'old-style' configuration with no options so it will stay local.</p>
+<div class="codehilite"><pre><span></span><code>realm test.lan {
+}
+</code></pre></div>
+
+<p>If we start the radius server now it will also authenticate users with a test.lan realm appended to the username (user@test.lan). The server will tell you in debug mode the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">[</span><span class="n">suffix</span><span class="o">]</span><span class="w"> </span><span class="n">Adding</span><span class="w"> </span><span class="n">Realm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">&quot;test.lan&quot;</span>
+<span class="o">[</span><span class="n">suffix</span><span class="o">]</span><span class="w"> </span><span class="n">Authentication</span><span class="w"> </span><span class="n">realm</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="k">LOCAL</span><span class="p">.</span>
+</code></pre></div>
+
+<p>So it will do a local authentication. To map realms to a specific backend we need to edit /etc/freeradius/sites-available/default.
+We will force specific realms to use specific autorize modules. Replace the my-ldap line we added before with the following lines:</p>
+<div class="codehilite"><pre><span></span><code>        #realm switcher
+        switch &quot;%{Realm}&quot; {
+                case test.lan {
+                        my-ldap
+                }
+                case test2.lan {
+                        my-ldap2
+                }
+        }
+</code></pre></div>
+
+<p>Of course in this example you'll need to create the my-ldap2 module as well as add test2.lan to proxy.conf</p>
+<h1 id="add-ntdomain-support">Add ntdomain support</h1>
+<p>Since Microsoft always needs to do it different from the rest. The realms you get from the domains of the Windows supplicant don't contain an @. Instead Microsoft uses DOMAIN\user. To support this just uncomment the ntdomain in the default server authorize section (You're supposed to find that file by now)</p>
+<div class="codehilite"><pre><span></span><code>        #
+        #  If you are using multiple kinds of realms, you probably
+        #  want to set &quot;ignore_null = yes&quot; for all of them.
+        #  Otherwise, when the first style of realm doesn&#39;t match,
+        #  the other styles won&#39;t be checked.
+        #
+        suffix
+        ntdomain
+</code></pre></div>
+
+<p>It gets even worse. If you are using the windows credentials to login to your network you will probably need to enable:</p>
+<div class="codehilite"><pre><span></span><code>with_ntdomain_hack = yes
+</code></pre></div>
+
+<p>Apparently windows send the DOMAIN\user but when doing the mschap challenge only does the user part. So by default the mschap will fail. This hacks around that. In my case it was needed.</p>
+<p>You'll need to add the ntdomain realms to the proxy.conf as well.</p>
+<p><em>If you want to test a ntdomain realm with radtest you need to use 4 '\' characters. This has to do with the fact that '\' character is used for escaping characters.</em></p>
+<h2 id="add-eap-support">Add EAP support</h2>
+<p>To do 802.1x on our network we need <a href="http:*nl.wikipedia.org/wiki/Extensible_Authentication_Protocol">EAP</a> support. This is done through eap.conf. I won't go into detail about setting up the certificates. Alan DeKok has written a good guide for that: http:*deployingradius.com/documents/configuration/certificates.html.</p>
+<p>In my case I'm doing mostly EAP/TTLS and EAP/PEAP. So this setup is a bit tailored for that:</p>
+<p>in eap.conf change the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">default_eap_type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">peap</span>
+<span class="nx">ttls</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="nx">copy_request_to_tunnel</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">yes</span>
+<span class="w"> </span><span class="nx">use_tunneled_reply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">yes</span>
+<span class="p">}</span>
+<span class="nx">peap</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="nx">copy_request_to_tunnel</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">yes</span>
+<span class="w"> </span><span class="nx">use_tunneled_reply</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">yes</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>It's important to understand that the EAP is not handled by the default server. It's actually processed by the inner-tunnel server. The default server proxies the EAP to the inner-tunnel which is listening on a different port on the loopback adapter. The authentication of a user is also handled there. So if you need LDAP authentication for your EAP requests you'll need to add the same 'my-ldap' entry to the authorize section of the inner-tunnel virtual server. Actually if you only need to authenticate EAP requests and not plain radius you can even remove the 'my-ldap' entry from the default server.</p>
+<h2 id="reply-attributes">Reply attributes</h2>
+<p>In the old server (v1.1) I used to put the reply attributes in users file. However I found it's easier to put them in the post-auth section of the server config. In this example I add VLAN information to the reply-attributes.</p>
+<p>in /etc/freeradius/sites-available/default you'll find some commented examples of update reply. Around those examples add:</p>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="nx">update</span><span class="w"> </span><span class="nx">reply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">Service</span><span class="o">-</span><span class="nx">Type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">Framed</span><span class="o">-</span><span class="nx">User</span>
+<span class="w">        </span><span class="nx">Tunnel</span><span class="o">-</span><span class="k">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">VLAN</span>
+<span class="w">        </span><span class="nx">Tunnel</span><span class="o">-</span><span class="nx">medium</span><span class="o">-</span><span class="k">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">IEEE</span><span class="o">-</span><span class="mi">802</span>
+<span class="w">        </span><span class="nx">Tunnel</span><span class="o">-</span><span class="nx">Private</span><span class="o">-</span><span class="nx">Group</span><span class="o">-</span><span class="nx">Id</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">132</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+
+<p>Now after a succesfull authentication these attributes are added to the reply list.</p>
+<h2 id="quarantaining-mac-addresses">Quarantaining MAC-addresses</h2>
+<p>We sometimes find virus or malware traffic originating from our network. We usually can trace that easily to a certain mac-address. So in our case we want certain mac-addresses to be forced in a different VLAN. A poor-men's quarantaining system.</p>
+<p>Since Freeradius is extremely powerful and flexible this is easily accomplished. There's even a example module already in the modules directory (mac2vlan). In our case we have to use different attributes and we send VLAN ID's not names! Our network controllers send a Calling-Station-Id containing the users mac-address. We just create the file /etc/freeradius/callingstationid2vlanid:</p>
+<div class="codehilite"><pre><span></span><code>passwd<span class="w"> </span>callingstationid2vlanid<span class="w"> </span>{
+<span class="w">  </span>filename<span class="w"> </span>=<span class="w"> </span><span class="cp">${</span><span class="n">raddbdir</span><span class="cp">}</span>/mac2vlanid
+<span class="w">  </span>format<span class="w"> </span>=<span class="w"> </span>&quot;*Calling-Station-Id:=Tunnel-Private-Group-Id&quot;
+<span class="w">  </span>hashsize<span class="w"> </span>=<span class="w"> </span>0
+<span class="w">  </span>ignorenislike<span class="w"> </span>=<span class="w"> </span>no
+<span class="w">  </span>allowmultiplekeys<span class="w"> </span>=<span class="w"> </span>no
+}
+</code></pre></div>
+
+<p>I've put hashfile = 0 so the file is read from disk every request. This removes the need to reload the server to reread the file.</p>
+<p>Now in postauth add the callingstationid2vlanid before the 'update replies'.</p>
+<h2 id="rewrite-mac-addresses">Rewrite mac addresses</h2>
+<p>Every vendor has it's own idea of how a mac address is written so it could be handy to rewrite the mac format. I've found this snippet on the mailinglist to do exactly that:</p>
+<div class="codehilite"><pre><span></span><code><span class="o">#</span>
+<span class="o">#</span><span class="w"> </span><span class="nv">Rewrite</span><span class="w"> </span><span class="nv">called</span><span class="w"> </span><span class="nv">station</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="nv">attribute</span><span class="w"> </span><span class="nv">into</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">standard</span><span class="w"> </span><span class="k">for</span><span class="nv">mat</span><span class="w"> </span><span class="nv">using</span><span class="w"> </span><span class="nv">unlang</span>
+<span class="o">#</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="s">&quot;%{request:Calling-Station-Id}&quot;</span><span class="w"> </span><span class="o">=</span>~<span class="w"> </span><span class="o">/^</span><span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})</span><span class="o">.</span>?<span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})</span><span class="o">.</span>?<span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})</span><span class="o">.</span>?<span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})</span><span class="o">.</span>?<span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})</span><span class="o">.</span>?<span class="p">([</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="nv">a</span><span class="o">-</span><span class="nv">f</span><span class="p">]{</span><span class="mi">2</span><span class="p">})$</span><span class="o">/</span><span class="nv">i</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">update</span><span class="w"> </span><span class="nv">request</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nv">Calling</span><span class="o">-</span><span class="nv">Station</span><span class="o">-</span><span class="nv">Id</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s">&quot;%{tolower:%{1}-%{2}-%{3}-%{4}-%{5}-%{6}}&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Add this code just before callingstationid2vlanid in the post-auth section.</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

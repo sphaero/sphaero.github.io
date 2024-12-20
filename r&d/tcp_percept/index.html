@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Network in C-major
+ - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+
+<div class="date">~2013</div>
+
+<content>
+<h1 id="the-network-in-c-major">The Network in C-Major</h1>
+<p>Knowing what your system is doing on a network is not easy usually. It involves installing sniffer software such as Wireshark or Tcpdump. These tools present you with a very technical presentation of the 
+network. If you are not taught how to interpret these symbols and numbers it will not be of much value to you. In this project I present a system which eavesdrop on the network to capture the packets and 
+translate them into musical sounds.</p>
+<h2 id="technical-description">Technical Description</h2>
+<p>The system listens to TCP packets which are send trough the network interface card (NIC). It maintains a session table of all TCP sessions it sees and uses the state of these sessions to generate harmonic 
+chords. Only 2 notes are used to generate harmonics since tests showed states changing so quickly that it generates multiple notes almost at once. If the notes are chosen carefully a full chord of at 
+least 3 notes is audible most of the time. The following table is used to generate chords.</p>
+<table>
+<thead>
+<tr>
+<th>TCP packet flag/direction</th>
+<th>Notes relative to base note</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN</td>
+<td>Note 1: 0, Note 2: -2</td>
+<td>TCP session handshake start</td>
+</tr>
+<tr>
+<td>SYN + ACK</td>
+<td>Note 1: 0, Note 2: -5</td>
+<td>TCP remote handshake confirm</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>Note 1: 4, Note 2: -5</td>
+<td>TCP local handshake confirm</td>
+</tr>
+<tr>
+<td>Sending Data (Up)</td>
+<td>Note 1: 4, Note 2: 0</td>
+<td>Sending data to remote peer</td>
+</tr>
+<tr>
+<td>Receiving Data (Down)</td>
+<td>Note 1: 7, Note 2: 4</td>
+<td>Receiving data from remote peer</td>
+</tr>
+<tr>
+<td>FIN</td>
+<td>Note 1: 0, Note 2: 7</td>
+<td>TCP session termination start</td>
+</tr>
+<tr>
+<td>FIN + ACK</td>
+<td>Note 1: 0, Note 2: 4</td>
+<td>TCP remote termination confirm</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>Note 1: -8, Note 2: 0</td>
+<td>TCP local termination confirm</td>
+</tr>
+</tbody>
+</table>
+<p>Or put in a musical score:</p>
+<p><img alt="score image" src="img/tcp_score.PNG" /></p>
+<h2 id="use-case-strengths-limitations">Use case, strengths &amp; limitations</h2>
+<p>While testing the system. for instance, the chords gave a very direct insight in a failing IRC client trying to connect to an IRC server. Before the IRC client responded with a failed connect it was 
+already clear that the IRC server was not responding. It was even clear that the client had tried to connect 5 times using 2 TCP sessions. Another example while listening to http traffic showed that there 
+was data being send and received through a stable HTTP session. This was very irregular compared to every other HTTP session. It turned out that this was caused by a Dropbox client.</p>
+<p>While the chords are not as detailed as a regular tcpdump it does provide a very intuitive way too interpret what's going on through the NIC. Since it's audible it is very supportive while debugging an 
+application or session. No need to switch screens or apps to watch what's going on. The chords will tell immediately while keeping the hands and eyes free. The harmonics also make it pleasant to listen 
+to.</p>
+<p>The system is limited to the number of usable octaves. I've found this number to be a maximum of 6 to 8 to stay pleasant for the ears. It depends on the instrument as well however this limit makes it 
+challenging to interpret if listening to too much traffic at once. The chords are losing expression when too many sessions are captured in a short time frame.</p>
+<h2 id="installation">Installation</h2>
+<p>The repository is hosted at github: https://github.com/sphaero/tcp_percept</p>
+<p>The system is build in "PureData":http://puredata.info and using a custom external which wraps "Libpcap":http://www.tcpdump.org/. It's only tested on Linux. The external is currently hardcoded to the 'wlan0' network device. To set a different device you'll need to change the following line in pd-tcp-percept.c:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">x</span><span class="o">-&gt;</span><span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;wlan0&quot;</span><span class="p">;</span><span class="w">       </span><span class="cm">/* capture device name */</span>
+</code></pre></div>
+
+<p>To compile execute the following commands from the repository root. Make sure you have the PureData and libpcap libraries.</p>
+<div class="codehilite"><pre><span></span><code>gcc -DPD -I/usr/include/pd/ -O2 -g -Wall -c -fmessage-length=0 -fPIC -MMD -MP -MF&quot;pd-tcp-percept.d&quot; -MT&quot;pd-tcp-percept.d&quot; -o &quot;pd-tcp-percept.o&quot; &quot;pd-tcp-percept.c&quot;
+gcc -shared -o &quot;tcp_percept.pd_linux&quot;  ./pd-tcp-percept.o   -lpcap
+</code></pre></div>
+
+<p>Then execute the following command to start PureData with the external and the patch:</p>
+<div class="codehilite"><pre><span></span><code>pd -lib tcp_percept tcp7.pd
+</code></pre></div>
+
+<h2 id="setting-up-midi">Setting up Midi</h2>
+<p>Midi is used to generate the chords so you'll need a MIDI instrument to create audible ouput.</p>
+<p>On a linux system you could install Amsynth. To connect PureData to Amsyth using Alsa:</p>
+<div class="codehilite"><pre><span></span><code><span class="err">#</span><span class="w"> </span><span class="nx">list</span><span class="w"> </span><span class="nx">MIDI</span><span class="w"> </span><span class="nx">interfaces</span>
+<span class="nx">aconnect</span><span class="w"> </span><span class="o">-</span><span class="nx">l</span><span class="w"> </span><span class="o">-</span><span class="nx">i</span><span class="w"> </span><span class="o">-</span><span class="nx">o</span>
+<span class="nx">client</span><span class="w"> </span><span class="mi">0</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">System</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="k">type</span><span class="p">=</span><span class="nx">kernel</span><span class="p">]</span>
+<span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Timer</span><span class="w">           </span><span class="err">&#39;</span>
+<span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Announce</span><span class="w">        </span><span class="err">&#39;</span>
+<span class="nx">client</span><span class="w"> </span><span class="mi">14</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Midi</span><span class="w"> </span><span class="nx">Through</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="k">type</span><span class="p">=</span><span class="nx">kernel</span><span class="p">]</span>
+<span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Midi</span><span class="w"> </span><span class="nx">Through</span><span class="w"> </span><span class="nx">Port</span><span class="o">-</span><span class="mi">0</span><span class="err">&#39;</span>
+<span class="nx">client</span><span class="w"> </span><span class="mi">128</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">amSynth</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="k">type</span><span class="p">=</span><span class="nx">user</span><span class="p">]</span>
+<span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">amSynth</span><span class="w"> </span><span class="nx">MIDI</span><span class="w"> </span><span class="nx">IN</span><span class="w"> </span><span class="err">&#39;</span>
+<span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">amSynth</span><span class="w"> </span><span class="nx">MIDI</span><span class="w"> </span><span class="nx">OUT</span><span class="err">&#39;</span>
+<span class="nx">client</span><span class="w"> </span><span class="mi">129</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Pure</span><span class="w"> </span><span class="nx">Data</span><span class="err">&#39;</span><span class="w"> </span><span class="p">[</span><span class="k">type</span><span class="p">=</span><span class="nx">user</span><span class="p">]</span>
+<span class="w">    </span><span class="mi">0</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Pure</span><span class="w"> </span><span class="nx">Data</span><span class="w"> </span><span class="nx">Midi</span><span class="o">-</span><span class="nx">In</span><span class="w"> </span><span class="mi">1</span><span class="err">&#39;</span>
+<span class="w">    </span><span class="mi">1</span><span class="w"> </span><span class="err">&#39;</span><span class="nx">Pure</span><span class="w"> </span><span class="nx">Data</span><span class="w"> </span><span class="nx">Midi</span><span class="o">-</span><span class="nx">Out</span><span class="w"> </span><span class="mi">1</span><span class="err">&#39;</span>
+
+<span class="err">#</span><span class="w"> </span><span class="nx">connect</span><span class="w"> </span><span class="nx">PureData</span><span class="w"> </span><span class="nx">Out</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">Amsynth</span><span class="w"> </span><span class="nx">In</span>
+<span class="nx">aconnect</span><span class="w"> </span><span class="mi">129</span><span class="p">:</span><span class="mi">1</span><span class="w"> </span><span class="mi">128</span><span class="p">:</span><span class="mi">0</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

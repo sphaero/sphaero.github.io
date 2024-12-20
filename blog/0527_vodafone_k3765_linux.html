@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vodafone k3765 linux - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/vodafone.html">vodafone</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2011</div>
+
+<content>
+<h1 id="vodafone-k3765-linux">vodafone k3765 linux</h1>
+<p>OMG, so much time spend on getting this Vodafone K3765 (Huawei) USB dongle to work! I just used the wrong APN. So a hint to everybody: Can't get your 3G/UMTS/HSDPA dongle to work? Make sure you use the right APN. For me the NetworkManager gave me the wrong APN. So here are some right settings at least in The Netherlands:</p>
+<h4 id="_1"></h4>
+<p>Wvdial:</p>
+<div class="codehilite"><pre><span></span><code><span class="k">[Dialer Defaults]</span>
+<span class="na">Modem Type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">USB Modem</span>
+<span class="na">Baud</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">460800</span>
+<span class="na">New PPPD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">yes</span>
+<span class="c1">#Check your device!</span>
+<span class="na">Modem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/dev/ttyUSB1</span>
+<span class="na">ISDN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+
+<span class="k">[Dialer pin]</span>
+<span class="na">Init1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AT+Cpin=0000</span>
+
+<span class="k">[Dialer vodafone]</span>
+<span class="na">Dial Command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ATDT</span>
+<span class="na">Carrier Check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">no</span>
+<span class="na">Phone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">*99***1</span><span class="c1">#</span>
+<span class="na">Password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">vodafone</span>
+<span class="na">Username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">vodafone</span>
+<span class="na">Stupid Mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">on</span>
+<span class="na">Init1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ATZ</span>
+<span class="na">Init2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0</span>
+<span class="na">Init3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">AT+CGDCONT=1,&quot;IP&quot;,&quot;office.vodafone.nl&quot;</span>
+</code></pre></div>
+
+<p>Setting the pin doesn't work for me :( don't know why.</p>
+<p>Settings for a ppp call setup:
+/etc/ppp/peers/k3765:</p>
+<div class="codehilite"><pre><span></span><code>#<span class="w"> </span><span class="o">/</span><span class="nv">etc</span><span class="o">/</span><span class="nv">ppp</span><span class="o">/</span><span class="nv">peers</span><span class="o">/</span><span class="nv">k3765</span><span class="w"> </span><span class="nv">pppd</span><span class="w"> </span><span class="nv">script</span>
+#<span class="w"> </span><span class="nv">pppd</span><span class="w"> </span><span class="k">call</span><span class="w"> </span><span class="nl">k3765</span>
+<span class="nv">noauth</span>
+<span class="o">/</span><span class="nv">dev</span><span class="o">/</span><span class="nv">ttyUSB1</span>
+<span class="sc">#3600000</span>
+<span class="nv">noipdefault</span>
+<span class="nv">defaultroute</span>
+<span class="nv">persist</span>
+<span class="nv">noauth</span>
+<span class="nv">nodetach</span>
+<span class="nv">usepeerdns</span>
+<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>:<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>
+<span class="k">connect</span><span class="w"> </span><span class="s2">&quot;/usr/sbin/chat -vf /etc/ppp/peers/k3765.chat&quot;</span>
+</code></pre></div>
+
+<p>/etc/ppp/peers/k3765.chat:</p>
+<div class="codehilite"><pre><span></span><code>TIMEOUT 3
+SAY &#39;1...\n&#39;
+ABORT BUSY
+SAY &#39;2...\n&#39;
+ABORT &#39;NO CARRIER&#39;
+SAY &#39;3...\n&#39;
+ABORT VOICE
+SAY &#39;4...\n&#39;
+ABORT &#39;NO DIALTONE&#39;
+SAY &#39;5...\n&#39;
+ABORT &#39;NO DIAL TONE&#39;
+SAY &#39;6...\n&#39;
+ABORT &#39;NO ANSWER&#39;
+SAY &#39;7...\n&#39;
+ABORT DELAYED
+SAY &#39;8...\n&#39;
+&quot;&quot; ATZ
+SAY &#39;9...\n&#39;
+OK ATE0V1&amp;D2&amp;C1S0=0+IFC=2,2
+OK AT+CGDCONT=1,\&quot;IP\&quot;,\&quot;office.vodafone.nl\&quot;\
+SAY &#39;10...\n&#39;
+OK ATDT*99***#\
+SAY &#39;11...\n&#39;
+CONNECT &quot;&quot;
+SAY &#39;connect OK\n&#39;
+</code></pre></div>
+
+<p>Just run pppd call k3765</p>
+<p>So now hook it up to an openWRT router</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

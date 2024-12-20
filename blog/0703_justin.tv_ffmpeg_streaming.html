@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justin.tv ffmpeg streaming - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/ffmpeg.html">ffmpeg</a></li>
+    
+    <li><a href="/tags/bash.html">bash</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2012</div>
+
+<content>
+<h1 id="justintv-ffmpeg-streaming">Justin.tv ffmpeg streaming</h1>
+<p>Just a simple reminder again. This script streams the webcam directly to Justin.tv. Plain simple</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="nv">API_KEY</span><span class="o">=</span><span class="s2">&quot;live_**********&quot;</span>
+<span class="nv">FPS</span><span class="o">=</span><span class="s2">&quot;15&quot;</span>
+
+<span class="nv">INRES</span><span class="o">=</span><span class="s1">&#39;640x480&#39;</span>
+<span class="nv">OUTRES</span><span class="o">=</span><span class="s1">&#39;640x480&#39;</span>
+
+ffmpeg<span class="w"> </span>-f<span class="w"> </span>video4linux2<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$INRES</span><span class="s2">&quot;</span><span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$FPS</span><span class="s2">&quot;</span><span class="w"> </span>-i<span class="w"> </span>/dev/video0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="m">1</span>.f<span class="w"> </span>alsa<span class="w"> </span>-i<span class="w"> </span>pulse<span class="w"> </span>-vcodec<span class="w"> </span>libx264<span class="w">  </span>-s<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$OUTRES</span><span class="s2">&quot;</span><span class="w">  </span><span class="se">\</span>
+<span class="w">    </span><span class="m">2</span>.acodec<span class="w"> </span>libmp3lame<span class="w"> </span>-ab<span class="w"> </span>64k<span class="w"> </span>-ar<span class="w"> </span><span class="m">22050</span><span class="w"> </span>-threads<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="m">3</span>.f<span class="w"> </span>flv<span class="w"> </span><span class="s2">&quot;rtmp://live.justin.tv/app/</span><span class="nv">$API_KEY</span><span class="s2">&quot;</span>
+</code></pre></div>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

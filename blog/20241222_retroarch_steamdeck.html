@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroArch on the steamdeck to emulate the Amiga - sphaero.org </title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+<body >
+    <nav>
+        <a id="navhome" href="/" aria-label="Home">
+        /
+        </a>
+        
+        <a href="/blog/">/blog</a>
+        
+        <a href="/projects/">/projects</a>
+        
+        <a href="/r&d/">/r&d</a>
+        
+    </nav>
+
+    <main>
+        
+
+<tags>
+    <ul> 
+    <div>tags:</div> 
+    
+    <li><a href="/tags/steamdeck.html">steamdeck</a></li>
+    
+    <li><a href="/tags/linux.html">linux</a></li>
+    
+    <li><a href="/tags/amiga.html">amiga</a></li>
+    
+    </ul>
+</tags>
+
+
+<div class="date">~2024</div>
+
+<content>
+<h1 id="retroarch-on-the-steamdeck-to-emulate-the-amiga">RetroArch on the steamdeck to emulate the Amiga</h1>
+<p>It's nearing the end of the year. Time to feel nostalgic. I always seem to boot my Amiga around this time so I
+thought it would be handy to just run my Amiga games on my steamdeck attached to the TV.</p>
+<p>This is actaully very simple so I thought. SteamOS has flatpak enabled so you 
+can just install from flathub. But even better. You can find RetroArch in Steam!</p>
+<p>You can find RetroArch in Game mode but I couldn't find it in the Steam store so 
+through a search in the gui revealed I could just install it from a click. 
+Once installed you can run it and it will boot into RetroArch! </p>
+<p>The RetroArch install comes bundled with the <a href="https://docs.libretro.com/library/puae/">PUAE</a> core but you 
+will need the original Amiga roms copied to RetroArch to run an Amiga. The RetroArch directories are a bit hidden. 
+On my system they are at:</p>
+<div class="codehilite"><pre><span></span><code>/home/deck/.local/share/Steam/steamapps/common/RetroArch
+</code></pre></div>
+
+<p>I've placed the <code>kick34005.A500</code> file in the system dir through a <a href="https://en.wikipedia.org/wiki/Secure_copy_protocol">secure copy</a>:</p>
+<div class="codehilite"><pre><span></span><code>scp kick34005.A500 deck@&lt;steamdeck ip&gt;:.local/share/Steam/steamapps/common/RetroArch/system/
+</code></pre></div>
+
+<p>I also copied the <a href="https://www.lemonamiga.com/games/details.php?id=702">Lotus 2</a> ADF file to the deck.</p>
+<p>Now in RetroArch select "Content to load" and select the Lotus2 ADF file. It will ask you which core to
+use and you'll be racing after the disk has loaded!</p>
+<p><img alt="Lotus 2" src="lotus2.png" /></p>
+<h1 id="launch-from-steam">Launch from steam</h1>
+<p>I like the Steam GUI in Game Mode. I can easily select and run games. What I would 
+like is to be able to run my Amiga games like that as well. I know there 
+are lots of tools like EmuDeck and sorts but I just want RetroArch to run a 
+game directly. Simple as that so I thought!</p>
+<p>If you don't care about some technical background skip this paragraph! As the 
+Steamdeck is just a Linux box which already has <a href="https://flatpak.org/">flatpak</a> I know Steam just installs
+RetroArch through flatpak. So you can just run RetroArch from the commandline as
+follows: <code>flatpak run org.libretro.RetroArch</code>. You can add commandline flags so
+it boots a core (machine you emulate) and content (the game) as well. However 
+I found the RetroArch booted from commandline is different from the one launched
+from Steam. From commandline I'm missing lots of stuff. For example the RetroArch
+dir is <code>/home/deck/.local/share/Steam/steamapps/common/RetroArch</code> from Steam but
+from commandline it is <code>/home/deck/.var/app/org.libretro.RetroArch/config/retroarch/</code>.
+I don't want to get too deep in this shit. I just want Steam to do its thing and be
+done with it. After some digging I found <a href="https://developer.valvesoftware.com/wiki/Command_line_options#Steam">Valve Developers Wiki</a>
+which told me what I want.</p>
+<p><strong>Next steps need to be done from 'Desktop Mode':</strong></p>
+<p><em>Steam Menu - Power - Switch to Desktop</em></p>
+<p>I found we can use Steam from the command line to launch any installed asset. 
+You just need to find the game ID. You can find how steam launched RetroArch 
+by looking in the <code>~/.local/share/applications/RetroArch.desktop</code> file. In here
+you find that the following command is run <code>steam steam://rungameid/1118310</code>.
+From this line we now know the game ID is 1118310.</p>
+<p>Valve documentation says we can run Steam with the <code>-applaunch</code> argument which also 
+accepts extra arguments which will be passed to the launched game.</p>
+<p>We can then launch RetroArch with the PUAE core and an Amiga game like this:</p>
+<div class="codehilite"><pre><span></span><code>steam -applaunch 1118310 -L puae ~/Games/amiga/Lotus2/Lotus\ Turbo\ Challenge\ 2.adf
+</code></pre></div>
+
+<p>Ok let's create a script for this. Just create a MyGame.sh file somewhere and
+add the following content:</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/bin/sh</span>
+steam<span class="w"> </span>-applaunch<span class="w"> </span><span class="m">1118310</span><span class="w"> </span>-L<span class="w"> </span>puae<span class="w"> </span>~/Games/amiga/Lotus2/Lotus<span class="se">\ </span>Turbo<span class="se">\ </span>Challenge<span class="se">\ </span><span class="m">2</span>.adf
+</code></pre></div>
+
+<p>Make the file executable (chmod +x)</p>
+<p>Now open the filebrowser on the steamdeck and right select the file you just created.
+To context menu provides an option "Add to Steam". Switch back to Game Mode (icon on
+the Desktop) and find it in the library among the Non-Steam games!</p>
+<p>Voila!</p>
+<p>The only consequence I found was that when the game exits you are presented with
+the RetroArch entry in steam instead of the Game you lauched. I can live with that.</p>
+<h1 id="custom-art-work">Custom Art Work</h1>
+<p>The default look of the Non-Steam game is ugly to say the least. You can only 
+change that in Desktop Mode. In Steam go to the Game and right click on the banner
+(The place where you'd expect some imagery). The context menu provides an option
+to set the background and logo.</p>
+<p>Next up: make it look like a CRT!</p>
+</content>
+
+    </main>
+    <div class="clearfix" style="content: ''; display: table; clear: both;"></div>
+    <footer>
+        &copy; 2024 <a href="arnaud@sphaero.org">Arnaud Loonstra</a>
+        | <a href="https://www.researchgate.net/profile/Arnaud-Loonstra">ResearchGate</a>
+        | <a href="https://github.com/sphaero">GitHub</a>
+        | <a href="https://www.linkedin.com/in/sphaero">LinkedIn</a>
+    </footer>
+</body>
+</html>

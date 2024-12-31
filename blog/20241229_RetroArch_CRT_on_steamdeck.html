@@ -41,51 +41,33 @@
 
 <content>
 <h1 id="the-crt-challenge">The CRT challenge</h1>
-<p>Todo</p>
-<p>Here's a really nice article about the effect of CRT's:</p>
+<p><a href="20241222_retroarch_steamdeck.html">Previously</a> I added my Amiga games to my Steam library so I can play 
+them from Steam on my SteamDeck. What I really miss from playing games like that
+is the look and feel of the games on modern displays.</p>
+<p>Displays/Monitor/Televisions back in the 90's utilised a very different technique
+to display an image. </p>
+<p><img alt="CRT compare" src="rpg_compare.png" /></p>
+<p><em>image copied from datagubbe.se</em></p>
+<p>While this isn't the best example it at least shows that the pixels are 
+quite different back then. Read <a href="https://datagubbe.se/crt/">the article where the image was taken from</a>
+for more insight.</p>
+<p>RetroArch (or libretro) provides GPU shaders to emulate the effect of a 
+CRT display.</p>
+<p>If you run a game in RetroArch. Press the hotkey to open the menu 
+(f1 or R3 &amp; L3 on my controller). In the menu goto Shaders - Load Preset -
+shaders_glsl - crt and try a shader from the list.</p>
+<p>Some nice examples:</p>
 <ul>
-<li>https://datagubbe.se/crt/</li>
+<li>CRT-consumer: best so far</li>
+<li>CRT-geom: nice overall with curved borders</li>
+<li>CRT-lottes</li>
+<li>CRT-mattias: nice blurry and color bleed</li>
+<li>crt-cines</li>
+<li>fakelottes</li>
+<li>gtuv50: a bit blurry</li>
+<li>smuberstep-glow</li>
 </ul>
-<h1 id="first-level-heading">First Level Heading</h1>
-<p>Paragraph.</p>
-<h2 id="second-level-heading">Second Level Heading</h2>
-<p>Paragraph.</p>
-<ul>
-<li>bullet</li>
-<li>other bullet</li>
-<li>
-<p>another bullet</p>
-<ul>
-<li>child bullet</li>
-</ul>
-</li>
-<li>
-<p>ordered</p>
-</li>
-<li>next ordered</li>
-</ul>
-<h3 id="third-level-heading">Third Level Heading</h3>
-<p>Some <em>italic</em> and <strong>bold</strong> text and <code>inline code</code>.</p>
-<p>An empty line starts a new paragraph.</p>
-<p>Use two spaces at the end<br />
-to force a line break.</p>
-<p>A horizontal ruler follows:</p>
-<hr />
-<p>Add links inline like <a href="https://www.qt.io">this link to the Qt homepage</a>,
-or with a reference like <a href="https://www.qt.io">this other link to the Qt homepage</a>.</p>
-<div class="codehilite"><pre><span></span><code>Add code blocks with
-four spaces at the front.
-</code></pre></div>
-
-<blockquote>
-<p>A blockquote
-starts with &gt;</p>
-<p>and has the same paragraph rules as normal text.</p>
-</blockquote>
-<h1 id="first-level-heading-in-alternate-style">First Level Heading in Alternate Style</h1>
-<p>Paragraph.</p>
-<h2 id="second-level-heading-in-alternate-style">Second Level Heading in Alternate Style</h2>
-<p>Paragraph.</p>
+<p>There are way more shaders. I've only tested the CRT directory so far!</p>
 </content>
 
     </main>
